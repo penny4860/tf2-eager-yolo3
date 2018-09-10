@@ -126,6 +126,7 @@ def make_yolov3_model(h = None, w = None):
 
 
 if __name__ == '__main__':
+    # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
     model = make_yolov3_model(416, 416)
     model.summary()
 
