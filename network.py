@@ -125,31 +125,153 @@ def make_yolov3_model(h = None, w = None):
     return model
 
 
+class _ConvBlock(tf.keras.Model):
+    def __init__(self, filters, stage, block):
+        super(_ConvBlock, self).__init__(name='')
+
+        conv_name_base = 'res' + str(stage) + block + '_branch'
+        bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+        self.conv = layers.Conv2D(filters, (3, 3), strides=(1, 1), padding='same', use_bias=False, name=conv_name_base)
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=bn_name_base)
+
+    def call(self, input_tensor, training=False):
+
+        x = self.conv(input_tensor)
+        x = self.bn(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        return x
+
+
+class _ConvPoolBlock(tf.keras.Model):
+    def __init__(self, filters, stage, block):
+        super(_ConvPoolBlock, self).__init__(name='')
+
+        conv_name_base = 'res' + str(stage) + block + '_branch'
+        bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+        self.pad = layers.ZeroPadding2D(((1,0),(1,0)))
+        self.conv = layers.Conv2D(filters, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name=conv_name_base)
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=bn_name_base)
+
+    def call(self, input_tensor, training=False):
+
+        x = self.pad(input_tensor)
+        x = self.conv(x)
+        x = self.bn(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        return x
+
+
+class _ResidualBlock(tf.keras.Model):
+    def __init__(self, filters, stage, block):
+        super(_ResidualBlock, self).__init__(name='')
+        filters1, filters2 = filters
+
+        conv_name_base = 'res' + str(stage) + block + '_branch'
+        bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2a')
+        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2a')
+
+        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2b')
+        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2b')
+
+    def call(self, input_tensor, training=False):
+        x = self.conv2a(input_tensor)
+        x = self.bn2a(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2b(x)
+        x = self.bn2b(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+
+        x += input_tensor
+        return x
+
+
 class Yolo3(tf.keras.Model):
     def __init__(self):
         super(Yolo3, self).__init__(name='')
         
-        self.conv0 = layers.Conv2D(32, (3, 3), strides=(1, 1), padding='same', use_bias=False, name='conv_0')
-        self.bn_conv0 = layers.BatchNormalization(epsilon=0.001, name='bnorm_0')
-        self.ac_conv0 = layers.LeakyReLU(alpha=0.1, name='leaky_0')
+        # (256, 256, 3)
+        self.l1a = _ConvBlock(32, stage="1", block="a")
+        self.l1_pool = _ConvPoolBlock(64, stage="1", block="b")
 
+        # (128, 128, 64)
+        self.l2a = _ResidualBlock([32, 64], stage="2", block="a")
+        self.l2_pool = _ConvPoolBlock(128, stage="2", block="b")
 
-        self.pad1 = layers.ZeroPadding2D(((1,0),(1,0)))
-        self.conv1 = layers.Conv2D(64, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name='conv_1')
-        self.bn_conv1 = layers.BatchNormalization(epsilon=0.001, name='bnorm_1')
-        self.ac_conv1 = layers.LeakyReLU(alpha=0.1, name='leaky_1')
+        # (64, 64, 128)
+        self.l3a = _ResidualBlock([64, 128], stage="3", block="a")
+        self.l3b = _ResidualBlock([64, 128], stage="3", block="b")
+        self.l3_pool = _ConvPoolBlock(256, stage="3", block="c")
+
+        # (32, 32, 256)
+        self.l4a = _ResidualBlock([128, 256], stage="4", block="a")
+        self.l4b = _ResidualBlock([128, 256], stage="4", block="b")
+        self.l4c = _ResidualBlock([128, 256], stage="4", block="c")
+        self.l4d = _ResidualBlock([128, 256], stage="4", block="d")
+        self.l4e = _ResidualBlock([128, 256], stage="4", block="e")
+        self.l4f = _ResidualBlock([128, 256], stage="4", block="f")
+        self.l4g = _ResidualBlock([128, 256], stage="4", block="g")
+        self.l4h = _ResidualBlock([128, 256], stage="4", block="h")
+        self.l4_pool = _ConvPoolBlock(512, stage="4", block="i")
+        
+        # (16, 16, 512)
+        self.l5a = _ResidualBlock([256, 512], stage="5", block="a")
+        self.l5b = _ResidualBlock([256, 512], stage="5", block="b")
+        self.l5c = _ResidualBlock([256, 512], stage="5", block="c")
+        self.l5d = _ResidualBlock([256, 512], stage="5", block="d")
+        self.l5e = _ResidualBlock([256, 512], stage="5", block="e")
+        self.l5f = _ResidualBlock([256, 512], stage="5", block="f")
+        self.l5g = _ResidualBlock([256, 512], stage="5", block="g")
+        self.l5h = _ResidualBlock([256, 512], stage="5", block="h")
+        self.l5_pool = _ConvPoolBlock(1024, stage="5", block="i")
+
+        # (8, 8, 1024)
+        self.l6a = _ResidualBlock([512, 1024], stage="6", block="a")
+        self.l6b = _ResidualBlock([512, 1024], stage="6", block="b")
+        self.l6c = _ResidualBlock([512, 1024], stage="6", block="c")
+        self.l6d = _ResidualBlock([512, 1024], stage="6", block="d")
+
 
     def call(self, input_tensor):
         
-        x = self.conv0(input_tensor)
-        x = self.bn_conv0(x)
-        x = self.ac_conv0(x)
-        
-        x = self.pad1(x)
-        x = self.conv1(x)
-        x = self.bn_conv1(x)
-        x = self.ac_conv1(x)
+        x = self.l1a(input_tensor)
+        x = self.l1_pool(x)
 
+        x = self.l2a(x)
+        x = self.l2_pool(x)
+
+        x = self.l3a(x)
+        x = self.l3b(x)
+        x = self.l3_pool(x)
+
+        x = self.l4a(x)
+        x = self.l4b(x)
+        x = self.l4c(x)
+        x = self.l4d(x)
+        x = self.l4e(x)
+        x = self.l4f(x)
+        x = self.l4g(x)
+        x = self.l4h(x)
+        x = self.l4_pool(x)
+
+        x = self.l5a(x)
+        x = self.l5b(x)
+        x = self.l5c(x)
+        x = self.l5d(x)
+        x = self.l5e(x)
+        x = self.l5f(x)
+        x = self.l5g(x)
+        x = self.l5h(x)
+        x = self.l5_pool(x)
+
+        x = self.l6a(x)
+        x = self.l6b(x)
+        x = self.l6c(x)
+        x = self.l6d(x)
         return x
 
 if __name__ == '__main__':
@@ -157,13 +279,11 @@ if __name__ == '__main__':
 #     model = make_yolov3_model(256, 256)
 #     model.summary()
     
-    
     import numpy as np
     imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
     input_tensor = tf.constant(imgs)
     yolo = Yolo3()
     y = yolo(input_tensor)
     print(y)
+    print(y.shape)
     
-
-
