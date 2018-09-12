@@ -195,19 +195,23 @@ class Yolo3(tf.keras.Model):
         super(Yolo3, self).__init__(name='')
         
         # (256, 256, 3)
+        # layer : 0 ~ 1
         self.l1a = _ConvBlock(32, stage="1", block="a")
         self.l1_pool = _ConvPoolBlock(64, stage="1", block="b")
 
         # (128, 128, 64)
+        # layer : 2 ~ 4
         self.l2a = _ResidualBlock([32, 64], stage="2", block="a")
         self.l2_pool = _ConvPoolBlock(128, stage="2", block="b")
 
         # (64, 64, 128)
+        # layer : 5 ~ 9
         self.l3a = _ResidualBlock([64, 128], stage="3", block="a")
         self.l3b = _ResidualBlock([64, 128], stage="3", block="b")
         self.l3_pool = _ConvPoolBlock(256, stage="3", block="c")
 
         # (32, 32, 256)
+        # layer : 10 ~ 26
         self.l4a = _ResidualBlock([128, 256], stage="4", block="a")
         self.l4b = _ResidualBlock([128, 256], stage="4", block="b")
         self.l4c = _ResidualBlock([128, 256], stage="4", block="c")
@@ -219,6 +223,7 @@ class Yolo3(tf.keras.Model):
         self.l4_pool = _ConvPoolBlock(512, stage="4", block="i")
         
         # (16, 16, 512)
+        # layer : 27 ~ 43
         self.l5a = _ResidualBlock([256, 512], stage="5", block="a")
         self.l5b = _ResidualBlock([256, 512], stage="5", block="b")
         self.l5c = _ResidualBlock([256, 512], stage="5", block="c")
@@ -230,6 +235,7 @@ class Yolo3(tf.keras.Model):
         self.l5_pool = _ConvPoolBlock(1024, stage="5", block="i")
 
         # (8, 8, 1024)
+        # layer : 44 ~ 51
         self.l6a = _ResidualBlock([512, 1024], stage="6", block="a")
         self.l6b = _ResidualBlock([512, 1024], stage="6", block="b")
         self.l6c = _ResidualBlock([512, 1024], stage="6", block="c")
