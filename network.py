@@ -125,9 +125,45 @@ def make_yolov3_model(h = None, w = None):
     return model
 
 
+class Yolo3(tf.keras.Model):
+    def __init__(self):
+        super(Yolo3, self).__init__(name='')
+        
+        self.conv0 = layers.Conv2D(32, (3, 3), strides=(1, 1), padding='same', use_bias=False, name='conv_0')
+        self.bn_conv0 = layers.BatchNormalization(epsilon=0.001, name='bnorm_0')
+        self.ac_conv0 = layers.LeakyReLU(alpha=0.1, name='leaky_0')
+
+
+        self.pad1 = layers.ZeroPadding2D(((1,0),(1,0)))
+        self.conv1 = layers.Conv2D(64, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name='conv_1')
+        self.bn_conv1 = layers.BatchNormalization(epsilon=0.001, name='bnorm_1')
+        self.ac_conv1 = layers.LeakyReLU(alpha=0.1, name='leaky_1')
+
+    def call(self, input_tensor):
+        
+        x = self.conv0(input_tensor)
+        x = self.bn_conv0(x)
+        x = self.ac_conv0(x)
+        
+        x = self.pad1(x)
+        x = self.conv1(x)
+        x = self.bn_conv1(x)
+        x = self.ac_conv1(x)
+
+        return x
+
 if __name__ == '__main__':
-    # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
-    model = make_yolov3_model(416, 416)
-    model.summary()
+#     # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
+#     model = make_yolov3_model(256, 256)
+#     model.summary()
+    
+    
+    import numpy as np
+    imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
+    input_tensor = tf.constant(imgs)
+    yolo = Yolo3()
+    y = yolo(input_tensor)
+    print(y)
+    
 
 
