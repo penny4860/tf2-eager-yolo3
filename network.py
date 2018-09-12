@@ -236,42 +236,42 @@ class Yolo3(tf.keras.Model):
         self.l6d = _ResidualBlock([512, 1024], stage="6", block="d")
 
 
-    def call(self, input_tensor):
+    def call(self, input_tensor, training=False):
         
-        x = self.l1a(input_tensor)
-        x = self.l1_pool(x)
+        x = self.l1a(input_tensor, training)
+        x = self.l1_pool(x, training)
 
-        x = self.l2a(x)
-        x = self.l2_pool(x)
+        x = self.l2a(x, training)
+        x = self.l2_pool(x, training)
 
-        x = self.l3a(x)
-        x = self.l3b(x)
-        x = self.l3_pool(x)
+        x = self.l3a(x, training)
+        x = self.l3b(x, training)
+        x = self.l3_pool(x, training)
 
-        x = self.l4a(x)
-        x = self.l4b(x)
-        x = self.l4c(x)
-        x = self.l4d(x)
-        x = self.l4e(x)
-        x = self.l4f(x)
-        x = self.l4g(x)
-        x = self.l4h(x)
-        x = self.l4_pool(x)
+        x = self.l4a(x, training)
+        x = self.l4b(x, training)
+        x = self.l4c(x, training)
+        x = self.l4d(x, training)
+        x = self.l4e(x, training)
+        x = self.l4f(x, training)
+        x = self.l4g(x, training)
+        x = self.l4h(x, training)
+        x = self.l4_pool(x, training)
 
-        x = self.l5a(x)
-        x = self.l5b(x)
-        x = self.l5c(x)
-        x = self.l5d(x)
-        x = self.l5e(x)
-        x = self.l5f(x)
-        x = self.l5g(x)
-        x = self.l5h(x)
-        x = self.l5_pool(x)
+        x = self.l5a(x, training)
+        x = self.l5b(x, training)
+        x = self.l5c(x, training)
+        x = self.l5d(x, training)
+        x = self.l5e(x, training)
+        x = self.l5f(x, training)
+        x = self.l5g(x, training)
+        x = self.l5h(x, training)
+        x = self.l5_pool(x, training)
 
-        x = self.l6a(x)
-        x = self.l6b(x)
-        x = self.l6c(x)
-        x = self.l6d(x)
+        x = self.l6a(x, training)
+        x = self.l6b(x, training)
+        x = self.l6c(x, training)
+        x = self.l6d(x, training)
         return x
 
 if __name__ == '__main__':
