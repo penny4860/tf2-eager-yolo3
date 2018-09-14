@@ -333,4 +333,11 @@ if __name__ == '__main__':
     y = yolo(input_tensor)
     print(y)
     print(y.shape)
+
+    imgs = np.random.randn(1, 8, 8, 1024).astype(np.float32)
+    input_tensor = tf.constant(imgs)
+    _conv5_layers = _ConvBlock5([512, 1024, 512, 1024, 512], "5_1", "a")
+    y = _conv5_layers(input_tensor)
+    print(y)
+    print(y.shape)
     
