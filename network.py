@@ -125,53 +125,6 @@ def make_yolov3_model(h = None, w = None):
     return model
 
 
-class _ConvBlock5(tf.keras.Model):
-    def __init__(self, filters, stage, block):
-        super(_ConvBlock5, self).__init__(name='')
-        filters1, filters2, filters3, filters4, filters5 = filters
-
-        conv_name_base = 'res' + str(stage) + block + '_branch'
-        bn_name_base = 'bn' + str(stage) + block + '_branch'
-
-        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2a')
-        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2a')
-
-        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2b')
-        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2b')
-
-        self.conv2c = layers.Conv2D(filters3, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2c')
-        self.bn2c = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2c')
-
-        self.conv2d = layers.Conv2D(filters4, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2d')
-        self.bn2d = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2d')
-
-        self.conv2e = layers.Conv2D(filters5, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2e')
-        self.bn2e = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2e')
-
-
-    def call(self, input_tensor, training=False):
-        x = self.conv2a(input_tensor)
-        x = self.bn2a(x, training=training)
-        x = tf.nn.leaky_relu(x, alpha=0.1)
-        
-        x = self.conv2b(x)
-        x = self.bn2b(x, training=training)
-        x = tf.nn.leaky_relu(x, alpha=0.1)
-        
-        x = self.conv2c(x)
-        x = self.bn2c(x, training=training)
-        x = tf.nn.leaky_relu(x, alpha=0.1)
-        
-        x = self.conv2d(x)
-        x = self.bn2d(x, training=training)
-        x = tf.nn.leaky_relu(x, alpha=0.1)
-        
-        x = self.conv2e(x)
-        x = self.bn2e(x, training=training)
-        x = tf.nn.leaky_relu(x, alpha=0.1)
-        return x
-
-
 class _ConvBlock(tf.keras.Model):
     def __init__(self, filters, stage, block):
         super(_ConvBlock, self).__init__(name='')
@@ -321,6 +274,79 @@ class Yolo3(tf.keras.Model):
         x = self.l5d(x, training)
         return x
 
+
+class _ConvBlock5(tf.keras.Model):
+    def __init__(self, filters, stage, block):
+        super(_ConvBlock5, self).__init__(name='')
+        filters1, filters2, filters3, filters4, filters5 = filters
+
+        conv_name_base = 'res' + str(stage) + block + '_branch'
+        bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2a')
+        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2a')
+
+        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2b')
+        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2b')
+
+        self.conv2c = layers.Conv2D(filters3, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2c')
+        self.bn2c = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2c')
+
+        self.conv2d = layers.Conv2D(filters4, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2d')
+        self.bn2d = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2d')
+
+        self.conv2e = layers.Conv2D(filters5, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2e')
+        self.bn2e = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2e')
+
+
+    def call(self, input_tensor, training=False):
+        x = self.conv2a(input_tensor)
+        x = self.bn2a(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2b(x)
+        x = self.bn2b(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2c(x)
+        x = self.bn2c(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2d(x)
+        x = self.bn2d(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2e(x)
+        x = self.bn2e(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        return x
+
+
+class _ConvBlock2(tf.keras.Model):
+    def __init__(self, filters, stage, block):
+        super(_ConvBlock2, self).__init__(name='')
+        filters1, filters2 = filters
+
+        conv_name_base = 'res' + str(stage) + block + '_branch'
+        bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2a')
+        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2a')
+
+        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2b')
+        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2b')
+
+    def call(self, input_tensor, training=False):
+        x = self.conv2a(input_tensor)
+        x = self.bn2a(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        
+        x = self.conv2b(x)
+        x = self.bn2b(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        return x
+
+
 if __name__ == '__main__':
 #     # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
 #     model = make_yolov3_model(256, 256)
@@ -336,8 +362,14 @@ if __name__ == '__main__':
 
     imgs = np.random.randn(1, 8, 8, 1024).astype(np.float32)
     input_tensor = tf.constant(imgs)
-    _conv5_layers = _ConvBlock5([512, 1024, 512, 1024, 512], "5_1", "a")
+    _conv5_layers = _ConvBlock5([512, 1024, 512, 1024, 512], "5", "p1")
     y = _conv5_layers(input_tensor)
     print(y)
     print(y.shape)
     
+    imgs = np.random.randn(1, 8, 8, 512).astype(np.float32)
+    input_tensor = tf.constant(imgs)
+    _conv5_layers = _ConvBlock2([1024, 255], "5", "p2")
+    y = _conv5_layers(input_tensor)
+    print(y)
+    print(y.shape)
