@@ -99,7 +99,6 @@ class Darknet53(tf.keras.Model):
         
         x = self.flatten(x)
         x = self.fc(x)
-        # x = tf.nn.softmax(x)
         return x
 
 
