@@ -11,17 +11,17 @@ class Darknet53(tf.keras.Model):
         super(Darknet53, self).__init__(name='')
         
         # (256, 256, 3)
-        self.l0a = _ConvBlock(32, stage="0", block="a")
-        self.l0_pool = _ConvPoolBlock(64, stage="0", block="b")
+        self.l0a = _ConvBlock(32, layer_idx=0)
+        self.l0_pool = _ConvPoolBlock(64, layer_idx=1)
 
         # (128, 128, 64)
         self.l1a = _ResidualBlock([32, 64], stage="1", block="a")
-        self.l1_pool = _ConvPoolBlock(128, stage="1", block="b")
+        self.l1_pool = _ConvPoolBlock(128, layer_idx=2)
 
         # (64, 64, 128)
         self.l2a = _ResidualBlock([64, 128], stage="2", block="a")
         self.l2b = _ResidualBlock([64, 128], stage="2", block="b")
-        self.l2_pool = _ConvPoolBlock(256, stage="2", block="c")
+        self.l2_pool = _ConvPoolBlock(256, layer_idx=3)
 
         # (32, 32, 256)
         self.l3a = _ResidualBlock([128, 256], stage="3", block="a")
@@ -32,7 +32,7 @@ class Darknet53(tf.keras.Model):
         self.l3f = _ResidualBlock([128, 256], stage="3", block="f")
         self.l3g = _ResidualBlock([128, 256], stage="3", block="g")
         self.l3h = _ResidualBlock([128, 256], stage="3", block="h")
-        self.l3_pool = _ConvPoolBlock(512, stage="3", block="i")
+        self.l3_pool = _ConvPoolBlock(512, layer_idx=4)
         
         # (16, 16, 512)
         self.l4a = _ResidualBlock([256, 512], stage="4", block="a")
@@ -43,7 +43,7 @@ class Darknet53(tf.keras.Model):
         self.l4f = _ResidualBlock([256, 512], stage="4", block="f")
         self.l4g = _ResidualBlock([256, 512], stage="4", block="g")
         self.l4h = _ResidualBlock([256, 512], stage="4", block="h")
-        self.l4_pool = _ConvPoolBlock(1024, stage="4", block="i")
+        self.l4_pool = _ConvPoolBlock(1024, layer_idx=5)
 
         # (8, 8, 1024)
         self.l5a = _ResidualBlock([512, 1024], stage="5", block="a")
@@ -97,20 +97,20 @@ class Darknet53(tf.keras.Model):
         x = self.l5c(x, training)
         x = self.l5d(x, training)
         
+        x = self.avg_pool(x)
         x = self.flatten(x)
         x = self.fc(x)
         return x
 
 
 class _ConvBlock(tf.keras.Model):
-    def __init__(self, filters, stage, block):
+    def __init__(self, filters, layer_idx):
         super(_ConvBlock, self).__init__(name='')
+        
+        layer_name = "layer_{}".format(str(layer_idx))
 
-        conv_name_base = 'res' + str(stage) + block + '_branch'
-        bn_name_base = 'bn' + str(stage) + block + '_branch'
-
-        self.conv = layers.Conv2D(filters, (3, 3), strides=(1, 1), padding='same', use_bias=False, name=conv_name_base)
-        self.bn = layers.BatchNormalization(epsilon=0.001, name=bn_name_base)
+        self.conv = layers.Conv2D(filters, (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_name)
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=layer_name)
 
     def call(self, input_tensor, training=False):
 
@@ -121,15 +121,14 @@ class _ConvBlock(tf.keras.Model):
 
 
 class _ConvPoolBlock(tf.keras.Model):
-    def __init__(self, filters, stage, block):
+    def __init__(self, filters, layer_idx):
         super(_ConvPoolBlock, self).__init__(name='')
 
-        conv_name_base = 'res' + str(stage) + block + '_branch'
-        bn_name_base = 'bn' + str(stage) + block + '_branch'
+        layer_name = "layer_{}".format(str(layer_idx))
 
         self.pad = layers.ZeroPadding2D(((1,0),(1,0)))
-        self.conv = layers.Conv2D(filters, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name=conv_name_base)
-        self.bn = layers.BatchNormalization(epsilon=0.001, name=bn_name_base)
+        self.conv = layers.Conv2D(filters, (3, 3), strides=(2, 2), padding='valid', use_bias=False, name=layer_name)
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=layer_name)
 
     def call(self, input_tensor, training=False):
 
@@ -172,6 +171,7 @@ if __name__ == '__main__':
 #     model = make_yolov3_model(256, 256)
 #     model.summary()
     tf.enable_eager_execution()
+    import tensorflow.contrib.eager as tfe
 
     import numpy as np
     imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
@@ -180,11 +180,19 @@ if __name__ == '__main__':
     y = darknet(input_tensor)
     print(y.shape)
     print(y.numpy().sum())
-    
+    print(len(darknet.variables))
+    print("")
     darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
-    for v in darknet.variables[:15]:
+    for v in darknet.variables[:-1]:
         np_kernel = v.numpy()
-        print(v.name, np_kernel.shape, np_kernel[0,0,0,:5])
-        break
+        print(v.name, np_kernel.shape)
+
+    # tf.get_variable_scope()
+    variables = tf.contrib.framework.get_variables(scope=None, suffix=None, collection=tf.GraphKeys.GLOBAL_VARIABLES)
+
+
+# darknet53/private__conv_block/res0a_branch/kernel:0 (3, 3, 3, 32)
+# darknet53/private__conv_block/bn0a_branch/gamma:0 (32,)
+# darknet53/private__conv_block/bn0a_branch/beta:0 (32,)
         
 
