@@ -181,5 +181,10 @@ if __name__ == '__main__':
     print(y.shape)
     print(y.numpy().sum())
     
-    
+    darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
+    for v in darknet.variables[:15]:
+        np_kernel = v.numpy()
+        print(v.name, np_kernel.shape, np_kernel[0,0,0,:5])
+        break
+        
 
