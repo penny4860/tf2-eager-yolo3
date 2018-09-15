@@ -22,7 +22,6 @@ class WeightReader:
     def load_weights(self, model):
 
         for i in range(model.num_layers):
-            # variables = darknet.get_variables(0 ,suffix="beta")
             variables = model.get_variables(layer_idx=i, suffix="beta")
             if variables:
                 bn_beta = variables[0]
@@ -80,7 +79,6 @@ class WeightReader:
                     value = value.reshape(list(reversed(kernel.shape)))
                     value = value.transpose([1,0])
                     kernel.assign(value)
-                    value  = self._read_bytes(1) # scale
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
