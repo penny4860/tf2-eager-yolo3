@@ -15,41 +15,41 @@ class Darknet53(tf.keras.Model):
         self.l0_pool = _ConvPoolBlock(64, layer_idx=1)
 
         # (128, 128, 64)
-        self.l1a = _ResidualBlock([32, 64], stage="1", block="a")
-        self.l1_pool = _ConvPoolBlock(128, layer_idx=2)
+        self.l1a = _ResidualBlock([32, 64], layer_idx=[2, 3])
+        self.l1_pool = _ConvPoolBlock(128, layer_idx=4)
 
         # (64, 64, 128)
-        self.l2a = _ResidualBlock([64, 128], stage="2", block="a")
-        self.l2b = _ResidualBlock([64, 128], stage="2", block="b")
-        self.l2_pool = _ConvPoolBlock(256, layer_idx=3)
+        self.l2a = _ResidualBlock([64, 128], layer_idx=[5, 6])
+        self.l2b = _ResidualBlock([64, 128], layer_idx=[7, 8])
+        self.l2_pool = _ConvPoolBlock(256, layer_idx=9)
 
         # (32, 32, 256)
-        self.l3a = _ResidualBlock([128, 256], stage="3", block="a")
-        self.l3b = _ResidualBlock([128, 256], stage="3", block="b")
-        self.l3c = _ResidualBlock([128, 256], stage="3", block="c")
-        self.l3d = _ResidualBlock([128, 256], stage="3", block="d")
-        self.l3e = _ResidualBlock([128, 256], stage="3", block="e")
-        self.l3f = _ResidualBlock([128, 256], stage="3", block="f")
-        self.l3g = _ResidualBlock([128, 256], stage="3", block="g")
-        self.l3h = _ResidualBlock([128, 256], stage="3", block="h")
-        self.l3_pool = _ConvPoolBlock(512, layer_idx=4)
+        self.l3a = _ResidualBlock([128, 256], layer_idx=[10, 11])
+        self.l3b = _ResidualBlock([128, 256], layer_idx=[12, 13])
+        self.l3c = _ResidualBlock([128, 256], layer_idx=[14, 15])
+        self.l3d = _ResidualBlock([128, 256], layer_idx=[16, 17])
+        self.l3e = _ResidualBlock([128, 256], layer_idx=[18, 19])
+        self.l3f = _ResidualBlock([128, 256], layer_idx=[20, 21])
+        self.l3g = _ResidualBlock([128, 256], layer_idx=[22, 23])
+        self.l3h = _ResidualBlock([128, 256], layer_idx=[24, 25])
+        self.l3_pool = _ConvPoolBlock(512, layer_idx=26)
         
         # (16, 16, 512)
-        self.l4a = _ResidualBlock([256, 512], stage="4", block="a")
-        self.l4b = _ResidualBlock([256, 512], stage="4", block="b")
-        self.l4c = _ResidualBlock([256, 512], stage="4", block="c")
-        self.l4d = _ResidualBlock([256, 512], stage="4", block="d")
-        self.l4e = _ResidualBlock([256, 512], stage="4", block="e")
-        self.l4f = _ResidualBlock([256, 512], stage="4", block="f")
-        self.l4g = _ResidualBlock([256, 512], stage="4", block="g")
-        self.l4h = _ResidualBlock([256, 512], stage="4", block="h")
-        self.l4_pool = _ConvPoolBlock(1024, layer_idx=5)
+        self.l4a = _ResidualBlock([256, 512], layer_idx=[27, 28])
+        self.l4b = _ResidualBlock([256, 512], layer_idx=[29, 30])
+        self.l4c = _ResidualBlock([256, 512], layer_idx=[31, 32])
+        self.l4d = _ResidualBlock([256, 512], layer_idx=[33, 34])
+        self.l4e = _ResidualBlock([256, 512], layer_idx=[35, 36])
+        self.l4f = _ResidualBlock([256, 512], layer_idx=[37, 38])
+        self.l4g = _ResidualBlock([256, 512], layer_idx=[39, 40])
+        self.l4h = _ResidualBlock([256, 512], layer_idx=[41, 42])
+        self.l4_pool = _ConvPoolBlock(1024, layer_idx=43)
 
         # (8, 8, 1024)
-        self.l5a = _ResidualBlock([512, 1024], stage="5", block="a")
-        self.l5b = _ResidualBlock([512, 1024], stage="5", block="b")
-        self.l5c = _ResidualBlock([512, 1024], stage="5", block="c")
-        self.l5d = _ResidualBlock([512, 1024], stage="5", block="d")
+        self.l5a = _ResidualBlock([512, 1024], layer_idx=[44, 45])
+        self.l5b = _ResidualBlock([512, 1024], layer_idx=[46, 47])
+        self.l5c = _ResidualBlock([512, 1024], layer_idx=[48, 49])
+        self.l5d = _ResidualBlock([512, 1024], layer_idx=[50, 51])
         
         # (8, 8, 1024) => (1, 1, 1024)
         self.avg_pool = layers.GlobalAveragePooling2D()
@@ -58,7 +58,7 @@ class Darknet53(tf.keras.Model):
         # (1, 1, 1024) => (1024)
         self.flatten = layers.Flatten()
         # (1024) => (1000)
-        self.fc = layers.Dense(1000, activation='softmax', name='fc1000')
+        self.fc = layers.Dense(1000, activation='softmax', name="layer_52")
 
     def call(self, input_tensor, training=False):
         
@@ -140,18 +140,19 @@ class _ConvPoolBlock(tf.keras.Model):
 
 
 class _ResidualBlock(tf.keras.Model):
-    def __init__(self, filters, stage, block):
+    def __init__(self, filters, layer_idx):
         super(_ResidualBlock, self).__init__(name='')
         filters1, filters2 = filters
+        layer1, layer2 = layer_idx
 
-        conv_name_base = 'res' + str(stage) + block + '_branch'
-        bn_name_base = 'bn' + str(stage) + block + '_branch'
+        layer_name1 = "layer_{}".format(str(layer1))
+        layer_name2 = "layer_{}".format(str(layer2))
 
-        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=conv_name_base + '2a')
-        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2a')
+        self.conv2a = layers.Conv2D(filters1, (1, 1), padding='same', use_bias=False, name=layer_name1)
+        self.bn2a = layers.BatchNormalization(epsilon=0.001, name=layer_name1)
 
-        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=conv_name_base + '2b')
-        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=bn_name_base + '2b')
+        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', use_bias=False, name=layer_name2)
+        self.bn2b = layers.BatchNormalization(epsilon=0.001, name=layer_name2)
 
     def call(self, input_tensor, training=False):
         x = self.conv2a(input_tensor)
