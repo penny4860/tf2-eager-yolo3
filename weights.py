@@ -20,24 +20,67 @@ class WeightReader:
         self.all_weights = np.frombuffer(binary, dtype='float32')
 
     def load_weights(self, model):
-        for i in range(106):
-            try:
-                conv_layer = model.get_layer('conv_' + str(i))
-                print("loading weights of convolution #" + str(i))
 
-                # batch norm layer 가 있는 경우
-                if i not in [81, 93, 105]:
-                    self._load_bn_params(model, i)
+        for i in range(model.num_layers):
+            # variables = darknet.get_variables(0 ,suffix="beta")
+            variables = model.get_variables(layer_idx=i, suffix="beta")
+            if variables:
+                bn_beta = variables[0]
+                size = np.prod(bn_beta.shape)
+                value  = self._read_bytes(size) # bias
+                bn_beta.assign(value)
+                print("beta", i, bn_beta.shape, size)
 
-                # conv layer : bias 가 있는 경우
-                if len(conv_layer.get_weights()) > 1:
-                    self._load_conv_bias_params(conv_layer)
-                # conv layer : bias 가 없는 경우
+            variables = model.get_variables(layer_idx=i, suffix="gamma")
+            if variables:
+                bn_gamma = variables[0]
+                size = np.prod(bn_gamma.shape)
+                value  = self._read_bytes(size) # scale
+                bn_gamma.assign(value)
+                print("gamma", i, bn_gamma.shape, size)
+
+            variables = model.get_variables(layer_idx=i, suffix="moving_mean")
+            if variables:
+                bn_mean = variables[0]
+                size = np.prod(bn_mean.shape)
+                value  = self._read_bytes(size) # scale
+                bn_mean.assign(value)
+                print("moving_mean", i, bn_mean.shape, size)
+
+            variables = model.get_variables(layer_idx=i, suffix="moving_variance")
+            if variables:
+                bn_var = variables[0]
+                size = np.prod(bn_var.shape)
+                value  = self._read_bytes(size) # scale
+                bn_var.assign(value)
+                print("moving_variance", i, bn_var.shape, size)
+
+            variables = model.get_variables(layer_idx=i, suffix="bias")
+            if variables:
+                bias = variables[0]
+                size = np.prod(bias.shape)
+                value  = self._read_bytes(size) # scale
+                bias.assign(value)
+                print("bias", i, bias.shape, size)
+
+            variables = model.get_variables(layer_idx=i, suffix="kernel")
+            if variables:
+                kernel = variables[0]
+                # convolution layer kernel
+                if len(kernel.shape) == 4:
+                    size = np.prod(kernel.shape)
+                    value  = self._read_bytes(size) # scale
+                    value = value.reshape(list(reversed(kernel.shape)))
+                    value = value.transpose([2,3,1,0])
+                    kernel.assign(value)
+                # fc layer kernel
                 else:
-                    self._load_conv_params(conv_layer)
-
-            except ValueError:
-                print("no convolution #" + str(i))     
+                    size = np.prod(kernel.shape)
+                    value  = self._read_bytes(size) # scale
+                    value = value.reshape(list(reversed(kernel.shape)))
+                    value = value.transpose([1,0])
+                    kernel.assign(value)
+                    value  = self._read_bytes(1) # scale
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
@@ -79,7 +122,10 @@ if __name__ == '__main__':
     from yolo import PROJECT_ROOT
     WEIGHT_FILE = os.path.join(os.path.dirname(PROJECT_ROOT), "dataset", "yolo", "darknet53.weights")
 
-
     darknet = Darknet53()
+    reader = WeightReader(WEIGHT_FILE)
+    reader.load_weights(darknet)
+
+
 
 
