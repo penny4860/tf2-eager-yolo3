@@ -101,7 +101,17 @@ class Darknet53(tf.keras.Model):
         x = self.flatten(x)
         x = self.fc(x)
         return x
-
+    
+    def get_variables(self, layer_idx, suffix=None):
+        if suffix:
+            find_name = "layer_{}/{}".format(layer_idx, suffix)
+        else:
+            find_name = "layer_{}/".format(layer_idx)
+        variables = []
+        for v in self.variables:
+            if find_name in v.name:
+                variables.append(v)
+        return variables
 
 class _ConvBlock(tf.keras.Model):
     def __init__(self, filters, layer_idx, name=""):
@@ -183,10 +193,15 @@ if __name__ == '__main__':
     print(y.numpy().sum())
     print(len(darknet.variables))
     print("")
-    darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
-    for v in darknet.variables[:-1]:
-        np_kernel = v.numpy()
-        print(v.name, np_kernel.shape)
+#     darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
+#     for v in darknet.variables[:-1]:
+#         np_kernel = v.numpy()
+#         print(v.name, np_kernel.shape)
+
+    variables = darknet.get_variables(1)
+    for v in variables:
+        print(v.name)
+
 
     # tf.get_variable_scope()
     # variables = tf.contrib.framework.get_variables(scope=None, suffix=None, collection=tf.GraphKeys.GLOBAL_VARIABLES)
