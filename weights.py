@@ -73,9 +73,8 @@ class WeightReader:
         value  = self._read_bytes(size) # scale
         
         # Todo : darknet 에 저장된 형식이 (output_ch, input_ch)이 맞는지 확인하자.
-#         value = value.reshape(list(reversed(variable.shape)))
-#         value = value.transpose([1,0])
-        value = value.reshape(variable.shape)
+        value = value.reshape(list(reversed(variable.shape)))
+        value = value.transpose([1,0])
         variable.assign(value)
 
 
