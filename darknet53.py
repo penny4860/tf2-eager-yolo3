@@ -59,6 +59,8 @@ class Darknet53(tf.keras.Model):
         self.flatten = layers.Flatten()
         # (1024) => (1000)
         self.fc = layers.Dense(1000, activation='softmax', name="layer_52")
+        self.num_layers = 53
+        self._init_vars()
 
     def call(self, input_tensor, training=False):
         
@@ -112,6 +114,13 @@ class Darknet53(tf.keras.Model):
             if find_name in v.name:
                 variables.append(v)
         return variables
+
+    def _init_vars(self):
+        import numpy as np
+        imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
+        input_tensor = tf.constant(imgs)
+        self.call(input_tensor)
+
 
 class _ConvBlock(tf.keras.Model):
     def __init__(self, filters, layer_idx, name=""):
@@ -188,17 +197,17 @@ if __name__ == '__main__':
     imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
     input_tensor = tf.constant(imgs)
     darknet = Darknet53()
-    y = darknet(input_tensor)
-    print(y.shape)
-    print(y.numpy().sum())
-    print(len(darknet.variables))
-    print("")
+#     y = darknet(input_tensor)
+#     print(y.shape)
+#     print(y.numpy().sum())
+#     print(len(darknet.variables))
+#     print("")
 #     darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
 #     for v in darknet.variables[:-1]:
 #         np_kernel = v.numpy()
 #         print(v.name, np_kernel.shape)
 
-    variables = darknet.get_variables(1)
+    variables = darknet.get_variables(0 ,suffix="beta")
     for v in variables:
         print(v.name)
 
