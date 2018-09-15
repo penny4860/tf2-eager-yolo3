@@ -198,28 +198,8 @@ class _ConvBlock2(tf.keras.Model):
 
 
 if __name__ == '__main__':
-#     # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
-#     model = make_yolov3_model(256, 256)
-#     model.summary()
+    # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
+    model = make_yolov3_model(256, 256)
+    model.summary()
     
-    import numpy as np
-    imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
-    input_tensor = tf.constant(imgs)
-    yolo = Yolo3()
-    y = yolo(input_tensor)
-    print(y)
-    print(y.shape)
 
-    imgs = np.random.randn(1, 8, 8, 1024).astype(np.float32)
-    input_tensor = tf.constant(imgs)
-    _conv5_layers = _ConvBlock5([512, 1024, 512, 1024, 512], "5", "p1")
-    y = _conv5_layers(input_tensor)
-    print(y)
-    print(y.shape)
-    
-    imgs = np.random.randn(1, 8, 8, 512).astype(np.float32)
-    input_tensor = tf.constant(imgs)
-    _conv5_layers = _ConvBlock2([1024, 255], "5", "p2")
-    y = _conv5_layers(input_tensor)
-    print(y)
-    print(y.shape)
