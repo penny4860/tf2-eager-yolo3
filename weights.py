@@ -19,11 +19,6 @@ class WeightReader:
         self.offset = 0
         self.all_weights = np.frombuffer(binary, dtype='float32')
 
-    def _load_1d_var(self, variable):
-        size = np.prod(variable.shape)
-        value  = self._read_bytes(size) # bias
-        variable.assign(value)
-
     def load_weights(self, model):
 
         for i in range(model.num_layers):
@@ -52,49 +47,33 @@ class WeightReader:
                 kernel = variables[0]
                 # convolution layer kernel
                 if len(kernel.shape) == 4:
-                    size = np.prod(kernel.shape)
-                    value  = self._read_bytes(size) # scale
-                    value = value.reshape(list(reversed(kernel.shape)))
-                    value = value.transpose([2,3,1,0])
-                    kernel.assign(value)
+                    self._load_4d_var(kernel)
                 # fc layer kernel
                 else:
-                    size = np.prod(kernel.shape)
-                    value  = self._read_bytes(size) # scale
-                    value = value.reshape(list(reversed(kernel.shape)))
-                    value = value.transpose([1,0])
-                    kernel.assign(value)
+                    self._load_2d_var(kernel)
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
         return self.all_weights[self.offset-size:self.offset]
     
-    def _load_bn_params(self, model, i):
-        norm_layer = model.get_layer('bnorm_' + str(i))
+    def _load_1d_var(self, variable):
+        size = np.prod(variable.shape)
+        value  = self._read_bytes(size) # bias
+        variable.assign(value)
 
-        size = np.prod(norm_layer.get_weights()[0].shape)
-        print(len(norm_layer.get_weights()), norm_layer.get_weights()[0].shape, size)
+    def _load_4d_var(self, variable):
+        size = np.prod(variable.shape)
+        value  = self._read_bytes(size) # scale
+        value = value.reshape(list(reversed(variable.shape)))
+        value = value.transpose([2,3,1,0])
+        variable.assign(value)
 
-        beta  = self._read_bytes(size) # bias
-        gamma = self._read_bytes(size) # scale
-        mean  = self._read_bytes(size) # mean
-        var   = self._read_bytes(size) # variance            
-
-        norm_layer.set_weights([gamma, beta, mean, var])  
-
-    def _load_conv_bias_params(self, conv_layer):
-        bias   = self._read_bytes(np.prod(conv_layer.get_weights()[1].shape))
-        kernel = self._read_bytes(np.prod(conv_layer.get_weights()[0].shape))
-        
-        kernel = kernel.reshape(list(reversed(conv_layer.get_weights()[0].shape)))
-        kernel = kernel.transpose([2,3,1,0])
-        conv_layer.set_weights([kernel, bias])
-
-    def _load_conv_params(self, conv_layer):
-        kernel = self._read_bytes(np.prod(conv_layer.get_weights()[0].shape))
-        kernel = kernel.reshape(list(reversed(conv_layer.get_weights()[0].shape)))
-        kernel = kernel.transpose([2,3,1,0])
-        conv_layer.set_weights([kernel])
+    def _load_2d_var(self, variable):
+        size = np.prod(variable.shape)
+        value  = self._read_bytes(size) # scale
+        value = value.reshape(list(reversed(variable.shape)))
+        value = value.transpose([1,0])
+        variable.assign(value)
 
 
 if __name__ == '__main__':
@@ -108,7 +87,6 @@ if __name__ == '__main__':
     darknet = Darknet53()
     reader = WeightReader(WEIGHT_FILE)
     reader.load_weights(darknet)
-
 
 
 
