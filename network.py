@@ -266,6 +266,20 @@ class _ConvBlock2(tf.keras.Model):
         x = tf.nn.leaky_relu(x, alpha=0.1)
         return x
 
+def get_darknet():
+    from yolo import YOLOV3_WEIGHTS
+    
+    yolov3 = make_yolov3_model(256, 256)
+    weight_reader = WeightReader(YOLOV3_WEIGHTS)
+    weight_reader.load_weights(yolov3)
+
+    # model.summary()
+    input_tensor = yolov3.get_layer("input_1")
+    output_tensor = yolov3.get_layer("leaky_73")
+    
+    darknet = models.Model(input_tensor.input,
+                           output_tensor.output)
+    return darknet
 
 if __name__ == '__main__':
     # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
