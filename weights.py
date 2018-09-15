@@ -19,48 +19,33 @@ class WeightReader:
         self.offset = 0
         self.all_weights = np.frombuffer(binary, dtype='float32')
 
+    def _load_1d_var(self, variable):
+        size = np.prod(variable.shape)
+        value  = self._read_bytes(size) # bias
+        variable.assign(value)
+
     def load_weights(self, model):
 
         for i in range(model.num_layers):
             variables = model.get_variables(layer_idx=i, suffix="beta")
             if variables:
-                bn_beta = variables[0]
-                size = np.prod(bn_beta.shape)
-                value  = self._read_bytes(size) # bias
-                bn_beta.assign(value)
-                print("beta", i, bn_beta.shape, size)
+                self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="gamma")
             if variables:
-                bn_gamma = variables[0]
-                size = np.prod(bn_gamma.shape)
-                value  = self._read_bytes(size) # scale
-                bn_gamma.assign(value)
-                print("gamma", i, bn_gamma.shape, size)
+                self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="moving_mean")
             if variables:
-                bn_mean = variables[0]
-                size = np.prod(bn_mean.shape)
-                value  = self._read_bytes(size) # scale
-                bn_mean.assign(value)
-                print("moving_mean", i, bn_mean.shape, size)
+                self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="moving_variance")
             if variables:
-                bn_var = variables[0]
-                size = np.prod(bn_var.shape)
-                value  = self._read_bytes(size) # scale
-                bn_var.assign(value)
-                print("moving_variance", i, bn_var.shape, size)
+                self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="bias")
             if variables:
-                bias = variables[0]
-                size = np.prod(bias.shape)
-                value  = self._read_bytes(size) # scale
-                bias.assign(value)
-                print("bias", i, bias.shape, size)
+                self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="kernel")
             if variables:
