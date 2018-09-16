@@ -51,15 +51,15 @@ class Darknet53(tf.keras.Model):
         self.l5c = _ResidualBlock([512, 1024], layer_idx=[48, 49], name="stage5")
         self.l5d = _ResidualBlock([512, 1024], layer_idx=[50, 51], name="stage5")
         
-        # (8, 8, 1024) => (1, 1, 1024)
-        self.avg_pool = layers.GlobalAveragePooling2D()
-        # self.avg_pool = layers.AveragePooling2D((8, 8), strides=(8, 8))
-
-        # (1, 1, 1024) => (1024)
-        self.flatten = layers.Flatten()
-        # (1024) => (1000)
-        self.fc = layers.Dense(1000, activation='softmax', name="layer_52")
-        self.num_layers = 53
+#         # (8, 8, 1024) => (1, 1, 1024)
+#         self.avg_pool = layers.GlobalAveragePooling2D()
+#         # self.avg_pool = layers.AveragePooling2D((8, 8), strides=(8, 8))
+# 
+#         # (1, 1, 1024) => (1024)
+#         self.flatten = layers.Flatten()
+#         # (1024) => (1000)
+#         self.fc = layers.Dense(1000, activation='softmax', name="layer_52")
+        self.num_layers = 52
         self._init_vars()
 
     def call(self, input_tensor, training=False):
@@ -99,9 +99,9 @@ class Darknet53(tf.keras.Model):
         x = self.l5c(x, training)
         x = self.l5d(x, training)
         
-        x = self.avg_pool(x)
-        x = self.flatten(x)
-        x = self.fc(x)
+#         x = self.avg_pool(x)
+#         x = self.flatten(x)
+#         x = self.fc(x)
         return x
     
     def get_variables(self, layer_idx, suffix=None):
