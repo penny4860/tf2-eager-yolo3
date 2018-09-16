@@ -6,6 +6,7 @@ layers = tf.keras.layers
 models = tf.keras.models
 
 
+# Darknet53 feature extractor
 class Darknet53(tf.keras.Model):
     def __init__(self):
         super(Darknet53, self).__init__(name='')
@@ -175,37 +176,13 @@ class _ResidualBlock(tf.keras.Model):
 
 
 if __name__ == '__main__':
-#     # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/eager/python/examples/resnet50/resnet50.py
-#     model = make_yolov3_model(256, 256)
-#     model.summary()
-    tf.enable_eager_execution()
-    import tensorflow.contrib.eager as tfe
-
     import numpy as np
+    tf.enable_eager_execution()
     imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
     input_tensor = tf.constant(imgs)
+    
+    # (1, 256, 256, 3) => (1, 8, 8, 1024)
     darknet = Darknet53()
-#     y = darknet(input_tensor)
-#     print(y.shape)
-#     print(y.numpy().sum())
-#     print(len(darknet.variables))
-#     print("")
-#     darknet.variables[0].assign(np.ones((3, 3, 3, 32)))
-#     for v in darknet.variables[:-1]:
-#         np_kernel = v.numpy()
-#         print(v.name, np_kernel.shape)
-
-    variables = darknet.get_variables(0 ,suffix="beta")
-    for v in variables:
-        print(v.name)
-
-
-    # tf.get_variable_scope()
-    # variables = tf.contrib.framework.get_variables(scope=None, suffix=None, collection=tf.GraphKeys.GLOBAL_VARIABLES)
-
-
-# darknet53/private__conv_block/res0a_branch/kernel:0 (3, 3, 3, 32)
-# darknet53/private__conv_block/bn0a_branch/gamma:0 (32,)
-# darknet53/private__conv_block/bn0a_branch/beta:0 (32,)
-        
+    y = darknet(input_tensor)
+    print(y.shape)
 
