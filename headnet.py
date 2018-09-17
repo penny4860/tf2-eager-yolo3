@@ -95,6 +95,24 @@ class _Conv2(tf.keras.Model):
         return x
 
 
+class _Upsamling(tf.keras.Model):
+    def __init__(self, filters, layer_idx, name=""):
+        super(_Conv2, self).__init__(name=name)
+        
+        layer_names = ["layer_{}".format(i) for i in layer_idx]
+
+        self.conv = layers.Conv2D(filters[0], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[0])
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.upsampling = layers.UpSampling2D(2)
+
+    def call(self, input_tensor, training=False):
+        x = self.conv(input_tensor)
+        x = self.bn(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.upsampling(x)
+        return x
+
+
 if __name__ == '__main__':
     import numpy as np
     tf.enable_eager_execution()
