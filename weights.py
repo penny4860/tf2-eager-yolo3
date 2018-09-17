@@ -81,15 +81,11 @@ class WeightReader:
 if __name__ == '__main__':
     import tensorflow as tf
     tf.enable_eager_execution()
-    import os
-    from yolo.darknet53 import Darknet53
-    from yolo import PROJECT_ROOT
-    WEIGHT_FILE = os.path.join(os.path.dirname(PROJECT_ROOT), "dataset", "yolo", "darknet53.weights")
 
-    darknet = Darknet53()
-    reader = WeightReader(WEIGHT_FILE)
-    reader.load_weights(darknet)
-
-
+    from yolo.yolonet import Yolonet
+    from yolo import YOLOV3_WEIGHTS
+    yolonet = Yolonet()
+    reader = WeightReader(YOLOV3_WEIGHTS)
+    reader.load_weights(yolonet)
 
 
