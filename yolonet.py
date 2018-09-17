@@ -15,7 +15,7 @@ class Yolonet(tf.keras.Model):
         super(Yolonet, self).__init__(name='')
         
         self.body = Bodynet()
-        self.head = Headnet()
+        self.head = Headnet(n_features)
 
         self.num_layers = 110
         self._init_vars()
