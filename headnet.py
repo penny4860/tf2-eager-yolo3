@@ -36,20 +36,21 @@ class Headnet(tf.keras.Model):
         self.call(input_tensor)
 
 
-class _ConvBlock(tf.keras.Model):
+class _Conv2(tf.keras.Model):
     def __init__(self, filters, layer_idx, name=""):
-        super(_ConvBlock, self).__init__(name=name)
+        super(_Conv2, self).__init__(name=name)
         
-        layer_name = "layer_{}".format(str(layer_idx))
+        layer_names = ["layer_{}".format(i) for i in layer_idx]
 
-        self.conv = layers.Conv2D(filters, (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_name)
-        self.bn = layers.BatchNormalization(epsilon=0.001, name=layer_name)
+        self.conv1 = layers.Conv2D(filters[0], (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_names[0])
+        self.bn = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.conv2 = layers.Conv2D(filters[1], (1, 1), strides=(1, 1), padding='same', use_bias=True, name=layer_names[1])
 
     def call(self, input_tensor, training=False):
-
-        x = self.conv(input_tensor)
+        x = self.conv1(input_tensor)
         x = self.bn(x, training=training)
         x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.conv2(input_tensor, training)
         return x
 
 
