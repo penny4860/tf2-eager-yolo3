@@ -36,6 +36,47 @@ class Headnet(tf.keras.Model):
         self.call(input_tensor)
 
 
+class _Conv5(tf.keras.Model):
+    def __init__(self, filters, layer_idx, name=""):
+        super(_Conv5, self).__init__(name=name)
+        
+        layer_names = ["layer_{}".format(i) for i in layer_idx]
+
+        self.conv1 = layers.Conv2D(filters[0], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[0])
+        self.bn1 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+
+        self.conv2 = layers.Conv2D(filters[1], (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_names[1])
+        self.bn2 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+
+        self.conv3 = layers.Conv2D(filters[2], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[2])
+        self.bn3 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+
+        self.conv4 = layers.Conv2D(filters[3], (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_names[3])
+        self.bn4 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+
+        self.conv5 = layers.Conv2D(filters[4], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[4])
+        self.bn5 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+
+
+    def call(self, input_tensor, training=False):
+        x = self.conv1(input_tensor)
+        x = self.bn1(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.conv2(x)
+        x = self.bn2(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.conv3(x)
+        x = self.bn3(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.conv4(x)
+        x = self.bn4(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        x = self.conv5(x)
+        x = self.bn5(x, training=training)
+        x = tf.nn.leaky_relu(x, alpha=0.1)
+        return x
+
+
 class _Conv2(tf.keras.Model):
     def __init__(self, filters, layer_idx, name=""):
         super(_Conv2, self).__init__(name=name)
