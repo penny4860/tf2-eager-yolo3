@@ -22,7 +22,6 @@ class WeightReader:
     def load_weights(self, model):
 
         for i in range(model.num_layers):
-            print(i)
             variables = model.get_variables(layer_idx=i, suffix="beta")
             if variables:
                 self._load_1d_var(variables[0])
@@ -54,7 +53,6 @@ class WeightReader:
                     self._load_2d_var(kernel)
     
     def _read_bytes(self, size):
-        print(len(self.all_weights), self.offset, self.offset + size)
         self.offset = self.offset + size
         return self.all_weights[self.offset-size:self.offset]
     
