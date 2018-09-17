@@ -75,6 +75,7 @@ class Darknet53(tf.keras.Model):
         x = self.l3f(x, training)
         x = self.l3g(x, training)
         x = self.l3h(x, training)
+        output_stage3 = x
         x = self.l3_pool(x, training)
 
         x = self.l4a(x, training)
@@ -85,13 +86,15 @@ class Darknet53(tf.keras.Model):
         x = self.l4f(x, training)
         x = self.l4g(x, training)
         x = self.l4h(x, training)
+        output_stage4 = x
         x = self.l4_pool(x, training)
 
         x = self.l5a(x, training)
         x = self.l5b(x, training)
         x = self.l5c(x, training)
         x = self.l5d(x, training)
-        return x
+        output_stage5 = x
+        return output_stage3, output_stage4, output_stage5
     
     def get_variables(self, layer_idx, suffix=None):
         if suffix:
@@ -183,6 +186,6 @@ if __name__ == '__main__':
     
     # (1, 256, 256, 3) => (1, 8, 8, 1024)
     darknet = Darknet53()
-    y = darknet(input_tensor)
-    print(y.shape)
+    s3, s4, s5 = darknet(input_tensor)
+    print(s3.shape, s4.shape, s5.shape)
 
