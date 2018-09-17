@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
+import numpy as np
 
 layers = tf.keras.layers
 models = tf.keras.models
