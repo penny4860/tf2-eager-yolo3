@@ -61,7 +61,7 @@ class Headnet(tf.keras.Model):
         s3 = tf.constant(np.random.randn(1, 32, 32, 256).astype(np.float32))
         s4 = tf.constant(np.random.randn(1, 16, 16, 512).astype(np.float32))
         s5 = tf.constant(np.random.randn(1, 8, 8, 1024).astype(np.float32))
-        return self.call(s3, s4, s5, training=False)
+        self.call(s3, s4, s5, training=False)
 
 
 class _Conv5(tf.keras.Model):
