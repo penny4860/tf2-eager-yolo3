@@ -18,6 +18,10 @@ class Yolonet(tf.keras.Model):
 
         self.num_layers = 110
         self._init_vars()
+    
+    def predict(self, input_array):
+        f5, f4, f3 = self.call(tf.constant(input_array.astype(np.float32)))
+        return f5.numpy(), f4.numpy(), f3.numpy()
 
     def call(self, input_tensor, training=False):
         s3, s4, s5 = self.body(input_tensor, training)
