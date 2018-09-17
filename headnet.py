@@ -153,3 +153,8 @@ if __name__ == '__main__':
     f5, f4, f3 = headnet(s3, s4, s5)
     print(f5.shape, f4.shape, f3.shape)
 
+    for v in headnet.variables:
+        print(v.name)
+
+
+
