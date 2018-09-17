@@ -74,16 +74,16 @@ class _Conv5(tf.keras.Model):
         self.bn1 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
 
         self.conv2 = layers.Conv2D(filters[1], (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_names[1])
-        self.bn2 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.bn2 = layers.BatchNormalization(epsilon=0.001, name=layer_names[1])
 
         self.conv3 = layers.Conv2D(filters[2], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[2])
-        self.bn3 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.bn3 = layers.BatchNormalization(epsilon=0.001, name=layer_names[2])
 
         self.conv4 = layers.Conv2D(filters[3], (3, 3), strides=(1, 1), padding='same', use_bias=False, name=layer_names[3])
-        self.bn4 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.bn4 = layers.BatchNormalization(epsilon=0.001, name=layer_names[3])
 
         self.conv5 = layers.Conv2D(filters[4], (1, 1), strides=(1, 1), padding='same', use_bias=False, name=layer_names[4])
-        self.bn5 = layers.BatchNormalization(epsilon=0.001, name=layer_names[0])
+        self.bn5 = layers.BatchNormalization(epsilon=0.001, name=layer_names[4])
 
 
     def call(self, input_tensor, training=False):
