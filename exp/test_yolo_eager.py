@@ -27,26 +27,23 @@ if __name__ == '__main__':
     np.random.seed(0)
     images = np.random.randn(1, 224, 224, 3)
     
-    yolo = get_yolo_keras()
+#     yolo = get_yolo_keras()
+#     f5, f4, f3 = yolo.predict(images)
+#     np.save("f5", f5)
+#     np.save("f4", f4)
+#     np.save("f3", f3)
+    
+    import tensorflow as tf
+    tf.enable_eager_execution()
+    yolo = get_yolo_eager()
     f5, f4, f3 = yolo.predict(images)
-    np.save("f5", f5)
-    np.save("f4", f4)
-    np.save("f3", f3)
-    
-    
+    f5_keras = np.load("f5.npy")
+    f4_keras = np.load("f4.npy")
+    f3_keras = np.load("f3.npy")
 
-#     darknet = get_darknet_keras()
-#     ys = darknet.predict(images)
-#     print(ys.shape)
-#     np.save("ys_keras", ys)
-
-#     import tensorflow as tf
-#     tf.enable_eager_execution()
-#     darknet_eager = get_darknet_eager()
-#     ys = darknet_eager(tf.constant(images.astype(np.float32)))
-#     ys_eager = ys.numpy()
-#     ys_keras = np.load("ys_keras.npy")
-#     print(np.allclose(ys_eager, ys_keras))
+    print(np.allclose(f5_keras, f5))
+    print(np.allclose(f4_keras, f4))
+    print(np.allclose(f3_keras, f3))
 
 
 
