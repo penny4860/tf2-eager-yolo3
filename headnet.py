@@ -25,7 +25,7 @@ class Headnet(tf.keras.Model):
 
         self.stage3_conv5 = _Conv5([128, 256, 128, 256, 128],
                                    [99, 100, 101, 102, 103])
-        self.stage3_conv2 = _Conv2([1024, n_features],
+        self.stage3_conv2 = _Conv2([256, n_features],
                                    [104, 105])
         self.num_layers = 106
         self._init_vars()
