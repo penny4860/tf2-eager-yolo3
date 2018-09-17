@@ -119,7 +119,7 @@ class _Conv2(tf.keras.Model):
         x = self.conv1(input_tensor)
         x = self.bn(x, training=training)
         x = tf.nn.leaky_relu(x, alpha=0.1)
-        x = self.conv2(input_tensor)
+        x = self.conv2(x)
         return x
 
 
