@@ -16,7 +16,7 @@ class Yolonet(tf.keras.Model):
         self.body = Bodynet()
         self.head = Headnet()
 
-        self.num_layers = 106
+        self.num_layers = 110
         self._init_vars()
 
     def call(self, input_tensor, training=False):
@@ -51,3 +51,5 @@ if __name__ == '__main__':
     f5, f4, f3 = yolonet(inputs)
     print(f5.shape, f4.shape, f3.shape)
 
+    for v in yolonet.variables:
+        print(v.name)
