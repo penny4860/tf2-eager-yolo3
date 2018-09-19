@@ -53,7 +53,7 @@ def _activate_classes(netout_classes, netout_objectness, obj_thresh=0.3):
     classes_conditional_probs = classes_probs * objectness_prob
     # 3. thresholding
     classes_conditional_probs *= objectness_prob > obj_thresh
-    return classes_conditional_probs
+    return classes_conditional_probs, np.squeeze(objectness_prob, axis=-1)
     
     
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
@@ -69,11 +69,9 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     boxes = []
 
     netout[..., :2]  = _sigmoid(netout[..., :2])
-    netout[..., 4:]  = _sigmoid(netout[..., 4:])
-    
-    netout[..., IDX_CLASS_PROB:] = _activate_classes(netout[..., IDX_CLASS_PROB:],
-                                                     netout[..., IDX_OBJECTNESS],
-                                                     obj_thresh)
+    netout[..., IDX_CLASS_PROB:], netout[..., IDX_OBJECTNESS] = _activate_classes(netout[..., IDX_CLASS_PROB:],
+                                                                                   netout[..., IDX_OBJECTNESS],
+                                                                                   obj_thresh)
 
     for row in range(n_rows):
         for col in range(n_cols):
