@@ -37,6 +37,22 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
+def _activate_classes(netout_classes, netout_objectness, obj_thresh=0.3):
+    """
+    # Args
+        netout_classes : (n_rows, n_cols, n_box, n_classes)
+        netout_objectness : (n_rows, n_cols, n_box)
+    
+    # Returns
+        netout_classes : (n_rows, n_cols, n_box, n_classes)
+    """
+    # (13, 13, 3, 80) = (13, 13, 3, 1) * (13, 13, 3, 80)
+    objectness = np.expand_dims(netout_objectness, -1)
+    netout_classes *= objectness
+    netout_classes *= objectness > obj_thresh
+    return netout_classes
+    
+    
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     """
     # Args
@@ -52,9 +68,9 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     netout[..., :2]  = _sigmoid(netout[..., :2])
     netout[..., 4:]  = _sigmoid(netout[..., 4:])
     
-    # (13, 13, 3, 80) = (13, 13, 3, 1) * (13, 13, 3, 80)
-    netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_OBJECTNESS][..., np.newaxis]
-    netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_CLASS_PROB:] > obj_thresh
+    netout[..., IDX_CLASS_PROB:] = _activate_classes(netout[..., IDX_CLASS_PROB:],
+                                                     netout[..., IDX_OBJECTNESS],
+                                                     obj_thresh)
 
     for row in range(n_rows):
         for col in range(n_cols):
