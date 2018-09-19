@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import cv2
 
 def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
     if (float(net_w)/image_w) < (float(net_h)/image_h):
@@ -38,6 +39,28 @@ def do_nms(boxes, nms_thresh):
 
                 if _bbox_iou(boxes[index_i], boxes[index_j]) >= nms_thresh:
                     boxes[index_j].classes[c] = 0
+
+
+def draw_boxes(image, boxes, labels, obj_thresh):
+    for box in boxes:
+        label_str = ''
+        label = -1
+        
+        for i in range(len(labels)):
+            if box.classes[i] > obj_thresh:
+                label_str += labels[i]
+                label = i
+                print(labels[i] + ': ' + str(box.classes[i]*100) + '%')
+                
+        if label >= 0:
+            cv2.rectangle(image, (box.xmin,box.ymin), (box.xmax,box.ymax), (0,255,0), 3)
+            cv2.putText(image, 
+                        label_str + ' ' + str(box.get_score()), 
+                        (box.xmin, box.ymin - 13), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 
+                        1e-3 * image.shape[0], 
+                        (0,255,0), 2)
+    return image      
 
 
 def _interval_overlap(interval_a, interval_b):
