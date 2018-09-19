@@ -33,6 +33,8 @@ IDX_X = 0
 IDX_Y = 1
 IDX_W = 2
 IDX_H = 3
+IDX_OBJECTNESS = 4
+IDX_CLASS_PROB = 5
 
 
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
@@ -49,31 +51,31 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
 
     netout[..., :2]  = _sigmoid(netout[..., :2])
     netout[..., 4:]  = _sigmoid(netout[..., 4:])
-    netout[..., 5:]  = netout[..., 4][..., np.newaxis] * netout[..., 5:]
-    netout[..., 5:] *= netout[..., 5:] > obj_thresh
+    
+    # (13, 13, 3, 80) = (13, 13, 3, 1) * (13, 13, 3, 80)
+    netout[..., IDX_CLASS_PROB:]  = netout[..., IDX_OBJECTNESS][..., np.newaxis] * netout[..., IDX_CLASS_PROB:]
+    netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_CLASS_PROB:] > obj_thresh
 
     for row in range(grid_h):
         for col in range(grid_w):
             for b in range(nb_box):
                 # 4th element is objectness score
-                objectness = netout[int(row)][int(col)][b][4]
-                #objectness = netout[..., :4]
+                objectness = netout[row, col, b, IDX_OBJECTNESS]
                 
                 if(objectness.all() <= obj_thresh): continue
                 
                 # first 4 elements are x, y, w, and h
-                x, y, w, h = netout[int(row)][int(col)][b][:4]
+                x, y, w, h = netout[row, col, b, :IDX_H+1]
     
                 x = (col + x) / grid_w # center position, unit: image width
-                y = (int(row) + y) / grid_h # center position, unit: image height
+                y = (row + y) / grid_h # center position, unit: image height
                 w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
                 h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
                 
                 # last elements are class probabilities
-                classes = netout[int(row)][col][b][5:]
+                classes = netout[row, col, b, IDX_CLASS_PROB:]
                 
                 box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
-                #box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, None, classes)
     
                 boxes.append(box)
 
