@@ -37,11 +37,15 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
-# def _decode_coords(x, y, w, h, row, col):
-#     x = (col + x) / n_cols # center position, unit: image width
-#     y = (row + y) / n_rows # center position, unit: image height
-#     w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
-#     h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
+def _decode_coords(netout, row, col, b, anchors):
+    x, y, w, h = netout[row, col, b, :IDX_H+1]
+
+    x = col + _sigmoid(x)
+    y = row + _sigmoid(y)
+    w = anchors[2 * b + 0] * np.exp(w)
+    h = anchors[2 * b + 1] * np.exp(h)
+
+    return x, y, w, h
 
 
 def _activate_probs(netout_classes, netout_objectness, obj_thresh=0.3):
@@ -73,31 +77,27 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     """
     n_rows, n_cols = netout.shape[:2]
     netout = netout.reshape((n_rows, n_cols, nb_box, -1))
-
-    boxes = []
-
-    netout[..., :2]  = _sigmoid(netout[..., :2])
     netout[..., IDX_CLASS_PROB:], netout[..., IDX_OBJECTNESS] = _activate_probs(netout[..., IDX_CLASS_PROB:],
                                                                                 netout[..., IDX_OBJECTNESS],
                                                                                 obj_thresh)
 
+    boxes = []
     for row in range(n_rows):
         for col in range(n_cols):
             for b in range(nb_box):
-                # 4th element is objectness score
+                x, y, w, h = _decode_coords(netout, row, col, b, anchors)
+                
                 objectness = netout[row, col, b, IDX_OBJECTNESS]
-                if(objectness.all() <= obj_thresh): continue
-                
-                # first 4 elements are x, y, w, and h
-                x, y, w, h = netout[row, col, b, :IDX_H+1]
-    
-                x = (col + x) / n_cols # center position, unit: image width
-                y = (row + y) / n_rows # center position, unit: image height
-                w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
-                h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
-                
-                # last elements are class probabilities
                 classes = netout[row, col, b, IDX_CLASS_PROB:]
+                
+                if(objectness.all() <= obj_thresh):
+                    continue
+                
+                x /= n_cols # center position, unit: image width
+                y /= n_rows # center position, unit: image height
+                w /= net_w # unit: image width
+                h /= net_h # unit: image height  
+                
                 box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
                 boxes.append(box)
 
