@@ -44,8 +44,8 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
         anchors
         
     """
-    grid_h, grid_w = netout.shape[:2]
-    netout = netout.reshape((grid_h, grid_w, nb_box, -1))
+    n_rows, n_cols = netout.shape[:2]
+    netout = netout.reshape((n_rows, n_cols, nb_box, -1))
 
     boxes = []
 
@@ -56,8 +56,8 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_OBJECTNESS][..., np.newaxis]
     netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_CLASS_PROB:] > obj_thresh
 
-    for row in range(grid_h):
-        for col in range(grid_w):
+    for row in range(n_rows):
+        for col in range(n_cols):
             for b in range(nb_box):
                 # 4th element is objectness score
                 objectness = netout[row, col, b, IDX_OBJECTNESS]
@@ -67,8 +67,8 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
                 # first 4 elements are x, y, w, and h
                 x, y, w, h = netout[row, col, b, :IDX_H+1]
     
-                x = (col + x) / grid_w # center position, unit: image width
-                y = (row + y) / grid_h # center position, unit: image height
+                x = (col + x) / n_cols # center position, unit: image width
+                y = (row + y) / n_rows # center position, unit: image height
                 w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
                 h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
                 
