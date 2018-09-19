@@ -53,7 +53,7 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     netout[..., 4:]  = _sigmoid(netout[..., 4:])
     
     # (13, 13, 3, 80) = (13, 13, 3, 1) * (13, 13, 3, 80)
-    netout[..., IDX_CLASS_PROB:]  = netout[..., IDX_OBJECTNESS][..., np.newaxis] * netout[..., IDX_CLASS_PROB:]
+    netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_OBJECTNESS][..., np.newaxis]
     netout[..., IDX_CLASS_PROB:] *= netout[..., IDX_CLASS_PROB:] > obj_thresh
 
     for row in range(grid_h):
