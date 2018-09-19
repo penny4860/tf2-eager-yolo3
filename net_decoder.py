@@ -44,13 +44,16 @@ def _activate_classes(netout_classes, netout_objectness, obj_thresh=0.3):
         netout_objectness : (n_rows, n_cols, n_box)
     
     # Returns
-        netout_classes : (n_rows, n_cols, n_box, n_classes)
+        classes : (n_rows, n_cols, n_box, n_classes)
     """
-    # (13, 13, 3, 80) = (13, 13, 3, 1) * (13, 13, 3, 80)
-    objectness = np.expand_dims(netout_objectness, -1)
-    netout_classes *= objectness
-    netout_classes *= objectness > obj_thresh
-    return netout_classes
+    # 1. sigmoid activation
+    classes_probs = _sigmoid(netout_classes)
+    objectness_prob = np.expand_dims(_sigmoid(netout_objectness), -1)
+    # 2. conditional probability
+    classes_conditional_probs = classes_probs * objectness_prob
+    # 3. thresholding
+    classes_conditional_probs *= objectness_prob > obj_thresh
+    return classes_conditional_probs
     
     
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
