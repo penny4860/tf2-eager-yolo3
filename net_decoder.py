@@ -82,6 +82,28 @@ def _sigmoid(x):
 
 
 if __name__ == '__main__':
-    pass
+    
+#     0 (13, 13, 255) [116, 90, 156, 198, 373, 326]
+#     1 (26, 26, 255) [30, 61, 62, 45, 59, 119]
+#     2 (52, 52, 255) [10, 13, 16, 30, 33, 23]
 
+    np.random.seed(0)
+    netout = np.random.randn(13, 13, 255)
+    anchors = [116, 90, 156, 198, 373, 326]
+    boxes = decode_netout(netout, anchors, obj_thresh=0.5, net_h=416, net_w=416)
+    
+    import pickle
+    with open('expected_boxes.pkl', 'rb') as f:
+        expected_boxes = pickle.load(f)
 
+    for box, expected_box in zip(boxes, expected_boxes):
+        assert box.xmin == expected_box.xmin
+        assert box.ymin == expected_box.ymin
+        assert box.xmax == expected_box.xmax
+        assert box.ymax == expected_box.ymax
+        assert box.objness == expected_box.objness
+        # assert box.classes == expected_box.classes
+
+    print("passed")
+
+        
