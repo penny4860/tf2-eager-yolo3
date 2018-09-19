@@ -48,24 +48,24 @@ def _decode_coords(netout, row, col, b, anchors):
     return x, y, w, h
 
 
-def _activate_probs(netout_classes, netout_objectness, obj_thresh=0.3):
+def _activate_probs(objectness, classes, obj_thresh=0.3):
     """
     # Args
-        netout_classes : (n_rows, n_cols, n_box, n_classes)
-        netout_objectness : (n_rows, n_cols, n_box)
+        objectness : scalar
+        classes : (n_classes, )
     
     # Returns
-        classes_conditional_probs : (n_rows, n_cols, n_box, n_classes)
         objectness_prob : (n_rows, n_cols, n_box)
+        classes_conditional_probs : (n_rows, n_cols, n_box, n_classes)
     """
     # 1. sigmoid activation
-    classes_probs = _sigmoid(netout_classes)
-    objectness_prob = np.expand_dims(_sigmoid(netout_objectness), -1)
+    objectness_prob = _sigmoid(objectness)
+    classes_probs = _sigmoid(classes)
     # 2. conditional probability
     classes_conditional_probs = classes_probs * objectness_prob
     # 3. thresholding
     classes_conditional_probs *= objectness_prob > obj_thresh
-    return classes_conditional_probs, np.squeeze(objectness_prob, axis=-1)
+    return objectness_prob, classes_conditional_probs
     
     
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
@@ -77,29 +77,26 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     """
     n_rows, n_cols = netout.shape[:2]
     netout = netout.reshape((n_rows, n_cols, nb_box, -1))
-    netout[..., IDX_CLASS_PROB:], netout[..., IDX_OBJECTNESS] = _activate_probs(netout[..., IDX_CLASS_PROB:],
-                                                                                netout[..., IDX_OBJECTNESS],
-                                                                                obj_thresh)
 
     boxes = []
     for row in range(n_rows):
         for col in range(n_cols):
             for b in range(nb_box):
+                # 1. decode
                 x, y, w, h = _decode_coords(netout, row, col, b, anchors)
+                objectness, classes = _activate_probs(netout[row, col, b, IDX_OBJECTNESS],
+                                                      netout[row, col, b, IDX_CLASS_PROB:],
+                                                      obj_thresh)
+
+                # 2. scale normalize                
+                x /= n_cols
+                y /= n_rows
+                w /= net_w
+                h /= net_h
                 
-                objectness = netout[row, col, b, IDX_OBJECTNESS]
-                classes = netout[row, col, b, IDX_CLASS_PROB:]
-                
-                if(objectness.all() <= obj_thresh):
-                    continue
-                
-                x /= n_cols # center position, unit: image width
-                y /= n_rows # center position, unit: image height
-                w /= net_w # unit: image width
-                h /= net_h # unit: image height  
-                
-                box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
-                boxes.append(box)
+                if objectness > obj_thresh:
+                    box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
+                    boxes.append(box)
 
     return boxes
 
