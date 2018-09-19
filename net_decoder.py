@@ -57,7 +57,7 @@ def decode_netout(netout, anchors, obj_thresh, nms_thresh, net_h, net_w):
             x, y, w, h = netout[int(row)][int(col)][b][:4]
 
             x = (col + x) / grid_w # center position, unit: image width
-            y = (row + y) / grid_h # center position, unit: image height
+            y = (int(row) + y) / grid_h # center position, unit: image height
             w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
             h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
             
