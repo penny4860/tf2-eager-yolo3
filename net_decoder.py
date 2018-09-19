@@ -37,14 +37,15 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
-def _activate_classes(netout_classes, netout_objectness, obj_thresh=0.3):
+def _activate_probs(netout_classes, netout_objectness, obj_thresh=0.3):
     """
     # Args
         netout_classes : (n_rows, n_cols, n_box, n_classes)
         netout_objectness : (n_rows, n_cols, n_box)
     
     # Returns
-        classes : (n_rows, n_cols, n_box, n_classes)
+        classes_conditional_probs : (n_rows, n_cols, n_box, n_classes)
+        objectness_prob : (n_rows, n_cols, n_box)
     """
     # 1. sigmoid activation
     classes_probs = _sigmoid(netout_classes)
@@ -69,16 +70,15 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     boxes = []
 
     netout[..., :2]  = _sigmoid(netout[..., :2])
-    netout[..., IDX_CLASS_PROB:], netout[..., IDX_OBJECTNESS] = _activate_classes(netout[..., IDX_CLASS_PROB:],
-                                                                                   netout[..., IDX_OBJECTNESS],
-                                                                                   obj_thresh)
+    netout[..., IDX_CLASS_PROB:], netout[..., IDX_OBJECTNESS] = _activate_probs(netout[..., IDX_CLASS_PROB:],
+                                                                                netout[..., IDX_OBJECTNESS],
+                                                                                obj_thresh)
 
     for row in range(n_rows):
         for col in range(n_cols):
             for b in range(nb_box):
                 # 4th element is objectness score
                 objectness = netout[row, col, b, IDX_OBJECTNESS]
-                
                 if(objectness.all() <= obj_thresh): continue
                 
                 # first 4 elements are x, y, w, and h
@@ -91,9 +91,7 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
                 
                 # last elements are class probabilities
                 classes = netout[row, col, b, IDX_CLASS_PROB:]
-                
                 box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
-    
                 boxes.append(box)
 
     return boxes
