@@ -2,6 +2,13 @@
 
 import numpy as np
 
+IDX_X = 0
+IDX_Y = 1
+IDX_W = 2
+IDX_H = 3
+IDX_OBJECTNESS = 4
+IDX_CLASS_PROB = 5
+
 
 class BoundBox:
     def __init__(self, xmin, ymin, xmax, ymax, objness = None, classes = None):
@@ -29,45 +36,6 @@ class BoundBox:
         return self.score
 
 
-IDX_X = 0
-IDX_Y = 1
-IDX_W = 2
-IDX_H = 3
-IDX_OBJECTNESS = 4
-IDX_CLASS_PROB = 5
-
-
-def _decode_coords(netout, row, col, b, anchors):
-    x, y, w, h = netout[row, col, b, :IDX_H+1]
-
-    x = col + _sigmoid(x)
-    y = row + _sigmoid(y)
-    w = anchors[2 * b + 0] * np.exp(w)
-    h = anchors[2 * b + 1] * np.exp(h)
-
-    return x, y, w, h
-
-
-def _activate_probs(objectness, classes, obj_thresh=0.3):
-    """
-    # Args
-        objectness : scalar
-        classes : (n_classes, )
-    
-    # Returns
-        objectness_prob : (n_rows, n_cols, n_box)
-        classes_conditional_probs : (n_rows, n_cols, n_box, n_classes)
-    """
-    # 1. sigmoid activation
-    objectness_prob = _sigmoid(objectness)
-    classes_probs = _sigmoid(classes)
-    # 2. conditional probability
-    classes_conditional_probs = classes_probs * objectness_prob
-    # 3. thresholding
-    classes_conditional_probs *= objectness_prob > obj_thresh
-    return objectness_prob, classes_conditional_probs
-    
-    
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     """
     # Args
@@ -101,6 +69,37 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
     return boxes
 
 
+def _decode_coords(netout, row, col, b, anchors):
+    x, y, w, h = netout[row, col, b, :IDX_H+1]
+
+    x = col + _sigmoid(x)
+    y = row + _sigmoid(y)
+    w = anchors[2 * b + 0] * np.exp(w)
+    h = anchors[2 * b + 1] * np.exp(h)
+
+    return x, y, w, h
+
+
+def _activate_probs(objectness, classes, obj_thresh=0.3):
+    """
+    # Args
+        objectness : scalar
+        classes : (n_classes, )
+    
+    # Returns
+        objectness_prob : (n_rows, n_cols, n_box)
+        classes_conditional_probs : (n_rows, n_cols, n_box, n_classes)
+    """
+    # 1. sigmoid activation
+    objectness_prob = _sigmoid(objectness)
+    classes_probs = _sigmoid(classes)
+    # 2. conditional probability
+    classes_conditional_probs = classes_probs * objectness_prob
+    # 3. thresholding
+    classes_conditional_probs *= objectness_prob > obj_thresh
+    return objectness_prob, classes_conditional_probs
+    
+    
 def _sigmoid(x):
     return 1. / (1. + np.exp(-x))
 
