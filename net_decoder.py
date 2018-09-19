@@ -37,6 +37,13 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
+# def _decode_coords(x, y, w, h, row, col):
+#     x = (col + x) / n_cols # center position, unit: image width
+#     y = (row + y) / n_rows # center position, unit: image height
+#     w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
+#     h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
+
+
 def _activate_probs(netout_classes, netout_objectness, obj_thresh=0.3):
     """
     # Args
