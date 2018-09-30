@@ -73,7 +73,10 @@ if __name__ == '__main__':
         # scale: 1, loss_value: [0.56469357 5.286211  ]
         # scale: 2, loss_value: [0.05866125 4.778614  ]
         # scale: 3, loss_value: [ 0.54328686 11.0839405 ]
+    
+    # Todo : implement loss_fn()
+    # loss_value = loss_fn(y_true, y_pred)
+
 
 #     # should (loss_values == losses)
-#     loss_values = loss_fn(y_true_1, y_true_2, y_true_3, y_pred_1, y_pred_2, y_pred_3)
 #     losses = train_model.predict([x_batch, t_batch, y_true_1, y_true_2, y_true_3])
