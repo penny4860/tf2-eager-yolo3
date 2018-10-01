@@ -3,6 +3,12 @@
 import tensorflow as tf
 import numpy as np
 
+
+def reshape_y_pred(y_pred):
+    y_pred_reshaped = y_pred.reshape(y_pred.shape[0], y_pred.shape[1], y_pred.shape[2], 3, -1)
+    return y_pred_reshaped
+
+
 def cell_grid(max_grid, batch_size=2):
 
     max_grid_h, max_grid_w = max_grid
@@ -14,6 +20,7 @@ def cell_grid(max_grid, batch_size=2):
     cell_y = np.transpose(cell_x, (0,2,1,3,4))
     cell_grid = np.tile(np.concatenate([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
     return cell_grid
+
 
 class YoloLayerNp(object):
     def __init__(self,
