@@ -8,6 +8,20 @@ def reshape_y_pred(y_pred):
     y_pred_reshaped = y_pred.reshape(y_pred.shape[0], y_pred.shape[1], y_pred.shape[2], 3, -1)
     return y_pred_reshaped
 
+def setup_env(input_image, y_true):
+    # initialize the masks
+    object_mask     = np.expand_dims(y_true[..., 4], 4)
+ 
+    # compute grid factor and net factor
+    grid_h = y_true.shape[1]
+    grid_w = y_true.shape[2]
+    grid_factor = np.array([grid_w, grid_h], dtype=np.float32).reshape([1,1,1,1,2])
+
+    net_h = input_image.shape[1]
+    net_w = input_image.shape[2]
+    net_factor = np.array([net_w, net_h], dtype=np.float32).reshape([1,1,1,1,2])
+    return object_mask, grid_factor, net_factor, grid_h, grid_w
+
 
 def cell_grid(max_grid, batch_size=2):
 
