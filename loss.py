@@ -40,12 +40,6 @@ if __name__ == '__main__':
         loss_model = create_loss_model(scales[i])
         loss_value = loss_model.predict([x_batch, t_batch, ys[i], y_preds[i]])
         print("scale: {}, loss_value: {}".format(i+1, loss_value))
-        
-        if i == 0:
-            np.save("x_batch", x_batch)
-            np.save("t_batch", t_batch)
-            np.save("ys", ys[i])
-            np.save("y_preds", y_preds[i])
             
         # scale: 1, loss_value: [0.56469357 5.286211  ]
         # scale: 2, loss_value: [0.05866125 4.778614  ]
