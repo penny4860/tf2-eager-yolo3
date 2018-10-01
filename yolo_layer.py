@@ -30,7 +30,7 @@ class YoloLayerNp(object):
         # make the model settings persistent
         self.ignore_thresh  = ignore_thresh
         self.warmup_batches = warmup_batches
-        self.anchors        = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
+        self.anchors        = anchors.reshape([1,1,1,3,2]).astype(np.float32)
         self.grid_scale     = grid_scale
         self.obj_scale      = obj_scale
         self.noobj_scale    = noobj_scale
