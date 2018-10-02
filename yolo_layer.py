@@ -53,8 +53,6 @@ def intersect_areas_fn(true_boxes, pred_box_xy, pred_box_wh, grid_factor, net_fa
         pred_areas : (batch_size, grid, grid, nb_box, 1)
         true_areas : (batch_size, 1, 1, 1, 2)
     """
-
-    
     # then, ignore the boxes which have good overlap with some true box
     true_xy = true_boxes[..., 0:2] / grid_factor
     true_wh = true_boxes[..., 2:4] / net_factor
@@ -79,6 +77,27 @@ def intersect_areas_fn(true_boxes, pred_box_xy, pred_box_wh, grid_factor, net_fa
     true_areas = true_wh[..., 0] * true_wh[..., 1]
     pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
     return intersect_areas, pred_areas, true_areas
+
+
+def conf_delta_fn(pred_box_conf, intersect_areas, pred_areas, true_areas, ignore_thresh):
+    """
+    # Args
+        pred_box_conf
+        intersect_areas : (batch_size, grid, grid, nb_box, 2)
+        pred_areas : (batch_size, grid, grid, nb_box, 1)
+        true_areas : (batch_size, 1, 1, 1, 2)
+    # Returns
+        conf_delta : (batch_size, grid, grid, nb_box, 1)
+    """
+    
+    # initially, drag all objectness of all boxes to 0
+    conf_delta  = pred_box_conf - 0 
+
+    union_areas = pred_areas + true_areas - intersect_areas
+    iou_scores  = intersect_areas / union_areas
+    best_ious   = np.max(iou_scores, axis=4)        
+    conf_delta *= np.expand_dims((best_ious < ignore_thresh).astype(np.float32), 4)
+    return conf_delta
 
 
 def cell_grid(max_grid, batch_size=2):
