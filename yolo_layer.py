@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
+from scipy.special import expit as sigmoid
 
 
 def reshape_y_pred(y_pred):
@@ -21,6 +22,13 @@ def setup_env(input_image, y_true):
     net_w = input_image.shape[2]
     net_factor = np.array([net_w, net_h], dtype=np.float32).reshape([1,1,1,1,2])
     return object_mask, grid_factor, net_factor, grid_h, grid_w
+
+def adjust_pred(y_pred, cell_grid, grid_h, grid_w):
+    pred_box_xy    = (cell_grid[:,:grid_h,:grid_w,:,:] + sigmoid(y_pred[..., :2]))  # sigma(t_xy) + c_xy
+    pred_box_wh    = y_pred[..., 2:4]                                                       # t_wh
+    pred_box_conf  = np.expand_dims(sigmoid(y_pred[..., 4]), 4)                          # adjust confidence
+    pred_box_class = y_pred[..., 5:]                                                        # adjust class probabilities      
+    return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
 
 
 def cell_grid(max_grid, batch_size=2):
