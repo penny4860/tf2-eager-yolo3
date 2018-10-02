@@ -38,6 +38,49 @@ def adjust_true(y_true):
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
 
+def intersect_areas_fn(true_boxes, pred_box_xy, pred_box_wh, grid_factor, net_factor, anchors):
+    """
+    # Args
+        true_boxes : (batch_size, 1, 1, 1, nb_box, 4)
+        pred_box_xy : (batch_size, grid, grid, nb_box, 2)
+        pred_box_wh : (batch_size, grid, grid, nb_box, 2)
+        grid_factor : (1, 1, 1, 1, 2)
+        net_factor : (1, 1, 1, 1, 2)
+        anchors : (1, 1, 1, nb_box, 2)
+
+    # Returns
+        intersect_areas : (batch_size, grid, grid, nb_box, 2)
+        pred_areas : (batch_size, grid, grid, nb_box, 1)
+        true_areas : (batch_size, 1, 1, 1, 2)
+    """
+
+    
+    # then, ignore the boxes which have good overlap with some true box
+    true_xy = true_boxes[..., 0:2] / grid_factor
+    true_wh = true_boxes[..., 2:4] / net_factor
+     
+    true_wh_half = true_wh / 2.
+    true_mins    = true_xy - true_wh_half
+    true_maxes   = true_xy + true_wh_half
+     
+    pred_xy = np.expand_dims(pred_box_xy / grid_factor, 4)
+    pred_wh = np.expand_dims(np.exp(pred_box_wh) * anchors / net_factor, 4)
+     
+    pred_wh_half = pred_wh / 2.
+    pred_mins    = pred_xy - pred_wh_half
+    pred_maxes   = pred_xy + pred_wh_half    
+    
+    intersect_mins  = np.maximum(pred_mins,  true_mins)
+    intersect_maxes = np.minimum(pred_maxes, true_maxes)
+    
+    intersect_wh    = np.maximum(intersect_maxes - intersect_mins, 0.)
+    intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
+
+    true_areas = true_wh[..., 0] * true_wh[..., 1]
+    pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
+    return intersect_areas, pred_areas, true_areas
+
+
 def cell_grid(max_grid, batch_size=2):
 
     max_grid_h, max_grid_w = max_grid
