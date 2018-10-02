@@ -172,7 +172,7 @@ class YoloLayerNp(object):
         self.cell_grid = cell_grid(max_grid, batch_size)
 
     def call(self, x):
-        input_image, y_pred, y_true, true_boxes = x
+        input_image, true_boxes, y_true, y_pred  = x
         
         # 1. setup
         y_pred = reshape_y_pred(y_pred)
