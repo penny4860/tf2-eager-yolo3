@@ -106,17 +106,17 @@ def wh_scale_fn(true_box_wh, anchors, net_factor):
 
 def loss_xy_fn(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
     xy_delta    = object_mask   * (pred_box_xy-true_box_xy) * wh_scale * xywh_scale
-    loss_xy    = np.sum(xy_delta*xy_delta, list(range(1,5)))
+    loss_xy    = np.sum(xy_delta*xy_delta, tuple(range(1,5)))
     return loss_xy
 
 def loss_wh_fn(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
     wh_delta    = object_mask   * (pred_box_wh-true_box_wh) * wh_scale * xywh_scale
-    loss_wh    = np.sum(wh_delta*wh_delta,       list(range(1,5)))
+    loss_wh    = np.sum(wh_delta*wh_delta,       tuple(range(1,5)))
     return loss_wh
     
 def loss_conf_fn(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
     conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
-    loss_conf  = np.sum(conf_delta*conf_delta,     list(range(1,5)))
+    loss_conf  = np.sum(conf_delta*conf_delta,     tuple(range(1,5)))
     return loss_conf
 
 def loss_class_fn(object_mask, pred_box_class, true_box_class, class_scale):
@@ -130,7 +130,7 @@ def loss_class_fn(object_mask, pred_box_class, true_box_class, class_scale):
     class_delta = object_mask * \
                   np.expand_dims(sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class), 4) * \
                   class_scale
-    loss_class = np.sum(class_delta,               list(range(1,5)))
+    loss_class = np.sum(class_delta,               tuple(range(1,5)))
     return loss_class
 
 def cell_grid(max_grid, batch_size=2):
@@ -223,8 +223,8 @@ def test_main():
 # from yolo_ import YoloLayer
 if __name__ == '__main__':
     test_main()
-
-
-
+#     array = np.arange(200).reshape(10, 10, 2)
+#     print(np.sum(array, axis=(1,2)))
+#     print(tuple(range(1,5)))
 
 
