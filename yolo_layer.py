@@ -120,6 +120,7 @@ def loss_conf_fn(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_sca
     return loss_conf
 
 def loss_class_fn(object_mask, pred_box_class, true_box_class, class_scale):
+    # Todo : numpy 로 구현하자.
     def sparse_softmax_cross_entropy_with_logits(labels, logits):
         op = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.constant(labels),
                                                             logits = tf.constant(logits))
