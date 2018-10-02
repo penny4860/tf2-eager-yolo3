@@ -99,27 +99,27 @@ def conf_delta_fn(pred_box_conf, intersect_areas, pred_areas, true_areas, ignore
     conf_delta *= np.expand_dims((best_ious < ignore_thresh).astype(np.float32), 4)
     return conf_delta
 
-def wh_scale(true_box_wh, anchors, net_factor):
+def wh_scale_fn(true_box_wh, anchors, net_factor):
     wh_scale = np.exp(true_box_wh) * anchors / net_factor
     wh_scale = np.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
     return wh_scale
 
-def loss_xy(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
+def loss_xy_fn(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
     xy_delta    = object_mask   * (pred_box_xy-true_box_xy) * wh_scale * xywh_scale
     loss_xy    = np.sum(xy_delta*xy_delta, list(range(1,5)))
     return loss_xy
 
-def loss_wh(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
+def loss_wh_fn(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
     wh_delta    = object_mask   * (pred_box_wh-true_box_wh) * wh_scale * xywh_scale
     loss_wh    = np.sum(wh_delta*wh_delta,       list(range(1,5)))
     return loss_wh
     
-def loss_conf(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
+def loss_conf_fn(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
     conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
     loss_conf  = np.sum(conf_delta*conf_delta,     list(range(1,5)))
     return loss_conf
 
-def loss_class(object_mask, pred_box_class, true_box_class, class_scale):
+def loss_class_fn(object_mask, pred_box_class, true_box_class, class_scale):
     def sparse_softmax_cross_entropy_with_logits(labels, logits):
         op = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.constant(labels),
                                                             logits = tf.constant(logits))
@@ -161,7 +161,7 @@ class YoloLayerNp(object):
         # make the model settings persistent
         self.ignore_thresh  = ignore_thresh
         self.warmup_batches = warmup_batches
-        self.anchors        = anchors.reshape([1,1,1,3,2]).astype(np.float32)
+        self.anchors        = np.array(anchors).reshape([1,1,1,3,2]).astype(np.float32)
         self.grid_scale     = grid_scale
         self.obj_scale      = obj_scale
         self.noobj_scale    = noobj_scale
@@ -171,20 +171,60 @@ class YoloLayerNp(object):
         # make a persistent mesh grid
         self.cell_grid = cell_grid(max_grid, batch_size)
 
+    def call(self, x):
+        input_image, y_pred, y_true, true_boxes = x
+        
+        # 1. setup
+        y_pred = reshape_y_pred(y_pred)
+        object_mask, grid_factor, net_factor, grid_h, grid_w = setup_env(input_image, y_true)
+
+        # 2. Adjust prediction
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred(y_pred, self.cell_grid, grid_h, grid_w)
+
+        # 3. Adjust ground truth
+        true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true(y_true)
+
+        # 4. conf_delta tensor
+        intersect_areas, pred_areas, true_areas = intersect_areas_fn(true_boxes,
+                                                                     pred_box_xy,
+                                                                     pred_box_wh,
+                                                                     grid_factor,
+                                                                     net_factor,
+                                                                     self.anchors)
+
+        conf_delta = conf_delta_fn(pred_box_conf, intersect_areas, pred_areas, true_areas, self.ignore_thresh)
+
+        # 5. loss tensor
+        wh_scale =  wh_scale_fn(true_box_wh, self.anchors, net_factor)
+
+        loss_xy = loss_xy_fn(object_mask, pred_box_xy, true_box_xy, wh_scale, self.xywh_scale)
+        loss_wh = loss_wh_fn(object_mask, pred_box_wh, true_box_wh, wh_scale, self.xywh_scale)
+        loss_conf = loss_conf_fn(object_mask, pred_box_conf, true_box_conf, self.obj_scale, self.noobj_scale, conf_delta)
+        loss_class = loss_class_fn(object_mask, pred_box_class, true_box_class, self.class_scale)
+        loss = loss_xy + loss_wh + loss_conf + loss_class
+        return loss*self.grid_scale
 
 
-from yolo_ import YoloLayer
+def test_main():
+    x_batch, t_batch, ys, y_preds = np.load("x_batch.npy"), np.load("t_batch.npy"), np.load("ys.npy"), np.load("y_preds.npy")
+    print(x_batch.shape, t_batch.shape, ys.shape, y_preds.shape)
+
+    yolo_layer_np = YoloLayerNp()
+    loss_value = yolo_layer_np.call([x_batch, t_batch, ys, y_preds])
+    print(loss_value.shape)
+    
+    if np.allclose(loss_value, np.array([0.56469357, 5.286211]).reshape(2,)) == True:
+        print("main : test passed")
+    else:
+        print("main : test failed")
+
+
+
+# from yolo_ import YoloLayer
 if __name__ == '__main__':
-    
-    BATCH_SIZE = 1
-    MAX_GRID = [3, 3]
-    
-    cell_grid_tensor = YoloLayer(max_grid=MAX_GRID, batch_size=BATCH_SIZE).cell_grid
-    
-    with tf.Session() as sess:
-        cell_grid_value = sess.run(cell_grid_tensor)
-    cell_grid = cell_grid(MAX_GRID, batch_size=BATCH_SIZE)
+    test_main()
 
-    print(np.allclose(cell_grid_value, cell_grid))
+
+
 
 
