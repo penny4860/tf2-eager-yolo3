@@ -30,6 +30,13 @@ def adjust_pred(y_pred, cell_grid, grid_h, grid_w):
     pred_box_class = y_pred[..., 5:]                                                        # adjust class probabilities      
     return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
 
+def adjust_true(y_true):
+    true_box_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
+    true_box_wh    = y_true[..., 2:4] # t_wh
+    true_box_conf  = np.expand_dims(y_true[..., 4], 4)
+    true_box_class = np.argmax(y_true[..., 5:], -1)
+    return true_box_xy, true_box_wh, true_box_conf, true_box_class
+
 
 def cell_grid(max_grid, batch_size=2):
 
