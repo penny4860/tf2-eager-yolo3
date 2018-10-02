@@ -99,6 +99,39 @@ def conf_delta_fn(pred_box_conf, intersect_areas, pred_areas, true_areas, ignore
     conf_delta *= np.expand_dims((best_ious < ignore_thresh).astype(np.float32), 4)
     return conf_delta
 
+def wh_scale(true_box_wh, anchors, net_factor):
+    wh_scale = np.exp(true_box_wh) * anchors / net_factor
+    wh_scale = np.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
+    return wh_scale
+
+def loss_xy(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
+    xy_delta    = object_mask   * (pred_box_xy-true_box_xy) * wh_scale * xywh_scale
+    loss_xy    = np.sum(xy_delta*xy_delta, list(range(1,5)))
+    return loss_xy
+
+def loss_wh(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
+    wh_delta    = object_mask   * (pred_box_wh-true_box_wh) * wh_scale * xywh_scale
+    loss_wh    = np.sum(wh_delta*wh_delta,       list(range(1,5)))
+    return loss_wh
+    
+def loss_conf(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
+    conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
+    loss_conf  = np.sum(conf_delta*conf_delta,     list(range(1,5)))
+    return loss_conf
+
+def loss_class(object_mask, pred_box_class, true_box_class, class_scale):
+    def sparse_softmax_cross_entropy_with_logits(labels, logits):
+        op = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.constant(labels),
+                                                            logits = tf.constant(logits))
+        
+        with tf.Session() as sess:
+            return sess.run(op)
+
+    class_delta = object_mask * \
+                  np.expand_dims(sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class), 4) * \
+                  class_scale
+    loss_class = np.sum(class_delta,               list(range(1,5)))
+    return loss_class
 
 def cell_grid(max_grid, batch_size=2):
 
