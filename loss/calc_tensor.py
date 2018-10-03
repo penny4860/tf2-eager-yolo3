@@ -9,7 +9,7 @@ def sum_loss(losses):
     return tf.sqrt(tf.reduce_sum(losses))
 
 
-def loss_fn(true_boxes, y_true, y_pred,
+def loss_fn(true_boxes, y_trues, y_preds,
             anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
             image_size=[288, 288], 
             batch_size=2,
@@ -50,9 +50,9 @@ def loss_fn(true_boxes, y_true, y_pred,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    loss_yolo_1 = calculator_1.run(true_boxes, y_true, y_pred)
-    loss_yolo_2 = calculator_2.run(true_boxes, y_true, y_pred)
-    loss_yolo_3 = calculator_3.run(true_boxes, y_true, y_pred)
+    loss_yolo_1 = calculator_1.run(true_boxes, y_trues[0], y_preds[0])
+    loss_yolo_2 = calculator_2.run(true_boxes, y_trues[1], y_preds[1])
+    loss_yolo_3 = calculator_3.run(true_boxes, y_trues[2], y_preds[2])
     return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
 
 
