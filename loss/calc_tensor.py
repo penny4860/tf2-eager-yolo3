@@ -5,6 +5,56 @@ from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
 from yolo.loss.utils import conf_delta_tensor, intersect_areas_tensor, reshape_y_pred_tensor, setup_env_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
 
+def sum_loss(losses):
+    return tf.sqrt(tf.reduce_sum(losses))
+
+
+def loss_fn(true_boxes, y_true, y_pred,
+            anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
+            image_size=[288, 288], 
+            batch_size=2,
+            ignore_thresh=0.5, 
+            grid_scale=1,
+            obj_scale=5,
+            noobj_scale=1,
+            xywh_scale=1,
+            class_scale=1):
+    
+    calculator_1 = LossTensorCalculator(anchors=anchors[12:],
+                                        max_grid=[1*num for num in image_size],
+                                        image_size=image_size,
+                                        batch_size=batch_size,
+                                        ignore_thresh=ignore_thresh, 
+                                        grid_scale=grid_scale,
+                                        obj_scale=obj_scale,
+                                        noobj_scale=noobj_scale,
+                                        xywh_scale=xywh_scale,
+                                        class_scale=class_scale)
+    calculator_2 = LossTensorCalculator(anchors=anchors[6:12],
+                                        max_grid=[2*num for num in image_size],
+                                        image_size=image_size,
+                                        batch_size=batch_size,
+                                        ignore_thresh=ignore_thresh, 
+                                        grid_scale=grid_scale,
+                                        obj_scale=obj_scale,
+                                        noobj_scale=noobj_scale,
+                                        xywh_scale=xywh_scale,
+                                        class_scale=class_scale)
+    calculator_3 = LossTensorCalculator(anchors=anchors[:6],
+                                        max_grid=[4*num for num in image_size],
+                                        image_size=image_size,
+                                        batch_size=batch_size,
+                                        ignore_thresh=ignore_thresh, 
+                                        grid_scale=grid_scale,
+                                        obj_scale=obj_scale,
+                                        noobj_scale=noobj_scale,
+                                        xywh_scale=xywh_scale,
+                                        class_scale=class_scale)
+    loss_yolo_1 = calculator_1.run(true_boxes, y_true, y_pred)
+    loss_yolo_2 = calculator_2.run(true_boxes, y_true, y_pred)
+    loss_yolo_3 = calculator_3.run(true_boxes, y_true, y_pred)
+    return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
+
 
 class LossTensorCalculator(object):
     def __init__(self,
