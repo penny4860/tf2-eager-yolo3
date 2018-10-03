@@ -9,7 +9,7 @@ def reshape_y_pred(y_pred):
     y_pred_reshaped = y_pred.reshape(y_pred.shape[0], y_pred.shape[1], y_pred.shape[2], 3, -1)
     return y_pred_reshaped
 
-def setup_env(input_image, y_true):
+def setup_env(y_true):
     # initialize the masks
     object_mask     = np.expand_dims(y_true[..., 4], 4)
  
@@ -17,11 +17,7 @@ def setup_env(input_image, y_true):
     grid_h = y_true.shape[1]
     grid_w = y_true.shape[2]
     grid_factor = np.array([grid_w, grid_h], dtype=np.float32).reshape([1,1,1,1,2])
-
-    net_h = input_image.shape[1]
-    net_w = input_image.shape[2]
-    net_factor = np.array([net_w, net_h], dtype=np.float32).reshape([1,1,1,1,2])
-    return object_mask, grid_factor, net_factor, grid_h, grid_w
+    return object_mask, grid_factor, grid_h, grid_w
 
 def adjust_pred(y_pred, cell_grid, grid_h, grid_w):
     pred_box_xy    = (cell_grid[:,:grid_h,:grid_w,:,:] + sigmoid(y_pred[..., :2]))  # sigma(t_xy) + c_xy
@@ -172,12 +168,15 @@ class YoloLayerNp(object):
         # make a persistent mesh grid
         self.cell_grid = cell_grid(max_grid, batch_size)
 
-    def call(self, x):
-        input_image, true_boxes, y_true, y_pred  = x
+    def call(self, input_image, true_boxes, y_true, y_pred):
         
         # 1. setup
         y_pred = reshape_y_pred(y_pred)
-        object_mask, grid_factor, net_factor, grid_h, grid_w = setup_env(input_image, y_true)
+        object_mask, grid_factor, grid_h, grid_w = setup_env(y_true)
+
+        net_h = input_image.shape[1]
+        net_w = input_image.shape[2]
+        net_factor = np.array([net_w, net_h], dtype=np.float32).reshape([1,1,1,1,2])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred(y_pred, self.cell_grid, grid_h, grid_w)
@@ -211,7 +210,7 @@ def test_main():
     print(x_batch.shape, t_batch.shape, ys.shape, y_preds.shape)
 
     yolo_layer_np = YoloLayerNp()
-    loss_value = yolo_layer_np.call([x_batch, t_batch, ys, y_preds])
+    loss_value = yolo_layer_np.call(x_batch, t_batch, ys, y_preds)
     print(loss_value.shape)
     
     if np.allclose(loss_value, np.array([0.56469357, 5.286211]).reshape(2,)) == True:
