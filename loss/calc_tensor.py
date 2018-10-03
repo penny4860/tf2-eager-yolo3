@@ -18,30 +18,16 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
             xywh_scale=1,
             class_scale=1):
     
-    calculator_1 = LossTensorCalculator(image_size=image_size,
+    calculator = LossTensorCalculator(image_size=image_size,
                                         ignore_thresh=ignore_thresh, 
                                         grid_scale=grid_scale,
                                         obj_scale=obj_scale,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    calculator_2 = LossTensorCalculator(image_size=image_size,
-                                        ignore_thresh=ignore_thresh, 
-                                        grid_scale=grid_scale,
-                                        obj_scale=obj_scale,
-                                        noobj_scale=noobj_scale,
-                                        xywh_scale=xywh_scale,
-                                        class_scale=class_scale)
-    calculator_3 = LossTensorCalculator(image_size=image_size,
-                                        ignore_thresh=ignore_thresh, 
-                                        grid_scale=grid_scale,
-                                        obj_scale=obj_scale,
-                                        noobj_scale=noobj_scale,
-                                        xywh_scale=xywh_scale,
-                                        class_scale=class_scale)
-    loss_yolo_1 = calculator_1.run(true_boxes, list_y_trues[0], list_y_preds[0], max_grid=[1*num for num in image_size], anchors=anchors[12:])
-    loss_yolo_2 = calculator_2.run(true_boxes, list_y_trues[1], list_y_preds[1], max_grid=[2*num for num in image_size], anchors=anchors[6:12])
-    loss_yolo_3 = calculator_3.run(true_boxes, list_y_trues[2], list_y_preds[2], max_grid=[4*num for num in image_size], anchors=anchors[:6])
+    loss_yolo_1 = calculator.run(true_boxes, list_y_trues[0], list_y_preds[0], max_grid=[1*num for num in image_size], anchors=anchors[12:])
+    loss_yolo_2 = calculator.run(true_boxes, list_y_trues[1], list_y_preds[1], max_grid=[2*num for num in image_size], anchors=anchors[6:12])
+    loss_yolo_3 = calculator.run(true_boxes, list_y_trues[2], list_y_preds[2], max_grid=[4*num for num in image_size], anchors=anchors[:6])
     return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
 
 
