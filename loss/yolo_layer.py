@@ -7,7 +7,8 @@ from yolo.loss.utils import loss_class_fn, loss_conf_fn, loss_wh_fn, loss_xy_fn,
 class LossCalculator(object):
     def __init__(self,
                  anchors=[90, 95, 92, 154, 139, 281],
-                 max_grid=[288, 288], 
+                 max_grid=[288, 288],
+                 image_size=[288, 288], 
                  batch_size=2,
                  ignore_thresh=0.5, 
                  grid_scale=1,
@@ -22,18 +23,19 @@ class LossCalculator(object):
         self.obj_scale      = obj_scale
         self.noobj_scale    = noobj_scale
         self.xywh_scale     = xywh_scale
-        self.class_scale    = class_scale        
+        self.class_scale    = class_scale
+        self.image_size = image_size        # (h, w)-ordered
 
         # make a persistent mesh grid
         self.cell_grid = cell_grid(max_grid, batch_size)
 
-    def run(self, true_boxes, y_true, y_pred, image_h, image_w):
+    def run(self, true_boxes, y_true, y_pred):
         
         # 1. setup
         y_pred = reshape_y_pred(y_pred)
         object_mask, grid_factor, grid_h, grid_w = setup_env(y_true)
 
-        net_factor = np.array([image_h, image_w], dtype=np.float32).reshape([1,1,1,1,2])
+        net_factor = np.array(self.image_size, dtype=np.float32).reshape([1,1,1,1,2])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred(y_pred, self.cell_grid, grid_h, grid_w)
@@ -63,11 +65,12 @@ class LossCalculator(object):
 
 
 def test_main():
-    x_batch, t_batch, ys, y_preds = np.load("x_batch.npy"), np.load("t_batch.npy"), np.load("ys.npy"), np.load("y_preds.npy")
-    print(x_batch.shape, t_batch.shape, ys.shape, y_preds.shape)
+    image_size = [288, 288]
+    t_batch, ys, y_preds = np.load("t_batch.npy"), np.load("ys.npy"), np.load("y_preds.npy")
+    print(t_batch.shape, ys.shape, y_preds.shape)
 
-    loss_calculator = LossCalculator()
-    loss_value = loss_calculator.run(t_batch, ys, y_preds, x_batch.shape[1], x_batch.shape[2])
+    loss_calculator = LossCalculator(image_size=image_size)
+    loss_value = loss_calculator.run(t_batch, ys, y_preds)
     print(loss_value.shape)
     
     if np.allclose(loss_value, np.array([0.56469357, 5.286211]).reshape(2,)) == True:
