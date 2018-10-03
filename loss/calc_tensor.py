@@ -19,8 +19,7 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
             xywh_scale=1,
             class_scale=1):
     
-    calculator_1 = LossTensorCalculator(anchors=anchors[12:],
-                                        max_grid=[1*num for num in image_size],
+    calculator_1 = LossTensorCalculator(max_grid=[1*num for num in image_size],
                                         image_size=image_size,
                                         batch_size=batch_size,
                                         ignore_thresh=ignore_thresh, 
@@ -29,8 +28,7 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    calculator_2 = LossTensorCalculator(anchors=anchors[6:12],
-                                        max_grid=[2*num for num in image_size],
+    calculator_2 = LossTensorCalculator(max_grid=[2*num for num in image_size],
                                         image_size=image_size,
                                         batch_size=batch_size,
                                         ignore_thresh=ignore_thresh, 
@@ -39,8 +37,7 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    calculator_3 = LossTensorCalculator(anchors=anchors[:6],
-                                        max_grid=[4*num for num in image_size],
+    calculator_3 = LossTensorCalculator(max_grid=[4*num for num in image_size],
                                         image_size=image_size,
                                         batch_size=batch_size,
                                         ignore_thresh=ignore_thresh, 
@@ -49,15 +46,14 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    loss_yolo_1 = calculator_1.run(true_boxes, list_y_trues[0], list_y_preds[0])
-    loss_yolo_2 = calculator_2.run(true_boxes, list_y_trues[1], list_y_preds[1])
-    loss_yolo_3 = calculator_3.run(true_boxes, list_y_trues[2], list_y_preds[2])
+    loss_yolo_1 = calculator_1.run(true_boxes, list_y_trues[0], list_y_preds[0], anchors=anchors[12:])
+    loss_yolo_2 = calculator_2.run(true_boxes, list_y_trues[1], list_y_preds[1], anchors=anchors[6:12])
+    loss_yolo_3 = calculator_3.run(true_boxes, list_y_trues[2], list_y_preds[2], anchors=anchors[:6])
     return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
 
 
 class LossTensorCalculator(object):
     def __init__(self,
-                 anchors=[90, 95, 92, 154, 139, 281],
                  max_grid=[288, 288], 
                  image_size=[288, 288], 
                  batch_size=2,
@@ -68,7 +64,6 @@ class LossTensorCalculator(object):
                  xywh_scale=1,
                  class_scale=1):
         self.ignore_thresh  = ignore_thresh
-        self.anchors        = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
         self.grid_scale     = grid_scale
         self.obj_scale      = obj_scale
         self.noobj_scale    = noobj_scale
@@ -83,7 +78,11 @@ class LossTensorCalculator(object):
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
 
-    def run(self, true_boxes, y_true, y_pred):
+
+    def run(self, true_boxes, y_true, y_pred, anchors=[90, 95, 92, 154, 139, 281]):
+        
+        self.anchors = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
+
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
         object_mask, grid_factor, grid_h, grid_w = setup_env_tensor(y_true)
