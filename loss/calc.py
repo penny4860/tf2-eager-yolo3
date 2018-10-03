@@ -64,50 +64,6 @@ class LossCalculator(object):
         return loss*self.grid_scale
 
 
-def test_main():
-    from yolo import PROJECT_ROOT
-    import os
-    image_size = [288, 288]
-    t_batch = np.load(os.path.join(PROJECT_ROOT, "samples", "t_batch.npy"))
-
-    # (2, 9, 9, 3, 6) (2, 18, 18, 3, 6) (2, 36, 36, 3, 6)
-    y_true_1 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_1.npy"))
-    y_true_2 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_2.npy"))
-    y_true_3 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_3.npy"))
-    ys_trues = [y_true_1, y_true_2, y_true_3]
-
-    y_pred_1 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_1.npy")).astype(np.float64)
-    y_pred_2 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_2.npy")).astype(np.float64)
-    y_pred_3 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_3.npy")).astype(np.float64)
-    ys_preds = [y_pred_1, y_pred_2, y_pred_3]
-
-    anchorss=[[90, 95, 92, 154, 139, 281],
-              [42, 44, 56, 51, 72, 66],
-              [17, 18, 28, 24, 36, 34]]
-    
-    losses = []    
-    for i in range(3):
-        y_preds = ys_preds[i]
-        ys = ys_trues[i]
-        anchors = anchorss[i]
-        
-        loss_calculator = LossCalculator(anchors=anchors,
-                                         max_grid=[288*(2**i),288*(2**i)],
-                                         image_size=image_size)
-        loss_value = loss_calculator.run(t_batch, ys, y_preds)
-        losses.append(loss_value)    
-    
-    expected_losses = [np.array([0.56469357, 5.286211]).reshape(2,),
-                       np.array([0.05866125, 4.778614]).reshape(2,),
-                       np.array([0.54328686, 11.0839405]).reshape(2,)]
-
-    for loss_value, expected_loss in zip(losses, expected_losses):
-        if np.allclose(loss_value, expected_loss) == True:
-            print("main : test passed")
-        else:
-            print("main : test failed")
-
-# from yolo_ import YoloLayer
 if __name__ == '__main__':
-    test_main()
+    pass
 
