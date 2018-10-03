@@ -10,8 +10,8 @@ class LossTensorCalculator(object):
     def __init__(self,
                  anchors=[90, 95, 92, 154, 139, 281],
                  max_grid=[288, 288], 
+                 image_size=[288, 288], 
                  batch_size=2,
-                 warmup_batches=0,
                  ignore_thresh=0.5, 
                  grid_scale=1,
                  obj_scale=5,
@@ -19,13 +19,13 @@ class LossTensorCalculator(object):
                  xywh_scale=1,
                  class_scale=1):
         self.ignore_thresh  = ignore_thresh
-        self.warmup_batches = warmup_batches
         self.anchors        = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
         self.grid_scale     = grid_scale
         self.obj_scale      = obj_scale
         self.noobj_scale    = noobj_scale
         self.xywh_scale     = xywh_scale
         self.class_scale    = class_scale        
+        self.image_size = image_size        # (h, w)-ordered
 
         # make a persistent mesh grid
         max_grid_h, max_grid_w = max_grid
@@ -34,12 +34,11 @@ class LossTensorCalculator(object):
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
 
-    def call(self, x):
-        input_image, y_pred, y_true, true_boxes = x
-        
+    def run(self, true_boxes, y_true, y_pred):
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
-        object_mask, grid_factor, net_factor, grid_h, grid_w = setup_env_tensor(input_image, y_true)
+        object_mask, grid_factor, grid_h, grid_w = setup_env_tensor(y_true)
+        net_factor  = tf.reshape(tf.cast(self.image_size, tf.float32), [1,1,1,1,2])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, self.cell_grid, grid_h, grid_w)
