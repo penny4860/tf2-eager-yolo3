@@ -85,8 +85,7 @@ def test_main():
               [42, 44, 56, 51, 72, 66],
               [17, 18, 28, 24, 36, 34]]
     
-    print(t_batch.dtype, y_true_1.dtype, y_pred_1.dtype)
-    
+    losses = []    
     for i in range(3):
         y_preds = ys_preds[i]
         ys = ys_trues[i]
@@ -96,11 +95,17 @@ def test_main():
                                          max_grid=[288*(2**i),288*(2**i)],
                                          image_size=image_size)
         loss_value = loss_calculator.run(t_batch, ys, y_preds)
-        print(loss_value)
-   
-        # scale: 1, loss_value: [0.56469357 5.286211  ]
-        # scale: 2, loss_value: [0.05866125 4.778614  ]
-        # scale: 3, loss_value: [ 0.54328686 11.0839405 ]
+        losses.append(loss_value)    
+    
+    expected_losses = [np.array([0.56469357, 5.286211]).reshape(2,),
+                       np.array([0.05866125, 4.778614]).reshape(2,),
+                       np.array([0.54328686, 11.0839405]).reshape(2,)]
+
+    for loss_value, expected_loss in zip(losses, expected_losses):
+        if np.allclose(loss_value, expected_loss) == True:
+            print("main : test passed")
+        else:
+            print("main : test failed")
 
 # from yolo_ import YoloLayer
 if __name__ == '__main__':
