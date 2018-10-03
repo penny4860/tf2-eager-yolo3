@@ -168,15 +168,13 @@ class YoloLayerNp(object):
         # make a persistent mesh grid
         self.cell_grid = cell_grid(max_grid, batch_size)
 
-    def call(self, input_image, true_boxes, y_true, y_pred):
+    def call(self, true_boxes, y_true, y_pred, image_h, image_w):
         
         # 1. setup
         y_pred = reshape_y_pred(y_pred)
         object_mask, grid_factor, grid_h, grid_w = setup_env(y_true)
 
-        net_h = input_image.shape[1]
-        net_w = input_image.shape[2]
-        net_factor = np.array([net_w, net_h], dtype=np.float32).reshape([1,1,1,1,2])
+        net_factor = np.array([image_h, image_w], dtype=np.float32).reshape([1,1,1,1,2])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred(y_pred, self.cell_grid, grid_h, grid_w)
@@ -210,7 +208,7 @@ def test_main():
     print(x_batch.shape, t_batch.shape, ys.shape, y_preds.shape)
 
     yolo_layer_np = YoloLayerNp()
-    loss_value = yolo_layer_np.call(x_batch, t_batch, ys, y_preds)
+    loss_value = yolo_layer_np.call(t_batch, ys, y_preds, x_batch.shape[1], x_batch.shape[2])
     print(loss_value.shape)
     
     if np.allclose(loss_value, np.array([0.56469357, 5.286211]).reshape(2,)) == True:
