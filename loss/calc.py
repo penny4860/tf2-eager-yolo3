@@ -65,20 +65,42 @@ class LossCalculator(object):
 
 
 def test_main():
+    from yolo import PROJECT_ROOT
+    import os
     image_size = [288, 288]
-    t_batch, ys, y_preds = np.load("t_batch.npy"), np.load("ys.npy"), np.load("y_preds.npy")
-    print(t_batch.shape, ys.shape, y_preds.shape)
+    t_batch = np.load(os.path.join(PROJECT_ROOT, "samples", "t_batch.npy"))
 
-    loss_calculator = LossCalculator(image_size=image_size)
-    loss_value = loss_calculator.run(t_batch, ys, y_preds)
-    print(loss_value.shape)
+    # (2, 9, 9, 3, 6) (2, 18, 18, 3, 6) (2, 36, 36, 3, 6)
+    y_true_1 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_1.npy"))
+    y_true_2 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_2.npy"))
+    y_true_3 = np.load(os.path.join(PROJECT_ROOT, "samples", "yolo_3.npy"))
+    ys_trues = [y_true_1, y_true_2, y_true_3]
+
+    y_pred_1 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_1.npy")).astype(np.float64)
+    y_pred_2 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_2.npy")).astype(np.float64)
+    y_pred_3 = np.load(os.path.join(PROJECT_ROOT, "samples", "y_pred_3.npy")).astype(np.float64)
+    ys_preds = [y_pred_1, y_pred_2, y_pred_3]
+
+    anchorss=[[90, 95, 92, 154, 139, 281],
+              [42, 44, 56, 51, 72, 66],
+              [17, 18, 28, 24, 36, 34]]
     
-    if np.allclose(loss_value, np.array([0.56469357, 5.286211]).reshape(2,)) == True:
-        print("main : test passed")
-    else:
-        print("main : test failed")
-
-
+    print(t_batch.dtype, y_true_1.dtype, y_pred_1.dtype)
+    
+    for i in range(3):
+        y_preds = ys_preds[i]
+        ys = ys_trues[i]
+        anchors = anchorss[i]
+        
+        loss_calculator = LossCalculator(anchors=anchors,
+                                         max_grid=[288*(2**i),288*(2**i)],
+                                         image_size=image_size)
+        loss_value = loss_calculator.run(t_batch, ys, y_preds)
+        print(loss_value)
+   
+        # scale: 1, loss_value: [0.56469357 5.286211  ]
+        # scale: 2, loss_value: [0.05866125 4.778614  ]
+        # scale: 3, loss_value: [ 0.54328686 11.0839405 ]
 
 # from yolo_ import YoloLayer
 if __name__ == '__main__':
