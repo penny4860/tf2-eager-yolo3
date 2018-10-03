@@ -218,7 +218,52 @@ def test_main():
 
 
 
+def truebox_to_y_true(true_box, anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281]):
+    from utils.bbox import BoundBox, bbox_iou
+    # (cx, cy, w, h)
+    cx, cy, w, h = true_box
+    anchors = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(len(anchors)//2)]
+    
+    # find the best anchor box for this object
+    max_anchor = None                
+    max_iou    = -1
+
+    shifted_box = BoundBox(0, 
+                           0,
+                           w,                                                
+                           h)    
+    
+    for i in range(len(anchors)):
+        anchor = anchors[i]
+        iou    = bbox_iou(shifted_box, anchor)
+
+        if max_iou < iou:
+            max_anchor = anchor
+            max_iou    = iou                
+    
+    # (w, h) => (tw, th)
+    # determine the sizes of the bounding box
+    tw = np.log(w) / float(max_anchor.xmax) # t_w
+    th = np.log(h) / float(max_anchor.ymax) # t_h
+    return np.array([cx, cy, tw, th])
+
+
 # from yolo_ import YoloLayer
 if __name__ == '__main__':
-    test_main()
+    x_batch, t_batch, ys, y_preds = np.load("x_batch.npy"), np.load("t_batch.npy"), np.load("ys.npy"), np.load("y_preds.npy")
+    true_boxes = t_batch[0].reshape(2,4)
+    y_true = ys[0]
+    print(true_boxes.shape, y_true.shape)
+    
+    # (cx, cy, width, height)
+    for box in true_boxes:
+        print(box, truebox_to_y_true(box))
+    
+    for i in range(9):
+        for j in range(9):
+            for b in range(3):
+                if y_true[i, j, b, 4] != 0:
+                    print(i, j, b, y_true[i, j, b, :])
 
+
+    
