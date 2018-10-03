@@ -11,7 +11,6 @@ def sum_loss(losses):
 def loss_fn(true_boxes, list_y_trues, list_y_preds,
             anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
             image_size=[288, 288], 
-            batch_size=2,
             ignore_thresh=0.5, 
             grid_scale=1,
             obj_scale=5,
@@ -19,44 +18,36 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
             xywh_scale=1,
             class_scale=1):
     
-    calculator_1 = LossTensorCalculator(max_grid=[1*num for num in image_size],
-                                        image_size=image_size,
-                                        batch_size=batch_size,
+    calculator_1 = LossTensorCalculator(image_size=image_size,
                                         ignore_thresh=ignore_thresh, 
                                         grid_scale=grid_scale,
                                         obj_scale=obj_scale,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    calculator_2 = LossTensorCalculator(max_grid=[2*num for num in image_size],
-                                        image_size=image_size,
-                                        batch_size=batch_size,
+    calculator_2 = LossTensorCalculator(image_size=image_size,
                                         ignore_thresh=ignore_thresh, 
                                         grid_scale=grid_scale,
                                         obj_scale=obj_scale,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    calculator_3 = LossTensorCalculator(max_grid=[4*num for num in image_size],
-                                        image_size=image_size,
-                                        batch_size=batch_size,
+    calculator_3 = LossTensorCalculator(image_size=image_size,
                                         ignore_thresh=ignore_thresh, 
                                         grid_scale=grid_scale,
                                         obj_scale=obj_scale,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    loss_yolo_1 = calculator_1.run(true_boxes, list_y_trues[0], list_y_preds[0], anchors=anchors[12:])
-    loss_yolo_2 = calculator_2.run(true_boxes, list_y_trues[1], list_y_preds[1], anchors=anchors[6:12])
-    loss_yolo_3 = calculator_3.run(true_boxes, list_y_trues[2], list_y_preds[2], anchors=anchors[:6])
+    loss_yolo_1 = calculator_1.run(true_boxes, list_y_trues[0], list_y_preds[0], max_grid=[1*num for num in image_size], anchors=anchors[12:])
+    loss_yolo_2 = calculator_2.run(true_boxes, list_y_trues[1], list_y_preds[1], max_grid=[2*num for num in image_size], anchors=anchors[6:12])
+    loss_yolo_3 = calculator_3.run(true_boxes, list_y_trues[2], list_y_preds[2], max_grid=[4*num for num in image_size], anchors=anchors[:6])
     return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
 
 
 class LossTensorCalculator(object):
     def __init__(self,
-                 max_grid=[288, 288], 
                  image_size=[288, 288], 
-                 batch_size=2,
                  ignore_thresh=0.5, 
                  grid_scale=1,
                  obj_scale=5,
@@ -71,16 +62,14 @@ class LossTensorCalculator(object):
         self.class_scale    = class_scale        
         self.image_size = image_size        # (h, w)-ordered
 
-        # make a persistent mesh grid
-        max_grid_h, max_grid_w = max_grid
+    def run(self, true_boxes, y_true, y_pred, max_grid=[288, 288], anchors=[90, 95, 92, 154, 139, 281]):
 
+        # make a persistent mesh grid
+        batch_size = tf.shape(y_true)[0]
+        max_grid_h, max_grid_w = max_grid
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(max_grid_w), [max_grid_h]), (1, max_grid_h, max_grid_w, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
-
-
-    def run(self, true_boxes, y_true, y_pred, anchors=[90, 95, 92, 154, 139, 281]):
-        
         self.anchors = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
 
         # 1. setup
