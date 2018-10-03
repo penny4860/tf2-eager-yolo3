@@ -148,7 +148,6 @@ class YoloLayerNp(object):
                  anchors=[90, 95, 92, 154, 139, 281],
                  max_grid=[288, 288], 
                  batch_size=2,
-                 warmup_batches=0,
                  ignore_thresh=0.5, 
                  grid_scale=1,
                  obj_scale=5,
@@ -157,7 +156,6 @@ class YoloLayerNp(object):
                  class_scale=1):
         # make the model settings persistent
         self.ignore_thresh  = ignore_thresh
-        self.warmup_batches = warmup_batches
         self.anchors        = np.array(anchors).reshape([1,1,1,3,2]).astype(np.float32)
         self.grid_scale     = grid_scale
         self.obj_scale      = obj_scale
