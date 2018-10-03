@@ -221,8 +221,4 @@ def test_main():
 # from yolo_ import YoloLayer
 if __name__ == '__main__':
     test_main()
-#     array = np.arange(200).reshape(10, 10, 2)
-#     print(np.sum(array, axis=(1,2)))
-#     print(tuple(range(1,5)))
-
 
