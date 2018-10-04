@@ -37,9 +37,22 @@ def _images():
     return images
 
 
-# def grads_fn(self, input_data, target):
-#     # 4) grads_fn(input_tensor, target_tensor)
-#     # Get loss tensor
+def train(images_tensor, list_y_trues, true_boxes, optimizer, model, num_epoches=500, verbose=10):
+    def grads_fn(images_tensor, list_y_trues, true_boxes):
+        with tf.GradientTape() as tape:
+            logits = model(images_tensor)
+            loss = loss_fn(true_boxes, list_y_trues, logits)
+        return tape.gradient(loss, model.variables)
+
+    for i in range(num_epoches):
+        
+        grads = grads_fn(images_tensor, list_y_trues, true_boxes)
+        optimizer.apply_gradients(zip(grads, model.variables))
+        if i==0 or (i+1)%verbose==0:
+            logits = model(images_tensor)
+            print("{}-th loss = {}".format(i, loss_fn(true_boxes, list_y_trues, logits)))
+
+
 
 if __name__ == '__main__':
     
@@ -47,28 +60,11 @@ if __name__ == '__main__':
     true_boxes = tf.constant(_true_boxes())
     list_y_trues = [tf.constant(arr) for arr in _list_y_trues()]
 
-    yolo_model = Yolonet(n_features=18)    # 3 * (1+1+4)
+    model = Yolonet(18)
+    
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    NUM_EPOCHES = 100
-    for i in range(NUM_EPOCHES):
-
-        # 1. prediction
-        list_y_preds = yolo_model(images_tensor, training=True)
-
-        # 2. loss
-        with tf.GradientTape() as tape:
-            loss_tenosr = loss_fn(true_boxes, list_y_trues, list_y_preds)
-            # 3. grad
-            grads = tape.gradient(loss_tenosr, yolo_model.variables)
-            for grad in grads[:20]:
-                print(grad)
-        break
-
-#         print(loss_tenosr.numpy())
-#         print(len(yolo_model.variables), len(grads))
-#         # 4. update variables using optimizer
-#         optimizer.apply_gradients(zip(grads, yolo_model.variables))
-        
+    
+    train(images_tensor, list_y_trues, true_boxes, optimizer, model, 10, 1)
 
     
     
