@@ -25,32 +25,12 @@ def train(images_tensor, list_y_trues, true_boxes, optimizer, model, num_epoches
 
 
 if __name__ == '__main__':
-    
-    from yolo import PROJECT_ROOT
-    import os
-    import numpy as np
-    TEST_SAMPLE_ROOT = os.path.join(PROJECT_ROOT, "tests", "samples")
-    def _list_y_trues():
-        # (2, 9, 9, 3, 6) (2, 18, 18, 3, 6) (2, 36, 36, 3, 6)
-        y_true_1 = np.load(os.path.join(TEST_SAMPLE_ROOT, "yolo_1.npy")).astype(np.float32)
-        y_true_2 = np.load(os.path.join(TEST_SAMPLE_ROOT, "yolo_2.npy")).astype(np.float32)
-        y_true_3 = np.load(os.path.join(TEST_SAMPLE_ROOT, "yolo_3.npy")).astype(np.float32)
-        y_trues = [y_true_1, y_true_2, y_true_3]
-        return y_trues
-    
-    def _true_boxes():
-        # (2, 1, 1, 1, 2, 4)
-        true_boxes = np.load(os.path.join(TEST_SAMPLE_ROOT, "t_batch.npy")).astype(np.float32)
-        return true_boxes
-    
-    def _images():
-        images = np.load(os.path.join(TEST_SAMPLE_ROOT, "x_batch.npy")).astype(np.float32)
-        return images
+    from yolo.samples import sample_images, sample_list_y_trues, sample_true_boxes
     
     # 1. setup dataset
-    images_tensor = tf.constant(_images())
-    true_boxes = tf.constant(_true_boxes())
-    list_y_trues = [tf.constant(arr) for arr in _list_y_trues()]
+    images_tensor = tf.constant(sample_images())
+    true_boxes = tf.constant(sample_true_boxes())
+    list_y_trues = [tf.constant(arr) for arr in sample_list_y_trues()]
 
     # 2. create model
     model = Yolonet(18)
@@ -59,9 +39,5 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
     
     # 4. training
-    train(images_tensor, list_y_trues, true_boxes, optimizer, model, 10, 1)
+    train(images_tensor, list_y_trues, true_boxes, optimizer, model, 2, 1)
 
-    
-    
-    
-    
