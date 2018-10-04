@@ -52,13 +52,13 @@ class Yolonet(tf.keras.Model):
 
 
 if __name__ == '__main__':
-    from yolo import YOLOV3_WEIGHTS
     tf.enable_eager_execution()
     inputs = tf.constant(np.random.randn(1, 256, 256, 3).astype(np.float32))
     
     # (1, 256, 256, 3) => (1, 8, 8, 1024)
     yolonet = Yolonet()
-    yolonet.load_darknet_params(YOLOV3_WEIGHTS)
-    yolonet.save_weights("yolov3.h5")
+    f5, f4, f3 = yolonet(inputs)
+    print(f5.shape, f4.shape, f3.shape)
+
     for v in yolonet.variables:
         print(v.name)
