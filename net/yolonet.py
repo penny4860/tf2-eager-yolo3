@@ -8,6 +8,8 @@ models = tf.keras.models
 
 from yolo.net.bodynet import Bodynet
 from yolo.net.headnet import Headnet
+from yolo.net.weights import WeightReader
+
 
 # Yolo v3
 class Yolonet(tf.keras.Model):
@@ -19,6 +21,10 @@ class Yolonet(tf.keras.Model):
 
         self.num_layers = 110
         self._init_vars()
+
+    def load_darknet_params(self, weights_file):
+        weight_reader = WeightReader(weights_file)
+        weight_reader.load_weights(self)
     
     def predict(self, input_array):
         f5, f4, f3 = self.call(tf.constant(input_array.astype(np.float32)))
