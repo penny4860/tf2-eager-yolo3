@@ -6,8 +6,8 @@ import numpy as np
 layers = tf.keras.layers
 models = tf.keras.models
 
-from yolo.bodynet import Bodynet
-from yolo.headnet import Headnet
+from yolo.net.bodynet import Bodynet
+from yolo.net.headnet import Headnet
 
 # Yolo v3
 class Yolonet(tf.keras.Model):
@@ -41,13 +41,11 @@ class Yolonet(tf.keras.Model):
         return variables
 
     def _init_vars(self):
-        import numpy as np
         sample = tf.constant(np.random.randn(1, 224, 224, 3).astype(np.float32))
         self.call(sample, training=False)
 
 
 if __name__ == '__main__':
-    import numpy as np
     tf.enable_eager_execution()
     inputs = tf.constant(np.random.randn(1, 256, 256, 3).astype(np.float32))
     
