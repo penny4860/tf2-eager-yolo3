@@ -82,7 +82,7 @@ if __name__ == '__main__':
     import tensorflow as tf
     tf.enable_eager_execution()
 
-    from yolo.yolonet import Yolonet
+    from yolo.net.yolonet import Yolonet
     from yolo import YOLOV3_WEIGHTS
     yolonet = Yolonet()
     reader = WeightReader(YOLOV3_WEIGHTS)
