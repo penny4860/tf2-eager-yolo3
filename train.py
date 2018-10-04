@@ -3,7 +3,7 @@
 import tensorflow as tf
 tf.enable_eager_execution()
 
-from yolo.yolonet import Yolonet
+from yolo.net import Yolonet
 from yolo.loss import loss_fn
 
 
