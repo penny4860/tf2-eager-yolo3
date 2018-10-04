@@ -14,19 +14,22 @@ class Headnet(tf.keras.Model):
         self.stage5_conv5 = _Conv5([512, 1024, 512, 1024, 512],
                                    [75, 76, 77, 78, 79])
         self.stage5_conv2 = _Conv2([1024, n_features],
-                                   [80, 81])
+                                   [80, 81],
+                                   "detection_layer_1_{}".format(n_features))
         self.stage5_upsampling = _Upsamling([256], [84])
 
         self.stage4_conv5 = _Conv5([256, 512, 256, 512, 256],
                                    [87, 88, 89, 90, 91])
         self.stage4_conv2 = _Conv2([512, n_features],
-                                   [92, 93])
+                                   [92, 93],
+                                   "detection_layer_2_{}".format(n_features))
         self.stage4_upsampling = _Upsamling([128], [96])
 
         self.stage3_conv5 = _Conv5([128, 256, 128, 256, 128],
                                    [99, 100, 101, 102, 103])
         self.stage3_conv2 = _Conv2([256, n_features],
-                                   [104, 105])
+                                   [104, 105],
+                                   "detection_layer_3_{}".format(n_features))
         self.num_layers = 106
         self._init_vars()
 
