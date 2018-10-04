@@ -56,14 +56,18 @@ def train(images_tensor, list_y_trues, true_boxes, optimizer, model, num_epoches
 
 if __name__ == '__main__':
     
+    # 1. setup dataset
     images_tensor = tf.constant(_images())
     true_boxes = tf.constant(_true_boxes())
     list_y_trues = [tf.constant(arr) for arr in _list_y_trues()]
 
+    # 2. create model
     model = Yolonet(18)
-    
+
+    # 3. define optimizer    
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
     
+    # 4. training
     train(images_tensor, list_y_trues, true_boxes, optimizer, model, 10, 1)
 
     
