@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-tf.enable_eager_execution()
-
 from yolo.net import Yolonet
 from yolo.loss import loss_fn
 
@@ -25,6 +23,7 @@ def train(images_tensor, list_y_trues, true_boxes, optimizer, model, num_epoches
 
 
 if __name__ == '__main__':
+    tf.enable_eager_execution()
     from yolo.samples import sample_images, sample_list_y_trues, sample_true_boxes
     
     # 1. setup dataset
