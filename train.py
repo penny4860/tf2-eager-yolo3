@@ -45,5 +45,5 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
     
     # 4. training
-    train(images_tensor, list_y_trues, true_boxes, optimizer, model, 2, 1)
+    # train(images_tensor, list_y_trues, true_boxes, optimizer, model, 2, 1)
 
