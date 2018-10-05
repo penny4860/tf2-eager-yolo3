@@ -23,6 +23,21 @@ class WeightReader:
 
         # 81 93 105
         for i in range(model.num_layers):
+            
+            if skip_detect_layer:
+                if i == 81:
+                    skip_size = 255 + 1024*255
+                    self._read_bytes(skip_size)
+                    continue
+                if i == 93:
+                    skip_size = 255 + 512*255
+                    self._read_bytes(skip_size)
+                    continue
+                if i == 105:
+                    skip_size = 255 + 256*255
+                    self._read_bytes(skip_size)
+                    continue
+            
             suffixes = ["beta", "gamma", "moving_mean", "moving_variance", "bias"]
             for suffix in suffixes:
                 variables = model.get_variables(layer_idx=i, suffix=suffix)
@@ -32,6 +47,8 @@ class WeightReader:
             variables = model.get_variables(layer_idx=i, suffix="kernel")
             if variables:
                 self._load_4d_var(variables[0])
+    
+        print(self.offset) # 62001757
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
