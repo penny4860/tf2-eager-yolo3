@@ -19,28 +19,16 @@ class WeightReader:
         self.offset = 0
         self.all_weights = np.frombuffer(binary, dtype='float32')
 
-    def load_weights(self, model):
+    def load_weights(self, model, skip_detect_layer=False):
 
+        # 81 93 105
         for i in range(model.num_layers):
-            variables = model.get_variables(layer_idx=i, suffix="beta")
-            if variables:
-                self._load_1d_var(variables[0])
-
-            variables = model.get_variables(layer_idx=i, suffix="gamma")
-            if variables:
-                self._load_1d_var(variables[0])
-
-            variables = model.get_variables(layer_idx=i, suffix="moving_mean")
-            if variables:
-                self._load_1d_var(variables[0])
-
-            variables = model.get_variables(layer_idx=i, suffix="moving_variance")
-            if variables:
-                self._load_1d_var(variables[0])
-
-            variables = model.get_variables(layer_idx=i, suffix="bias")
-            if variables:
-                self._load_1d_var(variables[0])
+            
+            suffixes = ["beta", "gamma", "moving_mean", "moving_variance", "bias"]
+            for suffix in suffixes:
+                variables = model.get_variables(layer_idx=i, suffix=suffix)
+                if variables:
+                    self._load_1d_var(variables[0])
 
             variables = model.get_variables(layer_idx=i, suffix="kernel")
             if variables:
