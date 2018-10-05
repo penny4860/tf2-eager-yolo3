@@ -22,9 +22,9 @@ class Yolonet(tf.keras.Model):
         self.num_layers = 110
         self._init_vars()
 
-    def load_darknet_params(self, weights_file):
+    def load_darknet_params(self, weights_file, skip_detect_layer=False):
         weight_reader = WeightReader(weights_file)
-        weight_reader.load_weights(self)
+        weight_reader.load_weights(self, skip_detect_layer)
     
     def predict(self, input_array):
         f5, f4, f3 = self.call(tf.constant(input_array.astype(np.float32)))
