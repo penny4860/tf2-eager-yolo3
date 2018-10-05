@@ -23,20 +23,10 @@ class WeightReader:
 
         # 81 93 105
         for i in range(model.num_layers):
-            
-            if skip_detect_layer:
-                if i == 81:
-                    skip_size = 255 + 1024*255
-                    self._read_bytes(skip_size)
-                    continue
-                if i == 93:
-                    skip_size = 255 + 512*255
-                    self._read_bytes(skip_size)
-                    continue
-                if i == 105:
-                    skip_size = 255 + 256*255
-                    self._read_bytes(skip_size)
-                    continue
+            if skip_detect_layer and i in [81, 93, 105]:
+                skip_size = self._skip(i)
+                self._read_bytes(skip_size)
+                continue
             
             suffixes = ["beta", "gamma", "moving_mean", "moving_variance", "bias"]
             for suffix in suffixes:
@@ -49,6 +39,17 @@ class WeightReader:
                 self._load_4d_var(variables[0])
     
         print(self.offset) # 62001757
+
+    def _skip(self, i):
+        if i == 81:    
+            skip_size = 255 + 1024*255
+        elif i == 93:
+            skip_size = 255 + 512*255
+        elif i == 105:
+            skip_size = 255 + 256*255
+        else:
+            skip_size = 0
+        return skip_size
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
@@ -75,6 +76,6 @@ if __name__ == '__main__':
     from yolo import YOLOV3_WEIGHTS
     yolonet = Yolonet()
     reader = WeightReader(YOLOV3_WEIGHTS)
-    reader.load_weights(yolonet)
+    reader.load_weights(yolonet, True)
 
 
