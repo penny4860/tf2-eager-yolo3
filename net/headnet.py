@@ -8,8 +8,9 @@ models = tf.keras.models
 
 # Darknet53 feature extractor
 class Headnet(tf.keras.Model):
-    def __init__(self, n_features=255):
+    def __init__(self, n_classes=80):
         super(Headnet, self).__init__(name='')
+        n_features = 3 * (n_classes+1+4)
         
         self.stage5_conv5 = _Conv5([512, 1024, 512, 1024, 512],
                                    [75, 76, 77, 78, 79])

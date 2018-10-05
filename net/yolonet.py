@@ -13,11 +13,12 @@ from yolo.net.weights import WeightReader
 
 # Yolo v3
 class Yolonet(tf.keras.Model):
-    def __init__(self, n_features=255):
+    def __init__(self, n_classes=80):
+        
         super(Yolonet, self).__init__(name='')
         
         self.body = Bodynet()
-        self.head = Headnet(n_features)
+        self.head = Headnet(n_classes)
 
         self.num_layers = 110
         self._init_vars()
