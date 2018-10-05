@@ -6,13 +6,14 @@ from yolo.net import Yolonet
 from yolo.loss import loss_fn
 
 
-def train(generator, optimizer, model, num_epoches=500, verbose=10):
+def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weights.h5"):
     def grads_fn(images_tensor, list_y_trues, true_boxes):
         with tf.GradientTape() as tape:
             logits = model(images_tensor)
             loss = loss_fn(true_boxes, list_y_trues, logits)
         return tape.gradient(loss, model.variables)
 
+    min_loss_value = np.inf        
     for i in range(num_epoches):
         x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[i][0]
 
@@ -24,9 +25,16 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10):
         
         grads = grads_fn(images_tensor, list_y_trues, true_boxes)
         optimizer.apply_gradients(zip(grads, model.variables))
+
         if i==0 or (i+1)%verbose==0:
             logits = model(images_tensor)
-            print("{}-th loss = {}".format(i, loss_fn(true_boxes, list_y_trues, logits)))
+            loss_value = loss_fn(true_boxes, list_y_trues, logits)
+            print("{}-th loss = {}".format(i, loss_value))
+            
+            if min_loss_value > loss_value:
+                print("update weight {}".format(loss_value))
+                min_loss_value = loss_value
+                model.save_weights("{}_{}.h5".format(fname, i))
 
 
 if __name__ == '__main__':
