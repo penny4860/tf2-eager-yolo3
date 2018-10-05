@@ -23,7 +23,6 @@ class WeightReader:
 
         # 81 93 105
         for i in range(model.num_layers):
-            
             suffixes = ["beta", "gamma", "moving_mean", "moving_variance", "bias"]
             for suffix in suffixes:
                 variables = model.get_variables(layer_idx=i, suffix=suffix)
@@ -32,13 +31,7 @@ class WeightReader:
 
             variables = model.get_variables(layer_idx=i, suffix="kernel")
             if variables:
-                kernel = variables[0]
-                # convolution layer kernel
-                if len(kernel.shape) == 4:
-                    self._load_4d_var(kernel)
-                # fc layer kernel
-                else:
-                    self._load_2d_var(kernel)
+                self._load_4d_var(variables[0])
     
     def _read_bytes(self, size):
         self.offset = self.offset + size
@@ -54,15 +47,6 @@ class WeightReader:
         value  = self._read_bytes(size) # scale
         value = value.reshape(list(reversed(variable.shape)))
         value = value.transpose([2,3,1,0])
-        variable.assign(value)
-
-    def _load_2d_var(self, variable):
-        size = np.prod(variable.shape)
-        value  = self._read_bytes(size) # scale
-        
-        # Todo : darknet 에 저장된 형식이 (output_ch, input_ch)이 맞는지 확인하자.
-        value = value.reshape(list(reversed(variable.shape)))
-        value = value.transpose([1,0])
         variable.assign(value)
 
 
