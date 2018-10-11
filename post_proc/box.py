@@ -41,7 +41,7 @@ def do_nms(boxes, nms_thresh):
                     boxes[index_j].classes[c] = 0
 
 
-def draw_boxes(image, boxes, labels, obj_thresh):
+def draw_boxes(image, boxes, labels, obj_thresh=0.0):
     for box in boxes:
         label_str = ''
         label = -1
