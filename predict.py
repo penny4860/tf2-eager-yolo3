@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
-tf.enable_eager_execution()
 from yolo.post_proc.decoder import decode_netout
 from yolo.post_proc.box import correct_yolo_boxes, do_nms, draw_boxes
 
