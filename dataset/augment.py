@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# from imgaug import augmenters as iaa
+from imgaug import augmenters as iaa
 
 import numpy as np
 np.random.seed(1337)
