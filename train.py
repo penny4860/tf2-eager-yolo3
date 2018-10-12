@@ -15,7 +15,7 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
 
     min_loss_value = np.inf        
     for i in range(num_epoches):
-        x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[i][0]
+        x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[i]
 
         images_tensor = tf.constant(x_batch.astype(np.float32))
         list_y_trues = [tf.constant(yolo_1.astype(np.float32)),
