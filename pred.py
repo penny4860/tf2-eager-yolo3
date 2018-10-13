@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
-import numpy as np
 import cv2
 import tensorflow as tf
 tf.enable_eager_execution()
 
 from yolo.post_proc.decoder import decode_netout
 from yolo.post_proc.box import correct_yolo_boxes, do_nms, draw_boxes
-from yolo.net import Yolonet
+
+from yolo.net.yolonet import Yolonet, preprocess_input
 
 
 argparser = argparse.ArgumentParser(
@@ -26,32 +25,9 @@ argparser.add_argument(
     '--image',
     default="imgs/dog.jpg",
     help='path to image file')
-
-
-def preprocess_input(image, net_h, net_w):
-    new_h, new_w, _ = image.shape
-
-    # determine the new size of the image
-    if (float(net_w)/new_w) < (float(net_h)/new_h):
-        new_h = (new_h * net_w)/new_w
-        new_w = net_w
-    else:
-        new_w = (new_w * net_h)/new_h
-        new_h = net_h
-
-    # resize the image to the new size
-    resized = cv2.resize(image[:,:,::-1]/255., (int(new_w), int(new_h)))
-
-    # embed the image into the standard letter box
-    new_image = np.ones((net_h, net_w, 3)) * 0.5
-    new_image[int((net_h-new_h)//2):int((net_h+new_h)//2), int((net_w-new_w)//2):int((net_w+new_w)//2), :] = resized
-    new_image = np.expand_dims(new_image, 0)
-
-    return new_image
                     
 
 if __name__ == '__main__':
-    from yolo import PROJECT_ROOT
     args = argparser.parse_args()
 
     weights_path = args.weights
@@ -72,17 +48,17 @@ if __name__ == '__main__':
               "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", \
               "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
 
-    # make the yolov3 model to predict 80 classes on COCO
-    # load the weights trained on COCO into the model
+    # 1. create yolo model & load weights
     yolov3 = Yolonet()
     yolov3.load_darknet_params(weights_path)
 
-    # preprocess the image
+    # 2. preprocess the image
     image = cv2.imread(image_path)
+    image = image[:,:,::-1]
     image_h, image_w, _ = image.shape
     new_image = preprocess_input(image, net_h, net_w)
 
-    # run the prediction
+    # 3. predict
     yolos = yolov3.predict(new_image)
     boxes = []
 
