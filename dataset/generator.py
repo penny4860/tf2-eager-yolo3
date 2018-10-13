@@ -76,7 +76,7 @@ class BatchGenerator(Sequence):
                 assign_box(yolos[scale_index][i], box_index, yolobox, label)
 
                 # assign the true box to t_batch
-                t_batch[i, 0, 0, 0, true_box_index] = true_box(original_box, yolobox)
+                t_batch[i, 0, 0, 0, true_box_index] = true_box(yolos[scale_index], original_box, net_w, net_h)
 
                 true_box_index += 1
                 true_box_index  = true_box_index % self.max_box_per_image    
@@ -95,16 +95,25 @@ class BatchGenerator(Sequence):
         if self.shuffle: np.random.shuffle(self.annotations)
 
 
-def true_box(box, yolobox):
-    x1, y1, x2, y2 = box
-    center_x, center_y, _, _ = yolobox
+def true_box(yolo, original_box, net_w, net_h):
+    x1, y1, x2, y2 = original_box
+    
+    # determine the yolo to be responsible for this bounding box
+    grid_h, grid_w = yolo.shape[1:3]
+    
+    # determine the position of the bounding box on the grid
+    center_x = .5*(x1 + x2)
+    center_x = center_x / float(net_w) * grid_w # sigma(t_x) + c_x
+    center_y = .5*(y1 + y2)
+    center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
+    
     true_box = [center_x, center_y, x2 - x1, y2 - y1]
     return true_box
 
 
-def yolo_box(yolo, box, anchor, net_w, net_h):
+def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
     
-    x1, y1, x2, y2 = box
+    x1, y1, x2, y2 = original_box
     
     # determine the yolo to be responsible for this bounding box
     grid_h, grid_w = yolo.shape[1:3]
@@ -116,8 +125,8 @@ def yolo_box(yolo, box, anchor, net_w, net_h):
     center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
     
     # determine the sizes of the bounding box
-    w = np.log((x2 - x1) / float(anchor.w)) # t_w
-    h = np.log((y2 - y1) / float(anchor.h)) # t_h
+    w = np.log((x2 - x1) / float(anchor_box.w)) # t_w
+    h = np.log((y2 - y1) / float(anchor_box.h)) # t_h
 
     box = [center_x, center_y, w, h]
     return box
