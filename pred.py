@@ -98,9 +98,12 @@ if __name__ == '__main__':
 
     # draw bounding boxes on the image using labels
     draw_boxes(image, boxes, labels, obj_thresh) 
- 
-    # write the image with bounding boxes to file
-    cv2.imwrite(image_path[:-4] + '_detected' + image_path[-4:], (image).astype('uint8')) 
+    
+    import matplotlib.pyplot as plt
+    plt.imshow(image)
+    plt.show()
 
+
+ 
 
 
