@@ -43,16 +43,11 @@ def do_nms(boxes, nms_thresh):
 
 def draw_boxes(image, boxes, labels, obj_thresh=0.0):
     for box in boxes:
-        label_str = ''
-        label = -1
-        
-        for i in range(len(labels)):
-            if box.classes[i] > obj_thresh:
-                label_str += labels[i]
-                label = i
-                print(labels[i] + ': ' + str(box.classes[i]*100) + '%')
+        label = np.argmax(box.classes)
+        label_str = labels[label]
+        if box.classes[label] > obj_thresh:
+            print(label_str + ': ' + str(box.classes[label]*100) + '%')
                 
-        if label >= 0:
             image = image.astype(np.int32)
             
             cv2.rectangle(image, (box.xmin,box.ymin), (box.xmax,box.ymax), (0,255,0), 3)
