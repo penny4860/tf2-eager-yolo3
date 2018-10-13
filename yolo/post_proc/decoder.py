@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from yolo.post_proc.box import correct_yolo_boxes, do_nms
 
 IDX_X = 0
 IDX_Y = 1
@@ -8,6 +9,26 @@ IDX_W = 2
 IDX_H = 3
 IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
+
+
+def postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w, obj_thresh=0.5, nms_thresh=0.5):
+    """
+    # Args
+        yolos : list of arrays
+            Yolonet outputs
+    
+    """
+    boxes = []
+    for i in range(len(yolos)):
+        # decode the output of the network
+        boxes += decode_netout(yolos[i][0], anchors[i], obj_thresh, net_h, net_w)
+
+    # correct the sizes of the bounding boxes
+    correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w)
+
+    # suppress non-maximal boxes
+    do_nms(boxes, nms_thresh)
+    return boxes
 
 
 class BoundBox:
