@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
+import cv2
 
 layers = tf.keras.layers
 models = tf.keras.models
@@ -50,6 +51,29 @@ class Yolonet(tf.keras.Model):
     def _init_vars(self):
         sample = tf.constant(np.random.randn(1, 224, 224, 3).astype(np.float32))
         self.call(sample, training=False)
+
+
+def preprocess_input(image, net_h, net_w):
+    """
+    # Args
+        image : array, shape of (H, W, 3)
+            RGB-ordered
+        net_h : int
+        net_w : int
+    """
+    new_h, new_w, _ = image.shape
+
+    # determine the new size of the image
+    if (float(net_w)/new_w) < (float(net_h)/new_h):
+        new_h = (new_h * net_w)/new_w
+        new_w = net_w
+    else:
+        new_w = (new_w * net_h)/new_h
+        new_h = net_h
+
+    # resize the image to the new size
+    preprocess_img = cv2.resize(image/255., (int(new_w), int(new_h)))
+    return np.expand_dims(preprocess_img, axis=0)
 
 
 if __name__ == '__main__':
