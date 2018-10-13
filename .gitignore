@@ -1,0 +1,4 @@
+*.weights
+*project*
+*eclipse*
+*.pyc
