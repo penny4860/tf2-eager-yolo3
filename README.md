@@ -3,7 +3,7 @@
 
 I have implemented yolo-v3 detector using tensorflow eager execution.
 
-<img src="imgs/dog_detected.jpg" height="600">
+<img src="imgs/sample_detected.jpeg" height="600">
 
 ## Usage for python code
 
@@ -29,10 +29,13 @@ $ activate yolo3 # in linux "source activate yolo3"
 
 ### 1. Object detection using original yolo3-weights
 
-Download the pretrained weight file from [yolov3.weights](https://pjreddie.com/media/files/yolov3.weights).
+* Download the pretrained weight file from [yolov3.weights](https://pjreddie.com/media/files/yolov3.weights).
 
+* Run object detection through the following command.
+	* ```project/root> python pred.py -w yolov3.weights -i imgs/sample.jpeg```
 
-
+* You can see the following results:
+	* <img src="imgs/dog_detected.jpeg" height="600">
 
 ### 2. Training from scratch
 
