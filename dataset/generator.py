@@ -2,7 +2,8 @@
 
 import numpy as np
 from keras.utils import Sequence
-from utils.bbox import BoundBox, bbox_iou
+from yolo.utils.box import BoundBox
+
 
 from yolo.dataset.augment import ImgAugment
 
@@ -115,8 +116,8 @@ def yolo_box(yolo, box, anchor, net_w, net_h):
     center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
     
     # determine the sizes of the bounding box
-    w = np.log((x2 - x1) / float(anchor.xmax)) # t_w
-    h = np.log((y2 - y1) / float(anchor.ymax)) # t_h
+    w = np.log((x2 - x1) / float(anchor.w)) # t_w
+    h = np.log((y2 - y1) / float(anchor.h)) # t_h
 
     box = [center_x, center_y, w, h]
     return box
@@ -140,11 +141,11 @@ def find_match_anchor(box, anchors):
                            y2-y1)    
     
     for i in range(len(anchors)):
-        anchor = anchors[i]
-        iou    = bbox_iou(shifted_box, anchor)
+        anchor_box = anchors[i]
+        iou = shifted_box.iou(anchor_box)
 
         if max_iou < iou:
-            max_anchor = anchor
+            max_anchor = anchor_box
             max_index  = i
             max_iou    = iou
 
