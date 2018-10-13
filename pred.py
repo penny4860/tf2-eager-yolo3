@@ -82,8 +82,6 @@ if __name__ == '__main__':
     yolos = yolov3.predict(new_image)
     boxes = postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w)
     
-    print(image.shape)
-    
     # draw bounding boxes on the image using labels
     image = draw_boxes(image, boxes, labels, obj_thresh=0.5)
     
