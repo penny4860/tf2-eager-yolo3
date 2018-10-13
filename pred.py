@@ -23,7 +23,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-i',
     '--image',
-    default="imgs/dog.jpg",
+    default="imgs/sample.jpeg",
     help='path to image file')
 
 
@@ -55,7 +55,9 @@ if __name__ == '__main__':
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
     image_h, image_w, _ = image.shape
-    new_image = preprocess_input(image, net_h, net_w)
+    new_image = preprocess_input(image, net_h)
+    
+    print(new_image.shape)
 
     # 3. predict
     yolos = yolov3.predict(new_image)
