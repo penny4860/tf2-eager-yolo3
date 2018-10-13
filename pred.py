@@ -5,8 +5,8 @@ import cv2
 import tensorflow as tf
 tf.enable_eager_execution()
 
-from yolo.post_proc.decoder import decode_netout
-from yolo.post_proc.box import correct_yolo_boxes, do_nms, draw_boxes
+from yolo.post_proc.decoder import postprocess_ouput
+from yolo.post_proc.box import draw_boxes
 
 from yolo.net.yolonet import Yolonet, preprocess_input
 
@@ -25,27 +25,6 @@ argparser.add_argument(
     '--image',
     default="imgs/dog.jpg",
     help='path to image file')
-
-
-def postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w, obj_thresh=0.5, nms_thresh=0.5):
-    """
-    # Args
-        yolos : list of arrays
-            Yolonet outputs
-    
-    """
-    boxes = []
-    for i in range(len(yolos)):
-        # decode the output of the network
-        boxes += decode_netout(yolos[i][0], anchors[i], obj_thresh, net_h, net_w)
-
-    # correct the sizes of the bounding boxes
-    correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w)
-
-    # suppress non-maximal boxes
-    do_nms(boxes, nms_thresh)
-    return boxes
-
 
 
 if __name__ == '__main__':
