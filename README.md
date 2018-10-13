@@ -3,7 +3,7 @@
 
 I have implemented yolo-v3 detector using tensorflow eager execution.
 
-<img src="imgs/dog_detected.png" height="600">
+<img src="imgs/dog_detected.jpg" height="600">
 
 ## Usage for python code
 
@@ -19,7 +19,7 @@ I have implemented yolo-v3 detector using tensorflow eager execution.
 I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
 
 ```
-$ conda create -n yolo3 python=3.5 anaconda=5.1.0
+$ conda create -n yolo3 python=3.6 anaconda=5.1.0
 $ activate yolo3 # in linux "source activate yolo3"
 (yolo) $ pip install tensorflow==1.8.0
 (yolo) $ pip install opencv-python
