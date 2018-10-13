@@ -73,7 +73,7 @@ if __name__ == '__main__':
     do_nms(boxes, nms_thresh)     
 
     # draw bounding boxes on the image using labels
-    draw_boxes(image, boxes, labels, obj_thresh) 
+    image = draw_boxes(image, boxes, labels, obj_thresh) 
     
     import matplotlib.pyplot as plt
     plt.imshow(image)

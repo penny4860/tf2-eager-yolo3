@@ -53,6 +53,8 @@ def draw_boxes(image, boxes, labels, obj_thresh=0.0):
                 print(labels[i] + ': ' + str(box.classes[i]*100) + '%')
                 
         if label >= 0:
+            image = image.astype(np.int32)
+            
             cv2.rectangle(image, (box.xmin,box.ymin), (box.xmax,box.ymax), (0,255,0), 3)
             cv2.putText(image, 
                         label_str + ' ' + str(box.get_score()), 
