@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import argparse
-import cv2
 import tensorflow as tf
 tf.enable_eager_execution()
+import matplotlib.pyplot as plt
+import argparse
+import cv2
 
 from yolo.post_proc.decoder import postprocess_ouput
 from yolo.post_proc.box import draw_boxes
-
 from yolo.net.yolonet import Yolonet, preprocess_input
 
 
@@ -61,10 +61,10 @@ if __name__ == '__main__':
     yolos = yolov3.predict(new_image)
     boxes = postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w)
     
-    # draw bounding boxes on the image using labels
+    # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, obj_thresh=0.5)
-    
-    import matplotlib.pyplot as plt
+
+    # 5. plot    
     plt.imshow(image)
     plt.show()
 
