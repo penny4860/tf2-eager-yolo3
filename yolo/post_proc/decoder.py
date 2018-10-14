@@ -2,6 +2,7 @@
 
 import numpy as np
 from yolo.post_proc.box import correct_yolo_boxes, do_nms
+from yolo.utils.box import BoundBox
 
 IDX_X = 0
 IDX_Y = 1
@@ -30,32 +31,6 @@ def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.5
     # suppress non-maximal boxes
     do_nms(boxes, nms_thresh)
     return boxes
-
-
-class BoundBox:
-    def __init__(self, xmin, ymin, xmax, ymax, objness = None, classes = None):
-        self.xmin = xmin
-        self.ymin = ymin
-        self.xmax = xmax
-        self.ymax = ymax
-        
-        self.objness = objness
-        self.classes = classes
-
-        self.label = -1
-        self.score = -1
-
-    def get_label(self):
-        if self.label == -1:
-            self.label = np.argmax(self.classes)
-        
-        return self.label
-    
-    def get_score(self):
-        if self.score == -1:
-            self.score = self.classes[self.get_label()]
-            
-        return self.score
 
 
 def decode_netout(netout, anchors, obj_thresh, net_size, nb_box=3):
