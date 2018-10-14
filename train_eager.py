@@ -3,9 +3,9 @@
 import tensorflow as tf
 tf.enable_eager_execution()
 from yolo.net import Yolonet
-from yolo import YOLOV3_WEIGHTS
 from yolo.train import train
 
+YOLOV3_WEIGHTS = "yolov3.weights"
 
 if __name__ == '__main__':
     import os
