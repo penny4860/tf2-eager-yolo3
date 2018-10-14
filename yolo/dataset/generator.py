@@ -8,6 +8,7 @@ from yolo.utils.box import BoundBox
 from yolo.dataset.augment import ImgAugment
 
 DOWNSAMPLE_RATIO = 32
+DEFAULT_NETWORK_SIZE = 416
 
 class BatchGenerator(Sequence):
     def __init__(self, 
@@ -29,6 +30,7 @@ class BatchGenerator(Sequence):
         self.shuffle            = shuffle
         self.jitter             = jitter
         self.anchors            = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(len(anchors)//2)]
+        self.net_size = DEFAULT_NETWORK_SIZE
 
         if shuffle: np.random.shuffle(self.annotations)
             
@@ -84,7 +86,8 @@ class BatchGenerator(Sequence):
             net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
                                                          self.max_net_size/DOWNSAMPLE_RATIO+1)
             print("resizing: ", net_size, net_size)
-        return net_size
+            self.net_size = net_size
+        return self.net_size
 
     def on_epoch_end(self):
         if self.shuffle: np.random.shuffle(self.annotations)
