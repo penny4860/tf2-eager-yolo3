@@ -58,7 +58,7 @@ if __name__ == '__main__':
     
     # 3. predict
     yolos = yolov3.predict(new_image)
-    boxes = postprocess_ouput(yolos, COCO_ANCHORS, net_size, net_size, image_h, image_w)
+    boxes = postprocess_ouput(yolos, COCO_ANCHORS, net_size, image_h, image_w)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, obj_thresh=0.5)

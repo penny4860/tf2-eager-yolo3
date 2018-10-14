@@ -11,7 +11,7 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
-def postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w, obj_thresh=0.5, nms_thresh=0.5):
+def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.5, nms_thresh=0.5):
     """
     # Args
         yolos : list of arrays
@@ -22,7 +22,7 @@ def postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w, obj_thresh
     boxes = []
     for i in range(len(yolos)):
         # decode the output of the network
-        boxes += decode_netout(yolos[i][0], anchors[3-(i+1)], obj_thresh, net_h, net_w)
+        boxes += decode_netout(yolos[i][0], anchors[3-(i+1)], obj_thresh, net_size)
 
     # correct the sizes of the bounding boxes
     correct_yolo_boxes(boxes, image_h, image_w)
@@ -58,7 +58,7 @@ class BoundBox:
         return self.score
 
 
-def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
+def decode_netout(netout, anchors, obj_thresh, net_size, nb_box=3):
     """
     # Args
         netout : (n_rows, n_cols, 3, 4+1+n_classes)
@@ -81,8 +81,8 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w, nb_box=3):
                 # 2. scale normalize                
                 x /= n_cols
                 y /= n_rows
-                w /= net_w
-                h /= net_h
+                w /= net_size
+                h /= net_size
                 
                 if objectness > obj_thresh:
                     box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
