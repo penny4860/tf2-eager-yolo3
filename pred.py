@@ -23,7 +23,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-i',
     '--image',
-    default="imgs/dog.jpg",
+    default="imgs/sample.jpeg",
     help='path to image file')
 
 
