@@ -48,7 +48,9 @@ def draw_boxes(image, boxes, labels, obj_thresh=0.0):
         if box.classes[label] > obj_thresh:
             print(label_str + ': ' + str(box.classes[label]*100) + '%')
                 
-            image = image.astype(np.int32)
+            # Todo: check this code
+            if image.dtype == np.uint8:
+                image = image.astype(np.int32)
             
             cv2.rectangle(image, (box.xmin,box.ymin), (box.xmax,box.ymax), (0,255,0), 3)
             cv2.putText(image, 
