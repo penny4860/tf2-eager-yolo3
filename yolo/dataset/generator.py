@@ -177,6 +177,28 @@ def assign_box(yolo, box_index, box, label):
     yolo[grid_y, grid_x, box_index, 5+label] = 1
 
 
+def normalize(image):
+    return image/255.
+
+
+import os
+from yolo import PROJECT_ROOT
+def create_generator():
+    from yolo.dataset.annotation import parse_annotation
+    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
+    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
+    train_anns = parse_annotation(ann_dir,
+                                  img_dir,
+                                  labels_naming=["raccoon"])
+    generator = BatchGenerator(train_anns,
+                               anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
+                               min_net_size=288,
+                               max_net_size=288,
+                               shuffle=False,
+                               norm=normalize,
+                               labels=["raccoon"])
+    return generator
+
 
 if __name__ == '__main__':
     def test(x_batch, t_batch, yolo_1, yolo_2, yolo_3):
@@ -193,24 +215,8 @@ if __name__ == '__main__':
             else:
                 print("Test Failed")
 
-    import os
-    from yolo.dataset.annotation import parse_annotation
-    from yolo import PROJECT_ROOT
-    from utils.utils import normalize
-    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
-    train_anns = parse_annotation(ann_dir,
-                                  img_dir,
-                                  labels_naming=["raccoon"])
-    generator = BatchGenerator(train_anns,
-                               anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
-                               min_net_size=288,
-                               max_net_size=288,
-                               shuffle=False,
-                               norm=normalize,
-                               labels=["raccoon"])
+    generator = create_generator()
     x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[0]
-     
     test(x_batch, t_batch, yolo_1, yolo_2, yolo_3)
     
 
