@@ -16,7 +16,7 @@ if __name__ == '__main__':
     import cv2
     net_size = 288
     image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-1.jpg")
-    # image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-12.jpg")
+    image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-12.jpg")
 
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
@@ -30,10 +30,10 @@ if __name__ == '__main__':
     anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
     # 3. predict
     yolos = model.predict(new_image)
-    boxes = postprocess_ouput(yolos, anchors, net_size, net_size, image_h, image_w)
+    boxes = postprocess_ouput(yolos, anchors, net_size, net_size, net_size, net_size)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels=["ani"], obj_thresh=0.0)
+    image = draw_boxes(new_image[0], boxes, labels=["ani"], obj_thresh=0.0)
 
     # 5. plot    
     plt.imshow(image)
