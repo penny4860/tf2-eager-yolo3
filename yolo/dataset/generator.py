@@ -8,7 +8,7 @@ from yolo.utils.box import BoundBox
 from yolo.dataset.augment import ImgAugment
 
 DOWNSAMPLE_RATIO = 32
-DEFAULT_NETWORK_SIZE = 416
+DEFAULT_NETWORK_SIZE = 288
 
 class BatchGenerator(Sequence):
     def __init__(self, 
