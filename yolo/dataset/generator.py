@@ -2,14 +2,13 @@
 
 import numpy as np
 from keras.utils import Sequence
-from yolo.utils.box import BoundBox
-
-
 from yolo.dataset.augment import ImgAugment
+from yolo.utils.box import create_anchor_boxes
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
 DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
+
 
 class BatchGenerator(Sequence):
     def __init__(self, 
@@ -29,7 +28,7 @@ class BatchGenerator(Sequence):
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.shuffle            = shuffle
         self.jitter             = jitter
-        self.anchors            = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(len(anchors)//2)]
+        self.anchors            = create_anchor_boxes(anchors)
         self.net_size = DEFAULT_NETWORK_SIZE
 
         if shuffle: np.random.shuffle(self.annotations)
@@ -112,6 +111,7 @@ def true_box(yolo, original_box, net_w, net_h):
 def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
     
     x1, y1, x2, y2 = original_box
+    _, _, anchor_w, anchor_h = anchor_box
     
     # determine the yolo to be responsible for this bounding box
     grid_h, grid_w = yolo.shape[1:3]
@@ -123,38 +123,25 @@ def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
     center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
     
     # determine the sizes of the bounding box
-    w = np.log((x2 - x1) / float(anchor_box.w)) # t_w
-    h = np.log((y2 - y1) / float(anchor_box.h)) # t_h
+    w = np.log((x2 - x1) / float(anchor_w)) # t_w
+    h = np.log((y2 - y1) / float(anchor_h)) # t_h
 
     box = [center_x, center_y, w, h]
     return box
 
 
-def find_match_anchor(box, anchors):
+def find_match_anchor(box, anchor_boxes):
     """
     # Args
         box : array, shape of (4,)
-        anchors : list of BoundBox (9)
+        anchor_boxes : array, shape of (9, 4)
     """
+    from yolo.utils.box import find_match_box
     x1, y1, x2, y2 = box
-    
-    max_anchor = None                
-    max_index  = -1
-    max_iou    = -1
-    
-    shifted_box = BoundBox(0, 
-                           0,
-                           x2-x1,                                                
-                           y2-y1)    
-    
-    for i in range(len(anchors)):
-        anchor_box = anchors[i]
-        iou = shifted_box.iou(anchor_box)
+    shifted_box = np.array([0, 0, x2-x1, y2-y1])
 
-        if max_iou < iou:
-            max_anchor = anchor_box
-            max_index  = i
-            max_iou    = iou
+    max_index = find_match_box(shifted_box, anchor_boxes)
+    max_anchor = anchor_boxes[max_index]
 
     scale_index = max_index // 3
     box_index = max_index%3
