@@ -35,7 +35,9 @@ if __name__ == '__main__':
 
     # set some parameters
     net_h, net_w = 416, 416
-    anchors = [[116,90,  156,198,  373,326],  [30,61, 62,45,  59,119], [10,13,  16,30,  33,23]]
+    anchors = [10,13, 16,30, 33,23,
+               30,61, 62,45,  59,119,
+               116,90,  156,198,  373,326]
     labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", \
               "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", \
               "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", \
