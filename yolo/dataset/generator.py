@@ -7,30 +7,29 @@ from yolo.utils.box import BoundBox
 
 from yolo.dataset.augment import ImgAugment
 
+DOWNSAMPLE_RATIO = 32
+
 class BatchGenerator(Sequence):
     def __init__(self, 
         instances, 
         anchors,   
         labels,        
-        downsample=32, # ratio between network input's size and network output's size, 32 for YOLOv3
+        DOWNSAMPLE_RATIO=32, # ratio between network input's size and network output's size, 32 for YOLOv3
         max_box_per_image=30,
         batch_size=1,
         min_net_size=320,
         max_net_size=608,    
         shuffle=True, 
         jitter=True, 
-        norm=None
     ):
         self.annotations          = instances
         self._batch_size         = batch_size
         self.labels             = labels
-        self.downsample         = downsample
         self.max_box_per_image  = max_box_per_image
-        self.min_net_size       = (min_net_size//self.downsample)*self.downsample
-        self.max_net_size       = (max_net_size//self.downsample)*self.downsample
+        self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
+        self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.shuffle            = shuffle
         self.jitter             = jitter
-        self.norm               = norm
         self.anchors            = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(len(anchors)//2)]
         self.net_h              = 416  
         self.net_w              = 416
@@ -43,7 +42,7 @@ class BatchGenerator(Sequence):
     def __getitem__(self, idx):
         # get image input size, change every 10 batches
         net_h, net_w = self._get_net_size(idx)
-        base_grid_h, base_grid_w = net_h//self.downsample, net_w//self.downsample
+        base_grid_h, base_grid_w = net_h//DOWNSAMPLE_RATIO, net_w//DOWNSAMPLE_RATIO
 
         # determine the first and the last indices of the batch
         x_batch = []
@@ -67,7 +66,7 @@ class BatchGenerator(Sequence):
             img_augmenter = ImgAugment(net_w, net_h, False)
             img, boxes = img_augmenter.imread(fname, boxes)
             
-            x_batch.append(self.norm(img))
+            x_batch.append(normalize(img))
 
             for original_box, label in zip(boxes, labels):
                 max_anchor, scale_index, box_index = find_match_anchor(original_box, self.anchors)
@@ -85,8 +84,8 @@ class BatchGenerator(Sequence):
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
-            net_size = self.downsample*np.random.randint(self.min_net_size/self.downsample, \
-                                                         self.max_net_size/self.downsample+1)
+            net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
+                                                         self.max_net_size/DOWNSAMPLE_RATIO+1)
             print("resizing: ", net_size, net_size)
             self.net_h, self.net_w = net_size, net_size
         return self.net_h, self.net_w
@@ -193,7 +192,6 @@ def create_generator(image_dir, annotation_dir):
                                min_net_size=288,
                                max_net_size=288,
                                shuffle=False,
-                               norm=normalize,
                                labels=["raccoon"])
     return generator
 
