@@ -13,7 +13,6 @@ class BatchGenerator(Sequence):
     def __init__(self, 
         annotations, 
         anchors,   
-        labels,        
         DOWNSAMPLE_RATIO=32, # ratio between network input's size and network output's size, 32 for YOLOv3
         max_box_per_image=30,
         batch_size=1,
@@ -24,7 +23,6 @@ class BatchGenerator(Sequence):
     ):
         self.annotations          = annotations
         self._batch_size         = batch_size
-        self.labels             = labels
         self.max_box_per_image  = max_box_per_image
         self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
@@ -47,9 +45,10 @@ class BatchGenerator(Sequence):
         t_batch = np.zeros((self._batch_size, 1, 1, 1,  self.max_box_per_image, 4))   # list of groundtruth boxes
 
         # initialize the inputs and the outputs
-        yolo_1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+len(self.labels))) # desired network output 1
-        yolo_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+len(self.labels))) # desired network output 2
-        yolo_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+len(self.labels))) # desired network output 3
+        n_classes = self.annotations.n_classes()
+        yolo_1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
+        yolo_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
+        yolo_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
         yolos = [yolo_3, yolo_2, yolo_1]
 
         true_box_index = 0
@@ -188,8 +187,7 @@ def create_generator(image_dir, annotation_dir):
                                anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
                                min_net_size=288,
                                max_net_size=288,
-                               shuffle=False,
-                               labels=["raccoon"])
+                               shuffle=False)
     return generator
 
 
