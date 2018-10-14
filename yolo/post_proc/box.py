@@ -3,22 +3,27 @@
 import numpy as np
 import cv2
 
-def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
-    if (float(net_w)/image_w) < (float(net_h)/image_h):
-        new_w = net_w
-        new_h = (image_h*net_w)/image_w
-    else:
-        new_h = net_w
-        new_w = (image_w*net_h)/image_h
-        
+def correct_yolo_boxes(boxes, image_h, image_w):
+    """
+    # Args
+        boxes : array, shape of (N, 4)
+            [0, 1]-scaled box
+    # Returns
+        boxes : array shape of (N, 4)
+            ([0, image_h], [0, image_w]) - scaled box
+    """
     for i in range(len(boxes)):
-        x_offset, x_scale = (net_w - new_w)/2./net_w, float(new_w)/net_w
-        y_offset, y_scale = (net_h - new_h)/2./net_h, float(new_h)/net_h
-        
-        boxes[i].xmin = int((boxes[i].xmin - x_offset) / x_scale * image_w)
-        boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
-        boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
-        boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
+        boxes[i].xmin = int(boxes[i].xmin * image_w)
+        boxes[i].xmax = int(boxes[i].xmax * image_w)
+        boxes[i].ymin = int(boxes[i].ymin * image_h)
+        boxes[i].ymax = int(boxes[i].ymax * image_h)
+
+        boxes[i].xmin = max(boxes[i].xmin, 0)
+        boxes[i].xmax = min(boxes[i].xmax, image_w-1)
+        boxes[i].ymin = max(boxes[i].ymin, 0)
+        boxes[i].ymax = min(boxes[i].ymax, image_h-1)
+
+
         
 def do_nms(boxes, nms_thresh):
     if len(boxes) > 0:
@@ -48,7 +53,9 @@ def draw_boxes(image, boxes, labels, obj_thresh=0.0):
         if box.classes[label] > obj_thresh:
             print(label_str + ': ' + str(box.classes[label]*100) + '%')
                 
-            image = image.astype(np.int32)
+            # Todo: check this code
+            if image.dtype == np.uint8:
+                image = image.astype(np.int32)
             
             cv2.rectangle(image, (box.xmin,box.ymin), (box.xmax,box.ymax), (0,255,0), 3)
             cv2.putText(image, 

@@ -34,7 +34,7 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
             if min_loss_value > loss_value:
                 print("    update weight {}".format(loss_value))
                 min_loss_value = loss_value
-                model.save_weights("{}_{}_{}.h5".format(fname, i, loss_value))
+                model.save_weights("{}.h5".format(fname))
 
 
 if __name__ == '__main__':

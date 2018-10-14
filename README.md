@@ -3,7 +3,7 @@
 
 I have implemented yolo-v3 detector using tensorflow eager execution.
 
-<img src="imgs/sample_detected.jpeg" height="600">
+<img src="imgs/sample_detected.png" height="600">
 
 ## Usage for python code
 

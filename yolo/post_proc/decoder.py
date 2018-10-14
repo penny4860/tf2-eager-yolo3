@@ -18,13 +18,14 @@ def postprocess_ouput(yolos, anchors, net_h, net_w, image_h, image_w, obj_thresh
             Yolonet outputs
     
     """
+    anchors = np.array(anchors).reshape(3, 6)
     boxes = []
     for i in range(len(yolos)):
         # decode the output of the network
-        boxes += decode_netout(yolos[i][0], anchors[i], obj_thresh, net_h, net_w)
+        boxes += decode_netout(yolos[i][0], anchors[3-(i+1)], obj_thresh, net_h, net_w)
 
     # correct the sizes of the bounding boxes
-    correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w)
+    correct_yolo_boxes(boxes, image_h, image_w)
 
     # suppress non-maximal boxes
     do_nms(boxes, nms_thresh)
