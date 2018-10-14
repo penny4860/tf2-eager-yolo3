@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 import cv2
 
-from yolo.post_proc.box import draw_boxes
+from yolo.utils.box import draw_boxes
 from yolo.net.yolonet import Yolonet
 from yolo import COCO_ANCHORS
 from yolo.frontend import YoloDetector

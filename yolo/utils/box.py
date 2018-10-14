@@ -4,6 +4,45 @@ import numpy as np
 import cv2
 
 
+def correct_yolo_boxes(boxes, image_h, image_w):
+    """
+    # Args
+        boxes : array, shape of (N, 4)
+            [0, 1]-scaled box
+    # Returns
+        boxes : array shape of (N, 4)
+            ([0, image_h], [0, image_w]) - scaled box
+    """
+    for i in range(len(boxes)):
+
+        boxes[i].x = int(boxes[i].x * image_w)
+        boxes[i].w = int(boxes[i].w * image_w)
+        boxes[i].y = int(boxes[i].y * image_h)
+        boxes[i].h = int(boxes[i].h * image_h)
+
+
+def draw_boxes(image, boxes, labels, obj_thresh=0.0):
+    for box in boxes:
+        label = np.argmax(box.classes)
+        label_str = labels[label]
+        if box.classes[label] > obj_thresh:
+            print(label_str + ': ' + str(box.classes[label]*100) + '%')
+                
+            # Todo: check this code
+            if image.dtype == np.uint8:
+                image = image.astype(np.int32)
+            x1, y1, x2, y2 = box.as_minmax().astype(np.int32)
+            
+            cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
+            cv2.putText(image, 
+                        label_str + ' ' + str(box.get_score()), 
+                        (x1, y1 - 13), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 
+                        1e-3 * image.shape[0], 
+                        (0,255,0), 2)
+    return image      
+
+
 # Todo : BoundBox & its related method extraction
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
@@ -28,6 +67,11 @@ class BoundBox:
 
     def as_centroid(self):
         return np.array([self.x, self.y, self.w, self.h])
+
+    def as_minmax(self):
+        centroid_boxes = self.as_centroid().reshape(-1,4)
+        minmax_box = to_minmax(centroid_boxes)[0]
+        return minmax_box
     
 
 def boxes_to_array(bound_boxes):
@@ -47,7 +91,7 @@ def boxes_to_array(bound_boxes):
     return np.array(centroid_boxes), np.array(probs)
 
 
-def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
+def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
     """
     # Args
         boxes : list of BoundBox
@@ -57,6 +101,7 @@ def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
             non maximum supressed BoundBox instances
     """
     # suppress non-maximal boxes
+    n_classes = len(boxes[0].classes)
     for c in range(n_classes):
         sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
 
@@ -93,17 +138,17 @@ def draw_scaled_boxes(image, boxes, probs, labels, desired_size=400):
     return draw_boxes(img_scaled, boxes_scaled, probs, labels)
         
 
-def draw_boxes(image, boxes, probs, labels):
-    for box, classes in zip(boxes, probs):
-        x1, y1, x2, y2 = box
-        cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
-        cv2.putText(image, 
-                    '{}:  {:.2f}'.format(labels[np.argmax(classes)], classes.max()), 
-                    (x1, y1 - 13), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 
-                    1e-3 * image.shape[0], 
-                    (0,255,0), 2)
-    return image        
+# def draw_boxes(image, boxes, probs, labels):
+#     for box, classes in zip(boxes, probs):
+#         x1, y1, x2, y2 = box
+#         cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
+#         cv2.putText(image, 
+#                     '{}:  {:.2f}'.format(labels[np.argmax(classes)], classes.max()), 
+#                     (x1, y1 - 13), 
+#                     cv2.FONT_HERSHEY_SIMPLEX, 
+#                     1e-3 * image.shape[0], 
+#                     (0,255,0), 2)
+#     return image        
 
 
 def centroid_box_iou(box1, box2):

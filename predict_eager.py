@@ -3,7 +3,7 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 tf.enable_eager_execution()
-from yolo.post_proc.box import draw_boxes
+from yolo.utils.box import draw_boxes
 from yolo.net.yolonet import Yolonet
 from yolo import RACCOON_ANCHORS
 from yolo.frontend import YoloDetector
