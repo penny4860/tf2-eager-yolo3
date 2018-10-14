@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import argparse
 import cv2
 
-from yolo.post_proc.decoder import postprocess_ouput
 from yolo.post_proc.box import draw_boxes
-from yolo.net.yolonet import Yolonet, preprocess_input
+from yolo.net.yolonet import Yolonet
 from yolo import COCO_ANCHORS
+from yolo.frontend import YoloDetector
+
 
 argparser = argparse.ArgumentParser(
     description='test yolov3 network with coco weights')
@@ -34,7 +35,6 @@ if __name__ == '__main__':
     image_path   = args.image
 
     # set some parameters
-    net_size = 416
     labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", \
               "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", \
               "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", \
@@ -53,12 +53,9 @@ if __name__ == '__main__':
     # 2. preprocess the image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
-    image_h, image_w, _ = image.shape
-    new_image = preprocess_input(image, net_size)
-    
-    # 3. predict
-    yolos = yolov3.predict(new_image)
-    boxes = postprocess_ouput(yolos, COCO_ANCHORS, net_size, image_h, image_w)
+
+    d = YoloDetector(yolov3)
+    boxes = d.detect(image, COCO_ANCHORS, net_size=416)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, obj_thresh=0.5)
