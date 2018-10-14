@@ -28,6 +28,11 @@ class BoundBox:
 
     def as_centroid(self):
         return np.array([self.x, self.y, self.w, self.h])
+
+    def as_minmax(self):
+        centroid_boxes = self.as_centroid().reshape(-1,4)
+        minmax_box = to_minmax(centroid_boxes)[0]
+        return minmax_box
     
 
 def boxes_to_array(bound_boxes):
@@ -47,7 +52,7 @@ def boxes_to_array(bound_boxes):
     return np.array(centroid_boxes), np.array(probs)
 
 
-def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
+def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
     """
     # Args
         boxes : list of BoundBox
@@ -57,6 +62,7 @@ def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
             non maximum supressed BoundBox instances
     """
     # suppress non-maximal boxes
+    n_classes = len(boxes[0].classes)
     for c in range(n_classes):
         sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
 

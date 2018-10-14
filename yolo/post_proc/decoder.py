@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from yolo.post_proc.box import correct_yolo_boxes, do_nms
+from yolo.post_proc.box import correct_yolo_boxes
+from yolo.utils.box import BoundBox, nms_boxes
 
 IDX_X = 0
 IDX_Y = 1
@@ -29,34 +30,8 @@ def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.5
     correct_yolo_boxes(boxes, image_h, image_w)
 
     # 3. suppress non-maximal boxes
-    do_nms(boxes, nms_thresh)
+    nms_boxes(boxes, nms_thresh)
     return boxes
-
-
-class BoundBox:
-    def __init__(self, xmin, ymin, xmax, ymax, objness = None, classes = None):
-        self.xmin = xmin
-        self.ymin = ymin
-        self.xmax = xmax
-        self.ymax = ymax
-        
-        self.objness = objness
-        self.classes = classes
-
-        self.label = -1
-        self.score = -1
-
-    def get_label(self):
-        if self.label == -1:
-            self.label = np.argmax(self.classes)
-        
-        return self.label
-    
-    def get_score(self):
-        if self.score == -1:
-            self.score = self.classes[self.get_label()]
-            
-        return self.score
 
 
 def decode_netout(netout, anchors, obj_thresh, net_size, nb_box=3):
@@ -86,7 +61,7 @@ def decode_netout(netout, anchors, obj_thresh, net_size, nb_box=3):
                 h /= net_size
                 
                 if objectness > obj_thresh:
-                    box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
+                    box = BoundBox(x, y, w, h, objectness, classes)
                     boxes.append(box)
 
     return boxes
@@ -136,7 +111,7 @@ if __name__ == '__main__':
     np.random.seed(0)
     netout = np.random.randn(13, 13, 255)
     anchors = [116, 90, 156, 198, 373, 326]
-    boxes = decode_netout(netout, anchors, obj_thresh=0.5, net_h=416, net_w=416)
+    boxes = decode_netout(netout, anchors, obj_thresh=0.5, net_size=416)
     
     import pickle
     with open('expected_boxes.pkl', 'rb') as f:
