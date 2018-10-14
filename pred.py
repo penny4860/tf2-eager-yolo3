@@ -34,7 +34,7 @@ if __name__ == '__main__':
     image_path   = args.image
 
     # set some parameters
-    net_h, net_w = 416, 416
+    net_size = 416
     labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", \
               "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", \
               "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", \
@@ -54,11 +54,11 @@ if __name__ == '__main__':
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
     image_h, image_w, _ = image.shape
-    new_image = preprocess_input(image, net_h)
+    new_image = preprocess_input(image, net_size)
     
     # 3. predict
     yolos = yolov3.predict(new_image)
-    boxes = postprocess_ouput(yolos, COCO_ANCHORS, net_h, net_w, image_h, image_w)
+    boxes = postprocess_ouput(yolos, COCO_ANCHORS, net_size, net_size, image_h, image_w)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, obj_thresh=0.5)
