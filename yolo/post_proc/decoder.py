@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from yolo.post_proc.box import correct_yolo_boxes
-from yolo.utils.box import BoundBox, nms_boxes
+from yolo.utils.box import BoundBox, nms_boxes, correct_yolo_boxes
 
 IDX_X = 0
 IDX_Y = 1
