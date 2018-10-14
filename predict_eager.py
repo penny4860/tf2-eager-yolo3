@@ -6,6 +6,7 @@ tf.enable_eager_execution()
 from yolo.post_proc.decoder import postprocess_ouput
 from yolo.post_proc.box import draw_boxes
 from yolo.net.yolonet import Yolonet, preprocess_input
+from yolo import RACCOON_ANCHORS
 
 WEIGHTS_FNAME = "weights.h5"
 
@@ -27,10 +28,9 @@ if __name__ == '__main__':
     model = Yolonet(n_classes=1)
     model.load_weights(WEIGHTS_FNAME)
 
-    anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
     # 3. predict
     yolos = model.predict(new_image)
-    boxes = postprocess_ouput(yolos, anchors, net_size, net_size, image_h, image_w)
+    boxes = postprocess_ouput(yolos, RACCOON_ANCHORS, net_size, image_h, image_w)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels=["ani"], obj_thresh=0.0)
