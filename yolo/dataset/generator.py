@@ -11,7 +11,7 @@ DOWNSAMPLE_RATIO = 32
 
 class BatchGenerator(Sequence):
     def __init__(self, 
-        instances, 
+        annotations, 
         anchors,   
         labels,        
         DOWNSAMPLE_RATIO=32, # ratio between network input's size and network output's size, 32 for YOLOv3
@@ -22,7 +22,7 @@ class BatchGenerator(Sequence):
         shuffle=True, 
         jitter=True, 
     ):
-        self.annotations          = instances
+        self.annotations          = annotations
         self._batch_size         = batch_size
         self.labels             = labels
         self.max_box_per_image  = max_box_per_image
@@ -31,8 +31,6 @@ class BatchGenerator(Sequence):
         self.shuffle            = shuffle
         self.jitter             = jitter
         self.anchors            = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(len(anchors)//2)]
-        self.net_h              = 416  
-        self.net_w              = 416
 
         if shuffle: np.random.shuffle(self.annotations)
             
@@ -41,8 +39,8 @@ class BatchGenerator(Sequence):
 
     def __getitem__(self, idx):
         # get image input size, change every 10 batches
-        net_h, net_w = self._get_net_size(idx)
-        base_grid_h, base_grid_w = net_h//DOWNSAMPLE_RATIO, net_w//DOWNSAMPLE_RATIO
+        net_size = self._get_net_size(idx)
+        base_grid_h, base_grid_w = net_size//DOWNSAMPLE_RATIO, net_size//DOWNSAMPLE_RATIO
 
         # determine the first and the last indices of the batch
         x_batch = []
@@ -63,7 +61,7 @@ class BatchGenerator(Sequence):
             labels = self.annotations.code_labels(self._batch_size*idx + i)
 
             # 2. read image in fixed size
-            img_augmenter = ImgAugment(net_w, net_h, False)
+            img_augmenter = ImgAugment(net_size, net_size, False)
             img, boxes = img_augmenter.imread(fname, boxes)
             
             x_batch.append(normalize(img))
@@ -71,11 +69,11 @@ class BatchGenerator(Sequence):
             for original_box, label in zip(boxes, labels):
                 max_anchor, scale_index, box_index = find_match_anchor(original_box, self.anchors)
                 
-                yolobox = yolo_box(yolos[scale_index], original_box, max_anchor, net_w, net_h)
+                yolobox = yolo_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
                 assign_box(yolos[scale_index][i], box_index, yolobox, label)
 
                 # assign the true box to t_batch
-                t_batch[i, 0, 0, 0, true_box_index] = true_box(yolos[scale_index], original_box, net_w, net_h)
+                t_batch[i, 0, 0, 0, true_box_index] = true_box(yolos[scale_index], original_box, net_size, net_size)
 
                 true_box_index += 1
                 true_box_index  = true_box_index % self.max_box_per_image    
@@ -87,8 +85,7 @@ class BatchGenerator(Sequence):
             net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
                                                          self.max_net_size/DOWNSAMPLE_RATIO+1)
             print("resizing: ", net_size, net_size)
-            self.net_h, self.net_w = net_size, net_size
-        return self.net_h, self.net_w
+        return net_size
 
     def on_epoch_end(self):
         if self.shuffle: np.random.shuffle(self.annotations)
