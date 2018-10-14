@@ -7,7 +7,7 @@ from yolo.post_proc.decoder import postprocess_ouput
 from yolo.post_proc.box import draw_boxes
 from yolo.net.yolonet import Yolonet, preprocess_input
 
-WEIGHTS_FNAME = "weights_.h5"
+WEIGHTS_FNAME = "weights.h5"
 
 
 if __name__ == '__main__':
