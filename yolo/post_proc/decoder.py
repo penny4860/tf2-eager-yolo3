@@ -20,14 +20,15 @@ def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.5
     """
     anchors = np.array(anchors).reshape(3, 6)
     boxes = []
+
+    # 1. decode the output of the network
     for i in range(len(yolos)):
-        # decode the output of the network
         boxes += decode_netout(yolos[i][0], anchors[3-(i+1)], obj_thresh, net_size)
 
-    # correct the sizes of the bounding boxes
+    # 2. correct box-scale to image size
     correct_yolo_boxes(boxes, image_h, image_w)
 
-    # suppress non-maximal boxes
+    # 3. suppress non-maximal boxes
     do_nms(boxes, nms_thresh)
     return boxes
 
