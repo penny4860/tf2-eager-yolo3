@@ -183,12 +183,10 @@ def normalize(image):
 
 import os
 from yolo import PROJECT_ROOT
-def create_generator():
+def create_generator(image_dir, annotation_dir):
     from yolo.dataset.annotation import parse_annotation
-    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
-    train_anns = parse_annotation(ann_dir,
-                                  img_dir,
+    train_anns = parse_annotation(annotation_dir,
+                                  image_dir,
                                   labels_naming=["raccoon"])
     generator = BatchGenerator(train_anns,
                                anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
@@ -215,7 +213,9 @@ if __name__ == '__main__':
             else:
                 print("Test Failed")
 
-    generator = create_generator()
+    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
+    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
+    generator = create_generator(img_dir, ann_dir)
     x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[0]
     test(x_batch, t_batch, yolo_1, yolo_2, yolo_3)
     
