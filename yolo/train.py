@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 from yolo.net import Yolonet
-from yolo.loss import loss_fn
+from yolo.loss.calc_tensor import loss_fn
 
 
 def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weights"):
