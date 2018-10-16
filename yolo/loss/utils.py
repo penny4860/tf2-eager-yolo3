@@ -191,15 +191,15 @@ def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_fa
     y_true = _activate(y_true)
     
     # then, ignore the boxes which have good overlap with some true box
-    true_xy = tf.expand_dims(y_true[..., 0:2] / grid_factor, 4)
-    true_wh = tf.expand_dims(y_true[..., 2:4] / net_factor, 4)
+    true_xy = y_true[..., 0:2] / grid_factor
+    true_wh = y_true[..., 2:4] / net_factor
      
     true_wh_half = true_wh / 2.
     true_mins    = true_xy - true_wh_half
     true_maxes   = true_xy + true_wh_half
      
-    pred_xy = tf.expand_dims(pred_box_xy / grid_factor, 4)
-    pred_wh = tf.expand_dims(tf.exp(pred_box_wh) * anchors / net_factor, 4)
+    pred_xy = pred_box_xy / grid_factor
+    pred_wh = tf.exp(pred_box_wh) * anchors / net_factor
      
     pred_wh_half = pred_wh / 2.
     pred_mins    = pred_xy - pred_wh_half
@@ -213,7 +213,9 @@ def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_fa
 
     true_areas = true_wh[..., 0] * true_wh[..., 1]
     pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
-    return intersect_areas, pred_areas, true_areas
+    
+    # (1, 9, 9, 3, 1) (1, 9, 9, 3, 1) (1, 9, 9, 3, 1)
+    return tf.expand_dims(intersect_areas, 4), tf.expand_dims(pred_areas, 4), tf.expand_dims(true_areas, 4)
 
 def conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, ignore_thresh):
     # initially, drag all objectness of all boxes to 0
