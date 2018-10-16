@@ -61,7 +61,7 @@ class LossTensorCalculator(object):
 
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
-        object_mask, grid_factor, grid_h, grid_w = setup_env_tensor(y_true)
+        object_mask, grid_h, grid_w = setup_env_tensor(y_true)
         net_factor  = tf.reshape(tf.cast(self.image_size, tf.float32), [1,1,1,1,2])
 
         # 2. Adjust prediction

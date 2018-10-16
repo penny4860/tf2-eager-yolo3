@@ -153,8 +153,7 @@ def setup_env_tensor(y_true):
     # compute grid factor and net factor
     grid_h      = tf.shape(y_true)[1]
     grid_w      = tf.shape(y_true)[2]
-    grid_factor = tf.reshape(tf.cast([grid_w, grid_h], tf.float32), [1,1,1,1,2])
-    return object_mask, grid_factor, grid_h, grid_w
+    return object_mask, grid_h, grid_w
 
 def adjust_pred_tensor(y_pred, cell_grid, grid_h, grid_w):
     pred_box_xy    = (cell_grid[:,:grid_h,:grid_w,:,:] + tf.sigmoid(y_pred[..., :2]))  # sigma(t_xy) + c_xy
