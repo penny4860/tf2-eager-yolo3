@@ -115,7 +115,7 @@ def y_true_to_true_boxes(y_trues, anchors):
     true_boxes = np.zeros((batch_size, 1, 1, 1, 30, 4))
     for i in range(batch_size):
         idx = 0
-        true_boxes_abatch = _batch(y_trues[i], anchors)
+        true_boxes_abatch = _batch(y_trues[i].numpy(), anchors)
         for b in true_boxes_abatch:
             true_boxes[i, 0, 0, 0, idx, :] = b
             idx += 1
