@@ -110,7 +110,31 @@ if __name__ == '__main__':
         else:
             print("Test Failed")
 
-    test()
+    def print_true_boxes():
+        true_boxes = np.squeeze(t_batch)
+        for b in true_boxes:
+            if b[0] != 0:
+                print(b)
+    
+    def print_y_pred():
+        n_rows, n_cols = yolo_1.shape[:2]
+        for r in range(n_rows):
+            for c in range(n_cols):
+                for b in range(3):
+                    if yolo_1[r, c, b, 4] != 0:
+                        print(yolo_1[r, c, b, :], r, c, n_rows, n_cols, b)
 
+    t_batch = np.load(os.path.join(PROJECT_ROOT, "t_batch.npy")).astype(np.float32)
+    yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)[0]
+    print(yolo_1.shape, t_batch.shape)
+    
+    print_true_boxes()
+    print_y_pred()
+    
+    pw = 139
+    ph = 281
+    tw = 0.3436407
+    th = -0.24019197
+    print(pw * np.exp(tw), ph * np.exp(th))
 
 
