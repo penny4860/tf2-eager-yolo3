@@ -15,7 +15,7 @@ class BatchGenerator(Sequence):
         annotations, 
         anchors,   
         max_box_per_image=30,
-        batch_size=1,
+        batch_size=2,
         min_net_size=320,
         max_net_size=608,    
         shuffle=True, 

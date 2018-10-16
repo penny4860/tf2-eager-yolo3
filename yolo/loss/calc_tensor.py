@@ -58,7 +58,6 @@ class LossTensorCalculator(object):
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(max_grid_w), [max_grid_h]), (1, max_grid_h, max_grid_w, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
-        self.anchors = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
 
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
@@ -72,19 +71,17 @@ class LossTensorCalculator(object):
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
-        true_boxes_ = y_true_to_true_boxes(y_true, anchors)
-
-        intersect_areas, pred_areas, true_areas = intersect_areas_tensor(true_boxes_,
+        intersect_areas, pred_areas, true_areas = intersect_areas_tensor(y_true,
                                                                          pred_box_xy,
                                                                          pred_box_wh,
                                                                          grid_factor,
                                                                          net_factor,
-                                                                         self.anchors)
+                                                                         anchors)
 
         conf_delta = conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, self.ignore_thresh)
 
         # 5. loss tensor
-        wh_scale =  wh_scale_tensor(true_box_wh, self.anchors, net_factor)
+        wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)
 
         loss_xy = loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, self.xywh_scale)
         loss_wh = loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, self.xywh_scale)
@@ -93,53 +90,23 @@ class LossTensorCalculator(object):
         loss = loss_xy + loss_wh + loss_conf + loss_class
         return loss*self.grid_scale
 
-def y_true_to_true_boxes(y_trues, anchors):
-
-    def _batch(y_true, anchors):
-        true_boxes = []
-        n_rows, n_cols = y_true.shape[:2]
-        for r in range(n_rows):
-            for c in range(n_cols):
-                for b in range(3):
-                    if y_true[r, c, b, 4] != 0:
-                        box = y_true[r, c, b, :4]
-                        tw = box[2]
-                        th = box[3]
-                        pw = anchors[2*b]
-                        ph = anchors[2*b + 1]
-                        box_ = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
-                        true_boxes.append(box_)
-        true_boxes = np.array(true_boxes)
-        return true_boxes
-    
-    batch_size = y_trues.shape[0]
-    true_boxes = np.zeros((batch_size, 1, 1, 1, 30, 4))
-    for i in range(batch_size):
-        idx = 0
-        true_boxes_abatch = _batch(y_trues[i].numpy(), anchors)
-        for b in true_boxes_abatch:
-            true_boxes[i, 0, 0, 0, idx, :] = b
-            idx += 1
-    return true_boxes
-
-
 if __name__ == '__main__':
-    import numpy as np
     import os
     from yolo import PROJECT_ROOT
+    tf.enable_eager_execution()
     def test():
         x_batch = np.load(os.path.join(PROJECT_ROOT, "x_batch.npy")).astype(np.float32)
-        t_batch = np.load(os.path.join(PROJECT_ROOT, "t_batch.npy")).astype(np.float32)
         yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)
         pred_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "pred_yolo_1.npy")).astype(np.float32)
 
         calculator = LossTensorCalculator()
-        loss_tensor = calculator.run(t_batch, yolo_1, pred_yolo_1)
+        loss_tensor = calculator.run(tf.constant(yolo_1), pred_yolo_1)
         loss_value =loss_tensor.numpy()[0]
         
-        if np.allclose(loss_value, 131.26439):
+        if np.allclose(loss_value, 63.16674):
             print("Test Passed")
         else:
             print("Test Failed")
+            print(loss_value)
 
     test()
