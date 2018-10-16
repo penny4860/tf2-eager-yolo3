@@ -74,7 +74,11 @@ class LossTensorCalculator(object):
         # 4. conf_delta tensor
         true_boxes_ = y_true_to_true_boxes(y_true, anchors)
 
-        intersect_areas, pred_areas, true_areas = intersect_areas_tensor(true_boxes_,
+        print(true_boxes_.shape, y_true.shape)
+
+
+        intersect_areas, pred_areas, true_areas = intersect_areas_tensor(y_true,
+                                                                         true_boxes_,
                                                                          pred_box_xy,
                                                                          pred_box_wh,
                                                                          grid_factor,
