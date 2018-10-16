@@ -170,7 +170,7 @@ def adjust_true_tensor(y_true):
     true_box_class = tf.argmax(y_true[..., 5:], -1)
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
-def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_factor, anchors):
+def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, anchors):
 
     def _activate(y_true):
         y_true_np = y_true.numpy()
@@ -188,19 +188,22 @@ def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_fa
         y_true = tf.constant(y_true_np)
         return y_true
     
+#     print(net_factor.shape, grid_factor.shape)
+#     print(net_factor[0,0,0,0,:].numpy(), grid_factor[0,0,0,0,:].numpy())
+    
     y_true = _activate(y_true)
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
     
     # then, ignore the boxes which have good overlap with some true box
-    true_xy = y_true[..., 0:2] / grid_factor
-    true_wh = y_true[..., 2:4] / net_factor
+    true_xy = y_true[..., 0:2]
+    true_wh = y_true[..., 2:4]
      
     true_wh_half = true_wh / 2.
     true_mins    = true_xy - true_wh_half
     true_maxes   = true_xy + true_wh_half
      
-    pred_xy = pred_box_xy / grid_factor
-    pred_wh = tf.exp(pred_box_wh) * anchors_ / net_factor
+    pred_xy = pred_box_xy
+    pred_wh = tf.exp(pred_box_wh) * anchors_
      
     pred_wh_half = pred_wh / 2.
     pred_mins    = pred_xy - pred_wh_half
