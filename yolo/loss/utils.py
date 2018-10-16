@@ -230,7 +230,8 @@ def conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, ig
 
 
 def wh_scale_tensor(true_box_wh, anchors, net_factor):
-    wh_scale = tf.exp(true_box_wh) * anchors / net_factor
+    anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
+    wh_scale = tf.exp(true_box_wh) * anchors_ / net_factor
     wh_scale = tf.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
     return wh_scale
 

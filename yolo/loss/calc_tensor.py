@@ -58,7 +58,6 @@ class LossTensorCalculator(object):
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(max_grid_w), [max_grid_h]), (1, max_grid_h, max_grid_w, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
-        self.anchors = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
 
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
@@ -82,7 +81,7 @@ class LossTensorCalculator(object):
         conf_delta = conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, self.ignore_thresh)
 
         # 5. loss tensor
-        wh_scale =  wh_scale_tensor(true_box_wh, self.anchors, net_factor)
+        wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)
 
         loss_xy = loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, self.xywh_scale)
         loss_wh = loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, self.xywh_scale)
