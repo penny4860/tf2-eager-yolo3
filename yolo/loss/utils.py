@@ -158,7 +158,7 @@ def setup_env_tensor(y_true):
 def adjust_pred_tensor(y_pred, cell_grid, grid_h, grid_w):
     pred_box_xy    = (cell_grid[:,:grid_h,:grid_w,:,:] + tf.sigmoid(y_pred[..., :2]))  # sigma(t_xy) + c_xy
     pred_box_wh    = y_pred[..., 2:4]                                                       # t_wh
-    pred_box_conf  = tf.expand_dims(tf.sigmoid(y_pred[..., 4]), 4)                          # adjust confidence
+    pred_box_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
     pred_box_class = y_pred[..., 5:]                                                        # adjust class probabilities      
     return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
 
@@ -220,7 +220,7 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
     union_areas = pred_areas + true_areas - intersect_areas
     best_ious  = tf.truediv(intersect_areas, union_areas)
     
-    conf_delta = tf.squeeze(pred_box_conf, axis=-1) * tf.to_float(best_ious < ignore_thresh)
+    conf_delta = pred_box_conf * tf.to_float(best_ious < ignore_thresh)
     return conf_delta
 
 def wh_scale_tensor(true_box_wh, anchors, net_factor):
@@ -249,6 +249,7 @@ def loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj
     
     true_box_conf = tf.expand_dims(true_box_conf, axis=-1)
     conf_delta = tf.expand_dims(conf_delta, axis=-1)
+    pred_box_conf = tf.expand_dims(pred_box_conf, axis=-1)
     
     conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
     loss_conf  = tf.reduce_sum(tf.square(conf_delta),     list(range(1,5)))
