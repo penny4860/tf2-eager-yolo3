@@ -77,7 +77,7 @@ class LossTensorCalculator(object):
                                                                          pred_box_wh,
                                                                          grid_factor,
                                                                          net_factor,
-                                                                         self.anchors)
+                                                                         anchors)
 
         conf_delta = conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, self.ignore_thresh)
 

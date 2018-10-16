@@ -183,7 +183,7 @@ def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_fa
                             box = y_true_np[i, r, c, b, :4]
                             tw = box[2]
                             th = box[3]
-                            pw, ph = anchors[0,0,0,b,:]
+                            pw, ph = anchors[2*b], anchors[2*b+1]
                             y_true_np[i, r, c, b, :4] = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
         y_true = tf.constant(y_true_np)
         return y_true
