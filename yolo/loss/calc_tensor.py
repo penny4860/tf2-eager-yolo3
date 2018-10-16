@@ -71,12 +71,12 @@ class LossTensorCalculator(object):
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
-        intersect_areas, pred_areas, true_areas = intersect_areas_tensor(y_true,
-                                                                         pred_box_xy,
-                                                                         pred_box_wh,
-                                                                         anchors)
-
-        conf_delta = conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, self.ignore_thresh)
+        conf_delta = intersect_areas_tensor(y_true,
+                                         pred_box_xy,
+                                         pred_box_wh,
+                                         pred_box_conf,
+                                         anchors,
+                                         self.ignore_thresh)
 
         # 5. loss tensor
         wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)

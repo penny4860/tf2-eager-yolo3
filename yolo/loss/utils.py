@@ -169,7 +169,7 @@ def adjust_true_tensor(y_true):
     true_box_class = tf.argmax(y_true[..., 5:], -1)
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
-def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, anchors):
+def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, ignore_thresh):
 
     def _activate(y_true):
         y_true_np = y_true.numpy()
@@ -216,21 +216,19 @@ def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, anchors):
 
     true_areas = true_wh[..., 0] * true_wh[..., 1]
     pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
-    
-    # (1, 9, 9, 3, 1) (1, 9, 9, 3, 1) (1, 9, 9, 3, 1)
-    return tf.expand_dims(intersect_areas, 4), tf.expand_dims(pred_areas, 4), tf.expand_dims(true_areas, 4)
 
-def conf_delta_tensor(pred_box_conf, intersect_areas, pred_areas, true_areas, ignore_thresh):
-    # initially, drag all objectness of all boxes to 0
+    intersect_areas = tf.expand_dims(intersect_areas, 4)
+    pred_areas = tf.expand_dims(pred_areas, 4)
+    true_areas = tf.expand_dims(true_areas, 4)
+
     conf_delta  = pred_box_conf - 0 
-
     union_areas = pred_areas + true_areas - intersect_areas
     iou_scores  = tf.truediv(intersect_areas, union_areas)
      
     best_ious   = tf.reduce_max(iou_scores, axis=4)        
     conf_delta *= tf.expand_dims(tf.to_float(best_ious < ignore_thresh), 4)
     return conf_delta
-
+    # (1, 9, 9, 3, 1) (1, 9, 9, 3, 1) (1, 9, 9, 3, 1)
 
 def wh_scale_tensor(true_box_wh, anchors, net_factor):
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
