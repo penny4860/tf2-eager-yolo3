@@ -77,7 +77,6 @@ class LossTensorCalculator(object):
                                          pred_box_conf,
                                          anchors,
                                          self.ignore_thresh)
-        print(conf_delta.shape)
 
         # 5. loss tensor
         wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)

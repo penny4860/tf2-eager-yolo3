@@ -165,7 +165,7 @@ def adjust_pred_tensor(y_pred, cell_grid, grid_h, grid_w):
 def adjust_true_tensor(y_true):
     true_box_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
     true_box_wh    = y_true[..., 2:4] # t_wh
-    true_box_conf  = tf.expand_dims(y_true[..., 4], 4)
+    true_box_conf  = y_true[..., 4]
     true_box_class = tf.argmax(y_true[..., 5:], -1)
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
@@ -221,7 +221,7 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
     best_ious  = tf.truediv(intersect_areas, union_areas)
     
     conf_delta = tf.squeeze(pred_box_conf, axis=-1) * tf.to_float(best_ious < ignore_thresh)
-    return tf.expand_dims(conf_delta, axis=-1)
+    return conf_delta
 
 def wh_scale_tensor(true_box_wh, anchors, net_factor):
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
@@ -240,6 +240,16 @@ def loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
     return loss_wh
     
 def loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
+    print("==========================================")
+    print(object_mask.shape)
+    print(pred_box_conf.shape)
+    print(true_box_conf.shape)
+    print(conf_delta.shape)
+    print("==========================================")
+    
+    true_box_conf = tf.expand_dims(true_box_conf, axis=-1)
+    conf_delta = tf.expand_dims(conf_delta, axis=-1)
+    
     conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
     loss_conf  = tf.reduce_sum(tf.square(conf_delta),     list(range(1,5)))
     return loss_conf
