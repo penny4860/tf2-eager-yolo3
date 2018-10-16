@@ -127,14 +127,14 @@ if __name__ == '__main__':
     import numpy as np
     import os
     from yolo import PROJECT_ROOT
+    tf.enable_eager_execution()
     def test():
         x_batch = np.load(os.path.join(PROJECT_ROOT, "x_batch.npy")).astype(np.float32)
-        t_batch = np.load(os.path.join(PROJECT_ROOT, "t_batch.npy")).astype(np.float32)
         yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)
         pred_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "pred_yolo_1.npy")).astype(np.float32)
 
         calculator = LossTensorCalculator()
-        loss_tensor = calculator.run(t_batch, yolo_1, pred_yolo_1)
+        loss_tensor = calculator.run(tf.constant(yolo_1), pred_yolo_1)
         loss_value =loss_tensor.numpy()[0]
         
         if np.allclose(loss_value, 131.26439):
