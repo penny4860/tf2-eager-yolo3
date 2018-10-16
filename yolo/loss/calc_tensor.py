@@ -95,7 +95,6 @@ if __name__ == '__main__':
     from yolo import PROJECT_ROOT
     tf.enable_eager_execution()
     def test():
-        x_batch = np.load(os.path.join(PROJECT_ROOT, "x_batch.npy")).astype(np.float32)
         yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)
         pred_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "pred_yolo_1.npy")).astype(np.float32)
 
