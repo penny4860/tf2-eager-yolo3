@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-tf.enable_eager_execution()
+import numpy as np
+# tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
 from yolo.loss.utils import conf_delta_tensor, intersect_areas_tensor, reshape_y_pred_tensor, setup_env_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
