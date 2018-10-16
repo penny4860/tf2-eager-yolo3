@@ -137,4 +137,24 @@ if __name__ == '__main__':
     th = -0.24019197
     print(pw * np.exp(tw), ph * np.exp(th))
 
+    true_boxes = []
+    n_rows, n_cols = yolo_1.shape[:2]
+    anchors=[90, 95, 92, 154, 139, 281]
+    for r in range(n_rows):
+        for c in range(n_cols):
+            for b in range(3):
+                if yolo_1[r, c, b, 4] != 0:
+                    box = yolo_1[r, c, b, :4]
+                    tw = box[2]
+                    th = box[3]
+                    pw = anchors[2*b]
+                    ph = anchors[2*b + 1]
+
+                    box_ = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
+                    true_boxes.append(box_)
+    true_boxes = np.array(true_boxes).astype(np.int32)
+    print(true_boxes)
+                    
+
+
 
