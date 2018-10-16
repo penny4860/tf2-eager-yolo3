@@ -240,19 +240,9 @@ def loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
     return loss_wh
     
 def loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
-    print("==========================================")
-    print(object_mask.shape)
-    print(pred_box_conf.shape)
-    print(true_box_conf.shape)
-    print(conf_delta.shape)
-    print("==========================================")
-    
-    true_box_conf = tf.expand_dims(true_box_conf, axis=-1)
-    conf_delta = tf.expand_dims(conf_delta, axis=-1)
-    pred_box_conf = tf.expand_dims(pred_box_conf, axis=-1)
-    
-    conf_delta  = object_mask * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask) * conf_delta * noobj_scale
-    loss_conf  = tf.reduce_sum(tf.square(conf_delta),     list(range(1,5)))
+    object_mask_ = tf.squeeze(object_mask, axis=-1)
+    conf_delta  = object_mask_ * (pred_box_conf-true_box_conf) * obj_scale + (1-object_mask_) * conf_delta * noobj_scale
+    loss_conf  = tf.reduce_sum(tf.square(conf_delta),     list(range(1,4)))
     return loss_conf
 
 def loss_class_tensor(object_mask, pred_box_class, true_box_class, class_scale):
