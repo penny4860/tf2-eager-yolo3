@@ -62,7 +62,6 @@ class LossTensorCalculator(object):
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
         object_mask, grid_h, grid_w = setup_env_tensor(y_true)
-        net_factor  = tf.reshape(tf.cast(self.image_size, tf.float32), [1,1,1,1,2])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, self.cell_grid, grid_h, grid_w)
@@ -79,7 +78,7 @@ class LossTensorCalculator(object):
                                          self.ignore_thresh)
 
         # 5. loss tensor
-        wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)
+        wh_scale =  wh_scale_tensor(true_box_wh, anchors, self.image_size)
 
         loss_xy = loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, self.xywh_scale)
         loss_wh = loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, self.xywh_scale)

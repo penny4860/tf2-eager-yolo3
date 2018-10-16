@@ -223,9 +223,12 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
     conf_delta = pred_box_conf * tf.to_float(best_ious < ignore_thresh)
     return conf_delta
 
-def wh_scale_tensor(true_box_wh, anchors, net_factor):
+def wh_scale_tensor(true_box_wh, anchors, image_size):
+    
+    image_size_  = tf.reshape(tf.cast(image_size, tf.float32), [1,1,1,1,2])
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
-    wh_scale = tf.exp(true_box_wh) * anchors_ / net_factor
+    
+    wh_scale = tf.exp(true_box_wh) * anchors_ / image_size_
     wh_scale = tf.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
     return wh_scale
 
