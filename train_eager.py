@@ -16,26 +16,15 @@ if __name__ == '__main__':
     ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
     generator = create_generator(img_dir, ann_dir)
-    x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[0]
  
     # 2. create model
     model = Yolonet(n_classes=1)
     model.load_darknet_params(YOLOV3_WEIGHTS, True)
-    
-    pred_yolo_1, pred_yolo_2, pred_yolo_3 = model.predict(x_batch)
-    print(x_batch.shape, t_batch.shape, yolo_1.shape, yolo_2.shape, yolo_3.shape)
-    print(pred_yolo_1.shape, pred_yolo_2.shape, pred_yolo_3.shape)
-
-    import numpy as np
-    np.save("x_batch", x_batch)
-    np.save("t_batch", t_batch)
-    np.save("yolo_1", yolo_1)
-    np.save("yolo_2", yolo_2)
-    np.save("yolo_3", yolo_3)
-    
-    np.save("pred_yolo_1", pred_yolo_1)
-    np.save("pred_yolo_2", pred_yolo_2)
-    np.save("pred_yolo_3", pred_yolo_3)
-
+     
+    # 3. define optimizer    
+    optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
+      
+    # 4. training
+    train(generator, optimizer, model, 100, 1)
 
 
