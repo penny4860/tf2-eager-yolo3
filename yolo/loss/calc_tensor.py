@@ -137,7 +137,7 @@ if __name__ == '__main__':
         loss_tensor = calculator.run(tf.constant(yolo_1), pred_yolo_1)
         loss_value =loss_tensor.numpy()[0]
         
-        if np.allclose(loss_value, 131.26439):
+        if np.allclose(loss_value, 63.16674):
             print("Test Passed")
         else:
             print("Test Failed")
