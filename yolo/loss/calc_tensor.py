@@ -91,38 +91,7 @@ class LossTensorCalculator(object):
         loss = loss_xy + loss_wh + loss_conf + loss_class
         return loss*self.grid_scale
 
-def y_true_to_true_boxes(y_trues, anchors):
-
-    def _batch(y_true, anchors):
-        true_boxes = []
-        n_rows, n_cols = y_true.shape[:2]
-        for r in range(n_rows):
-            for c in range(n_cols):
-                for b in range(3):
-                    if y_true[r, c, b, 4] != 0:
-                        box = y_true[r, c, b, :4]
-                        tw = box[2]
-                        th = box[3]
-                        pw = anchors[2*b]
-                        ph = anchors[2*b + 1]
-                        box_ = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
-                        true_boxes.append(box_)
-        true_boxes = np.array(true_boxes)
-        return true_boxes
-    
-    batch_size = y_trues.shape[0]
-    true_boxes = np.zeros((batch_size, 1, 1, 1, 30, 4))
-    for i in range(batch_size):
-        idx = 0
-        true_boxes_abatch = _batch(y_trues[i].numpy(), anchors)
-        for b in true_boxes_abatch:
-            true_boxes[i, 0, 0, 0, idx, :] = b
-            idx += 1
-    return true_boxes
-
-
 if __name__ == '__main__':
-    import numpy as np
     import os
     from yolo import PROJECT_ROOT
     tf.enable_eager_execution()
