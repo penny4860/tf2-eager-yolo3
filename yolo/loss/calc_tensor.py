@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
+tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
 from yolo.loss.utils import conf_delta_tensor, intersect_areas_tensor, reshape_y_pred_tensor, setup_env_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
@@ -88,4 +89,28 @@ class LossTensorCalculator(object):
         loss_class = loss_class_tensor(object_mask, pred_box_class, true_box_class, self.class_scale)
         loss = loss_xy + loss_wh + loss_conf + loss_class
         return loss*self.grid_scale
+
+
+if __name__ == '__main__':
+    import numpy as np
+    import os
+    from yolo import PROJECT_ROOT
+    def test():
+        x_batch = np.load(os.path.join(PROJECT_ROOT, "x_batch.npy")).astype(np.float32)
+        t_batch = np.load(os.path.join(PROJECT_ROOT, "t_batch.npy")).astype(np.float32)
+        yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)
+        pred_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "pred_yolo_1.npy")).astype(np.float32)
+
+        calculator = LossTensorCalculator()
+        loss_tensor = calculator.run(t_batch, yolo_1, pred_yolo_1)
+        loss_value =loss_tensor.numpy()[0]
+        
+        if np.allclose(loss_value, 131.26439):
+            print("Test Passed")
+        else:
+            print("Test Failed")
+
+    test()
+
+
 
