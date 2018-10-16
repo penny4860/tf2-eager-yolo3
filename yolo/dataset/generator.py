@@ -43,7 +43,6 @@ class BatchGenerator(Sequence):
 
         # determine the first and the last indices of the batch
         x_batch = []
-        t_batch = np.zeros((self._batch_size, 1, 1, 1,  self.max_box_per_image, 4))   # list of groundtruth boxes
 
         # initialize the inputs and the outputs
         n_classes = self.annotations.n_classes()
@@ -51,8 +50,6 @@ class BatchGenerator(Sequence):
         yolo_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
         yolo_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
         yolos = [yolo_3, yolo_2, yolo_1]
-
-        true_box_index = 0
 
         for i in range(self._batch_size):
             # 1. get input file & its annotation
@@ -72,13 +69,7 @@ class BatchGenerator(Sequence):
                 yolobox = yolo_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
                 assign_box(yolos[scale_index][i], box_index, yolobox, label)
 
-                # assign the true box to t_batch
-                t_batch[i, 0, 0, 0, true_box_index] = true_box(yolos[scale_index], original_box, net_size, net_size)
-
-                true_box_index += 1
-                true_box_index  = true_box_index % self.max_box_per_image    
-
-        return np.array(x_batch), t_batch, yolo_1, yolo_2, yolo_3
+        return np.array(x_batch), yolo_1, yolo_2, yolo_3
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
@@ -90,22 +81,6 @@ class BatchGenerator(Sequence):
 
     def on_epoch_end(self):
         if self.shuffle: np.random.shuffle(self.annotations)
-
-
-def true_box(yolo, original_box, net_w, net_h):
-    x1, y1, x2, y2 = original_box
-    
-    # determine the yolo to be responsible for this bounding box
-    grid_h, grid_w = yolo.shape[1:3]
-    
-    # determine the position of the bounding box on the grid
-    center_x = .5*(x1 + x2)
-    center_x = center_x / float(net_w) * grid_w # sigma(t_x) + c_x
-    center_y = .5*(y1 + y2)
-    center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
-    
-    true_box = [center_x, center_y, x2 - x1, y2 - y1]
-    return true_box
 
 
 def yolo_box(yolo, original_box, anchor_box, net_w, net_h):

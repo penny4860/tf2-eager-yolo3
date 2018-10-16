@@ -10,7 +10,7 @@ from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor,
 def sum_loss(losses):
     return tf.sqrt(tf.reduce_sum(losses))
 
-def loss_fn(true_boxes, list_y_trues, list_y_preds,
+def loss_fn(list_y_trues, list_y_preds,
             anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
             image_size=[288, 288], 
             ignore_thresh=0.5, 
@@ -27,9 +27,9 @@ def loss_fn(true_boxes, list_y_trues, list_y_preds,
                                         noobj_scale=noobj_scale,
                                         xywh_scale=xywh_scale,
                                         class_scale=class_scale)
-    loss_yolo_1 = calculator.run(true_boxes, list_y_trues[0], list_y_preds[0], max_grid=[1*num for num in image_size], anchors=anchors[12:])
-    loss_yolo_2 = calculator.run(true_boxes, list_y_trues[1], list_y_preds[1], max_grid=[2*num for num in image_size], anchors=anchors[6:12])
-    loss_yolo_3 = calculator.run(true_boxes, list_y_trues[2], list_y_preds[2], max_grid=[4*num for num in image_size], anchors=anchors[:6])
+    loss_yolo_1 = calculator.run(list_y_trues[0], list_y_preds[0], max_grid=[1*num for num in image_size], anchors=anchors[12:])
+    loss_yolo_2 = calculator.run(list_y_trues[1], list_y_preds[1], max_grid=[2*num for num in image_size], anchors=anchors[6:12])
+    loss_yolo_3 = calculator.run(list_y_trues[2], list_y_preds[2], max_grid=[4*num for num in image_size], anchors=anchors[:6])
     return sum_loss([loss_yolo_1, loss_yolo_2, loss_yolo_3])
 
 
@@ -50,7 +50,7 @@ class LossTensorCalculator(object):
         self.class_scale    = class_scale        
         self.image_size = image_size        # (h, w)-ordered
 
-    def run(self, true_boxes, y_true, y_pred, max_grid=[288, 288], anchors=[90, 95, 92, 154, 139, 281]):
+    def run(self, y_true, y_pred, max_grid=[288, 288], anchors=[90, 95, 92, 154, 139, 281]):
 
         # make a persistent mesh grid
         batch_size = tf.shape(y_true)[0]

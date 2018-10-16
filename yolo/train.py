@@ -7,28 +7,27 @@ from yolo.loss import loss_fn
 
 
 def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weights"):
-    def grads_fn(images_tensor, list_y_trues, true_boxes):
+    def grads_fn(images_tensor, list_y_trues):
         with tf.GradientTape() as tape:
             logits = model(images_tensor)
-            loss = loss_fn(true_boxes, list_y_trues, logits)
+            loss = loss_fn(list_y_trues, logits)
         return tape.gradient(loss, model.variables)
 
     min_loss_value = np.inf        
     for i in range(num_epoches):
-        x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[i]
+        x_batch, yolo_1, yolo_2, yolo_3 = generator[i]
 
         images_tensor = tf.constant(x_batch.astype(np.float32))
         list_y_trues = [tf.constant(yolo_1.astype(np.float32)),
                         tf.constant(yolo_2.astype(np.float32)),
                         tf.constant(yolo_3.astype(np.float32))]
-        true_boxes = tf.constant(t_batch.astype(np.float32))
         
-        grads = grads_fn(images_tensor, list_y_trues, true_boxes)
+        grads = grads_fn(images_tensor, list_y_trues)
         optimizer.apply_gradients(zip(grads, model.variables))
 
         if i==0 or (i+1)%verbose==0:
             logits = model(images_tensor)
-            loss_value = loss_fn(true_boxes, list_y_trues, logits)
+            loss_value = loss_fn(list_y_trues, logits)
             print("{}-th loss = {}".format(i, loss_value))
             
             if min_loss_value > loss_value:
