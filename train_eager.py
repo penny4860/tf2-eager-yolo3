@@ -25,6 +25,6 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
       
     # 4. training
-    train(generator, optimizer, model, 100, 1)
+    train(generator, optimizer, model, 100, 1, fname="weight_true_boxes")
 
 
