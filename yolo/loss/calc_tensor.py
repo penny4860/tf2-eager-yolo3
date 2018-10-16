@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 # tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
-from yolo.loss.utils import conf_delta_tensor, intersect_areas_tensor, reshape_y_pred_tensor, setup_env_tensor
+from yolo.loss.utils import conf_delta_tensor, reshape_y_pred_tensor, setup_env_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
 
 def sum_loss(losses):
@@ -71,12 +71,13 @@ class LossTensorCalculator(object):
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
-        conf_delta = intersect_areas_tensor(y_true,
+        conf_delta = conf_delta_tensor(y_true,
                                          pred_box_xy,
                                          pred_box_wh,
                                          pred_box_conf,
                                          anchors,
                                          self.ignore_thresh)
+        print(conf_delta.shape)
 
         # 5. loss tensor
         wh_scale =  wh_scale_tensor(true_box_wh, anchors, net_factor)

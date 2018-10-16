@@ -217,18 +217,11 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
     true_areas = true_wh[..., 0] * true_wh[..., 1]
     pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
 
-    intersect_areas = tf.expand_dims(intersect_areas, 4)
-    pred_areas = tf.expand_dims(pred_areas, 4)
-    true_areas = tf.expand_dims(true_areas, 4)
-
-    conf_delta  = pred_box_conf - 0 
     union_areas = pred_areas + true_areas - intersect_areas
-    iou_scores  = tf.truediv(intersect_areas, union_areas)
-     
-    best_ious   = tf.reduce_max(iou_scores, axis=4)        
-    conf_delta *= tf.expand_dims(tf.to_float(best_ious < ignore_thresh), 4)
-    return conf_delta
-    # (1, 9, 9, 3, 1) (1, 9, 9, 3, 1) (1, 9, 9, 3, 1)
+    best_ious  = tf.truediv(intersect_areas, union_areas)
+    
+    conf_delta = tf.squeeze(pred_box_conf, axis=-1) * tf.to_float(best_ious < ignore_thresh)
+    return tf.expand_dims(conf_delta, axis=-1)
 
 def wh_scale_tensor(true_box_wh, anchors, net_factor):
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
