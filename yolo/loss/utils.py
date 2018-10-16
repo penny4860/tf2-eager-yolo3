@@ -170,21 +170,21 @@ def adjust_true_tensor(y_true):
     true_box_class = tf.argmax(y_true[..., 5:], -1)
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
-def intersect_areas_tensor(y_true, true_boxes, pred_box_xy, pred_box_wh, grid_factor, net_factor, anchors):
+def intersect_areas_tensor(y_true, pred_box_xy, pred_box_wh, grid_factor, net_factor, anchors):
     
-    print("======================================================================")
-    print(y_true.shape, true_boxes.shape, pred_box_xy.shape)
-    print(grid_factor.shape, net_factor.shape)
-    print(anchors.shape)
-    print("======================================================================")
-
-    # (1, 1, 1, 1, 30, 4)
-    # print(true_boxes[0,0,0,0,0,:])
-    print(y_true[0,5,4,2,:4])
-    
-    y_true = y_true.numpy()
-    y_true[0,5,4,2,2:4] = [196., 220.]
-    y_true = tf.constant(y_true)
+    y_true_np = y_true.numpy()
+    batch_size, n_rows, n_cols = y_true.shape[:3]
+    for i in range(batch_size):
+        for r in range(n_rows):
+            for c in range(n_cols):
+                for b in range(3):
+                    if y_true_np[i, r, c, b, 4] != 0:
+                        box = y_true_np[i, r, c, b, :4]
+                        tw = box[2]
+                        th = box[3]
+                        pw, ph = anchors[0,0,0,b,:]
+                        y_true_np[i, r, c, b, :4] = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
+    y_true = tf.constant(y_true_np)
     
     # then, ignore the boxes which have good overlap with some true box
     true_xy = tf.expand_dims(y_true[..., 0:2] / grid_factor, 4)

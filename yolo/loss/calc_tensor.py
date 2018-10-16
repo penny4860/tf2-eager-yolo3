@@ -72,13 +72,7 @@ class LossTensorCalculator(object):
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
-        true_boxes_ = y_true_to_true_boxes(y_true, anchors)
-
-        print(true_boxes_.shape, y_true.shape)
-
-
         intersect_areas, pred_areas, true_areas = intersect_areas_tensor(y_true,
-                                                                         true_boxes_,
                                                                          pred_box_xy,
                                                                          pred_box_wh,
                                                                          grid_factor,
@@ -145,5 +139,6 @@ if __name__ == '__main__':
             print("Test Passed")
         else:
             print("Test Failed")
+            print(loss_value)
 
     test()
