@@ -155,8 +155,8 @@ def setup_env_tensor(y_true):
     grid_w      = tf.shape(y_true)[2]
     return object_mask, grid_h, grid_w
 
-def adjust_pred_tensor(y_pred, cell_grid, grid_h, grid_w):
-    pred_box_xy    = (cell_grid[:,:grid_h,:grid_w,:,:] + tf.sigmoid(y_pred[..., :2]))  # sigma(t_xy) + c_xy
+def adjust_pred_tensor(y_pred, cell_grid):
+    pred_box_xy    = cell_grid + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
     pred_box_wh    = y_pred[..., 2:4]                                                       # t_wh
     pred_box_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
     pred_box_class = y_pred[..., 5:]                                                        # adjust class probabilities      

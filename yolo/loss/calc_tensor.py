@@ -60,10 +60,10 @@ class LossTensorCalculator(object):
         batch_size = tf.shape(y_true)[0]
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-        self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
+        cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
 
         # 2. Adjust prediction
-        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, self.cell_grid, grid_h, grid_w)
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, cell_grid)
 
         # 3. Adjust ground truth
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
