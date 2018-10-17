@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 # tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
-from yolo.loss.utils import conf_delta_tensor, reshape_y_pred_tensor, setup_env_tensor
+from yolo.loss.utils import conf_delta_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
 
 def sum_loss(losses):
@@ -53,17 +53,11 @@ class LossTensorCalculator(object):
     def run(self, y_true, y_pred, anchors=[90, 95, 92, 154, 139, 281]):
 
         # 1. setup
-        y_pred = reshape_y_pred_tensor(y_pred)
-        object_mask, grid_h, grid_w = setup_env_tensor(y_true)
-
-        # make a persistent mesh grid
-        batch_size = tf.shape(y_true)[0]
-        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
-        cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-        cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
+        y_pred = tf.reshape(y_pred, y_true.shape)
+        object_mask = tf.expand_dims(y_true[..., 4], 4)
 
         # 2. Adjust prediction
-        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, cell_grid)
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred)
 
         # 3. Adjust ground truth
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)

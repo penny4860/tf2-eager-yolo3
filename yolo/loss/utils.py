@@ -3,21 +3,14 @@ import numpy as np
 import tensorflow as tf
 
 
-def reshape_y_pred_tensor(y_pred):
-    # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
-    y_pred = tf.reshape(y_pred, tf.concat([tf.shape(y_pred)[:3], tf.constant([3, -1])], axis=0))
-    return y_pred
-
-def setup_env_tensor(y_true):
-    # initialize the masks
-    object_mask     = tf.expand_dims(y_true[..., 4], 4)
-
-    # compute grid factor and net factor
-    grid_h      = tf.shape(y_true)[1]
-    grid_w      = tf.shape(y_true)[2]
-    return object_mask, grid_h, grid_w
-
-def adjust_pred_tensor(y_pred, cell_grid):
+def adjust_pred_tensor(y_pred):
+    
+    # make a persistent mesh grid
+    batch_size, grid_h, grid_w = tf.shape(y_pred)[0:3]
+    cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+    cell_y = tf.transpose(cell_x, (0,2,1,3,4))
+    cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
+    
     pred_box_xy    = cell_grid + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
     pred_box_wh    = y_pred[..., 2:4]                                                       # t_wh
     pred_box_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
