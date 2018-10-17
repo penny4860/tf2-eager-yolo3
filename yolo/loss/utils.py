@@ -69,8 +69,10 @@ def wh_scale_tensor(true_box_wh, anchors, image_size):
     image_size_  = tf.reshape(tf.cast(image_size, tf.float32), [1,1,1,1,2])
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
     
+    # [0, 1]-scaled width/height
     wh_scale = tf.exp(true_box_wh) * anchors_ / image_size_
-    wh_scale = tf.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
+    # the smaller the box, the bigger the scale
+    wh_scale = tf.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) 
     return wh_scale
 
 def loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
