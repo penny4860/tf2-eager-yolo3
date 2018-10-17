@@ -44,6 +44,14 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
     
 #     print(net_factor.shape, grid_factor.shape)
 #     print(net_factor[0,0,0,0,:].numpy(), grid_factor[0,0,0,0,:].numpy())
+
+#     batch_size, grid_size = y_true.shape[:2]
+#     n_box = 3
+#     cell_box = tf.tile(anchors, [batch_size*grid_size*grid_size])
+#     cell_box = tf.reshape(cell_box, [batch_size, grid_size, grid_size, n_box, 2])
+#     cell_box = tf.cast(cell_box, tf.float32)
+#     twh = y_true[:,:,:,:,2:4]
+#     bwh = cell_box * tf.exp(twh)
     
     y_true = _activate(y_true)
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
