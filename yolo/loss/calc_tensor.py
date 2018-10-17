@@ -52,16 +52,15 @@ class LossTensorCalculator(object):
 
     def run(self, y_true, y_pred, max_grid=[288, 288], anchors=[90, 95, 92, 154, 139, 281]):
 
-        # make a persistent mesh grid
-        batch_size = tf.shape(y_true)[0]
-        max_grid_h, max_grid_w = max_grid
-        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(max_grid_w), [max_grid_h]), (1, max_grid_h, max_grid_w, 1, 1)))
-        cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-        self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
-
         # 1. setup
         y_pred = reshape_y_pred_tensor(y_pred)
         object_mask, grid_h, grid_w = setup_env_tensor(y_true)
+
+        # make a persistent mesh grid
+        batch_size = tf.shape(y_true)[0]
+        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+        cell_y = tf.transpose(cell_x, (0,2,1,3,4))
+        self.cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
 
         # 2. Adjust prediction
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred, self.cell_grid, grid_h, grid_w)
