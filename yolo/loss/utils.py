@@ -5,9 +5,9 @@ import tensorflow as tf
 
 def adjust_pred_tensor(y_pred):
 
-    mesh_xy = _create_mesh_xy(*y_pred.shape[:4])
+    grid_offset = _create_mesh_xy(*y_pred.shape[:4])
     
-    pred_xy    = mesh_xy + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
+    pred_xy    = grid_offset + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
     pred_wh    = y_pred[..., 2:4]                                                       # t_wh
     pred_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
     pred_classes = y_pred[..., 5:]                                              
@@ -16,11 +16,9 @@ def adjust_pred_tensor(y_pred):
     return preds
 
 def adjust_true_tensor(y_true):
-    true_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
-    true_wh    = y_true[..., 2:4] # t_wh
-    true_conf  = y_true[..., 4]
+    true_    = y_true[..., :5]
     true_class = tf.argmax(y_true[..., 5:], -1)
-    trues = tf.concat([true_xy, true_wh, tf.expand_dims(true_conf, -1), tf.expand_dims(tf.cast(true_class, tf.float32), -1)], axis=-1)
+    trues = tf.concat([true_, tf.expand_dims(tf.cast(true_class, tf.float32), -1)], axis=-1)
     return trues
 
 def conf_delta_tensor(y_true, y_pred, anchors, ignore_thresh):
