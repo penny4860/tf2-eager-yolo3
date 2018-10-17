@@ -56,10 +56,10 @@ class LossTensorCalculator(object):
         y_pred = tf.reshape(y_pred, y_true.shape)
         object_mask = tf.expand_dims(y_true[..., 4], 4)
 
-        # 2. Adjust prediction
+        # 2. Adjust prediction (bxy, twh)
         pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred)
 
-        # 3. Adjust ground truth
+        # 3. Adjust ground truth (bxy, twh)
         true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
