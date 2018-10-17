@@ -75,15 +75,10 @@ def wh_scale_tensor(true_box_wh, anchors, image_size):
     wh_scale = tf.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) 
     return wh_scale
 
-def loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, xywh_scale):
-    xy_delta    = object_mask   * (pred_box_xy-true_box_xy) * wh_scale * xywh_scale
+def loss_coord_tensor(object_mask, pred_box, true_box, wh_scale, xywh_scale):
+    xy_delta    = object_mask   * (pred_box-true_box) * wh_scale * xywh_scale
     loss_xy    = tf.reduce_sum(tf.square(xy_delta),       list(range(1,5)))
     return loss_xy
-
-def loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, xywh_scale):
-    wh_delta    = object_mask   * (pred_box_wh-true_box_wh) * wh_scale * xywh_scale
-    loss_wh    = tf.reduce_sum(tf.square(wh_delta),       list(range(1,5)))
-    return loss_wh
     
 def loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj_scale, conf_delta):
     object_mask_ = tf.squeeze(object_mask, axis=-1)

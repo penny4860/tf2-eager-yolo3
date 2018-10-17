@@ -5,7 +5,7 @@ import numpy as np
 # tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
 from yolo.loss.utils import conf_delta_tensor
-from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_wh_tensor, loss_xy_tensor, wh_scale_tensor
+from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_coord_tensor, wh_scale_tensor
 
 def sum_loss(losses):
     return tf.sqrt(tf.reduce_sum(losses))
@@ -72,12 +72,14 @@ class LossTensorCalculator(object):
 
         # 5. loss tensor
         wh_scale =  wh_scale_tensor(true_wh, anchors, self.image_size)
+        
+        pred_box = tf.concat([pred_xy, pred_wh], axis=-1)
+        true_box = tf.concat([true_xy, true_wh], axis=-1)
 
-        loss_xy = loss_xy_tensor(object_mask, pred_xy, true_xy, wh_scale, self.xywh_scale)
-        loss_wh = loss_wh_tensor(object_mask, pred_wh, true_wh, wh_scale, self.xywh_scale)
+        loss_box = loss_coord_tensor(object_mask, pred_box, true_box, wh_scale, self.xywh_scale)
         loss_conf = loss_conf_tensor(object_mask, pred_conf, true_conf, self.obj_scale, self.noobj_scale, conf_delta)
         loss_class = loss_class_tensor(object_mask, pred_classes, true_class, self.class_scale)
-        loss = loss_xy + loss_wh + loss_conf + loss_class
+        loss = loss_box + loss_conf + loss_class
         return loss*self.grid_scale
 
 if __name__ == '__main__':
