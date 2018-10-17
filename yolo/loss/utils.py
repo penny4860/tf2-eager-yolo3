@@ -3,15 +3,17 @@ import numpy as np
 import tensorflow as tf
 
 
+def _create_mesh_xy(batch_size, grid_h, grid_w, n_box):
+    mesh_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+    mesh_y = tf.transpose(mesh_x, (0,2,1,3,4))
+    mesh_xy = tf.tile(tf.concat([mesh_x,mesh_y],-1), [batch_size, 1, 1, n_box, 1])
+    return mesh_xy
+
 def adjust_pred_tensor(y_pred):
+
+    mesh_xy = _create_mesh_xy(*y_pred.shape[:4])
     
-    # make a persistent mesh grid
-    batch_size, grid_h, grid_w = tf.shape(y_pred)[0:3]
-    cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
-    cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-    cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
-    
-    pred_xy    = cell_grid + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
+    pred_xy    = mesh_xy + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
     pred_wh    = y_pred[..., 2:4]                                                       # t_wh
     pred_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
     pred_classes = y_pred[..., 5:]                                              
