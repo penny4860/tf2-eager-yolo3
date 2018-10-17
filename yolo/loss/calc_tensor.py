@@ -57,26 +57,26 @@ class LossTensorCalculator(object):
         object_mask = tf.expand_dims(y_true[..., 4], 4)
 
         # 2. Adjust prediction (bxy, twh)
-        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = adjust_pred_tensor(y_pred)
+        pred_xy, pred_wh, pred_conf, pred_classes = adjust_pred_tensor(y_pred)
 
         # 3. Adjust ground truth (bxy, twh)
-        true_box_xy, true_box_wh, true_box_conf, true_box_class = adjust_true_tensor(y_true)
+        true_xy, true_wh, true_conf, true_class = adjust_true_tensor(y_true)
 
         # 4. conf_delta tensor
         conf_delta = conf_delta_tensor(y_true,
-                                         pred_box_xy,
-                                         pred_box_wh,
-                                         pred_box_conf,
+                                         pred_xy,
+                                         pred_wh,
+                                         pred_conf,
                                          anchors,
                                          self.ignore_thresh)
 
         # 5. loss tensor
-        wh_scale =  wh_scale_tensor(true_box_wh, anchors, self.image_size)
+        wh_scale =  wh_scale_tensor(true_wh, anchors, self.image_size)
 
-        loss_xy = loss_xy_tensor(object_mask, pred_box_xy, true_box_xy, wh_scale, self.xywh_scale)
-        loss_wh = loss_wh_tensor(object_mask, pred_box_wh, true_box_wh, wh_scale, self.xywh_scale)
-        loss_conf = loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, self.obj_scale, self.noobj_scale, conf_delta)
-        loss_class = loss_class_tensor(object_mask, pred_box_class, true_box_class, self.class_scale)
+        loss_xy = loss_xy_tensor(object_mask, pred_xy, true_xy, wh_scale, self.xywh_scale)
+        loss_wh = loss_wh_tensor(object_mask, pred_wh, true_wh, wh_scale, self.xywh_scale)
+        loss_conf = loss_conf_tensor(object_mask, pred_conf, true_conf, self.obj_scale, self.noobj_scale, conf_delta)
+        loss_class = loss_class_tensor(object_mask, pred_classes, true_class, self.class_scale)
         loss = loss_xy + loss_wh + loss_conf + loss_class
         return loss*self.grid_scale
 
