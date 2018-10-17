@@ -20,11 +20,12 @@ def adjust_pred_tensor(y_pred):
     return preds
 
 def adjust_true_tensor(y_true):
-    true_box_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
-    true_box_wh    = y_true[..., 2:4] # t_wh
-    true_box_conf  = y_true[..., 4]
-    true_box_class = tf.argmax(y_true[..., 5:], -1)
-    return true_box_xy, true_box_wh, true_box_conf, true_box_class
+    true_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
+    true_wh    = y_true[..., 2:4] # t_wh
+    true_conf  = y_true[..., 4]
+    true_class = tf.argmax(y_true[..., 5:], -1)
+    trues = tf.concat([true_xy, true_wh, tf.expand_dims(true_conf, -1), tf.expand_dims(tf.cast(true_class, tf.float32), -1)], axis=-1)
+    return trues
 
 def conf_delta_tensor(y_true, y_pred, anchors, ignore_thresh):
 
@@ -92,8 +93,9 @@ def loss_conf_tensor(object_mask, pred_box_conf, true_box_conf, obj_scale, noobj
     return loss_conf
 
 def loss_class_tensor(object_mask, pred_box_class, true_box_class, class_scale):
+    true_box_class_ = tf.cast(true_box_class, tf.int64)
     class_delta = object_mask * \
-                  tf.expand_dims(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class), 4) * \
+                  tf.expand_dims(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class_, logits=pred_box_class), 4) * \
                   class_scale
     loss_class = tf.reduce_sum(class_delta,               list(range(1,5)))
     return loss_class
