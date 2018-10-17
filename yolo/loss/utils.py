@@ -38,27 +38,35 @@ def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, 
                             tw = box[2]
                             th = box[3]
                             pw, ph = anchors[2*b], anchors[2*b+1]
-                            y_true_np[i, r, c, b, :4] = [box[0], box[1], int(pw * np.exp(tw)), int(ph * np.exp(th))]
+                            y_true_np[i, r, c, b, :4] = [box[0], box[1], pw * np.exp(tw), ph * np.exp(th)]
         y_true = tf.constant(y_true_np)
         return y_true
     
-#     print(net_factor.shape, grid_factor.shape)
-#     print(net_factor[0,0,0,0,:].numpy(), grid_factor[0,0,0,0,:].numpy())
-
-#     batch_size, grid_size = y_true.shape[:2]
-#     n_box = 3
-#     cell_box = tf.tile(anchors, [batch_size*grid_size*grid_size])
-#     cell_box = tf.reshape(cell_box, [batch_size, grid_size, grid_size, n_box, 2])
-#     cell_box = tf.cast(cell_box, tf.float32)
-#     twh = y_true[:,:,:,:,2:4]
-#     bwh = cell_box * tf.exp(twh)
+    batch_size, grid_size = y_true.shape[:2]
+    n_box = 3
+    cell_box = tf.tile(anchors, [batch_size*grid_size*grid_size])
+    cell_box = tf.reshape(cell_box, [batch_size, grid_size, grid_size, n_box, 2])
+    cell_box = tf.cast(cell_box, tf.float32)
+    twh = y_true[:,:,:,:,2:4]
+    bwh = cell_box * tf.exp(twh)
+    bwh = bwh * tf.expand_dims(y_true[:,:,:,:,4], 4)
+    # y_true = _activate(y_true)
     
-    y_true = _activate(y_true)
+    batch_size, n_rows, n_cols = y_true.shape[:3]
+    y_true_np = y_true.numpy()
+    bwh_np = bwh.numpy()
+    for i in range(batch_size):
+        for r in range(n_rows):
+            for c in range(n_cols):
+                for b in range(3):
+                    #if y_true_np[i, r, c, b, 4] != 0:
+                    print(i, r, c, b, y_true_np[i, r, c, b, 2:4], bwh_np[i,r,c,b,:])
+    
     anchors_ = tf.constant(anchors, dtype='float', shape=[1,1,1,3,2])
     
     # then, ignore the boxes which have good overlap with some true box
     true_xy = y_true[..., 0:2]
-    true_wh = y_true[..., 2:4]
+    true_wh = bwh
      
     true_wh_half = true_wh / 2.
     true_mins    = true_xy - true_wh_half
