@@ -3,31 +3,6 @@ import numpy as np
 import tensorflow as tf
 
 
-def _create_mesh_xy(batch_size, grid_h, grid_w, n_box):
-    """
-    # Returns
-        mesh_xy : Tensor, shape of (batch_size, grid_h, grid_w, n_box, 2)
-            [..., 0] means "grid_w"
-            [..., 1] means "grid_h"
-    """
-    mesh_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
-    mesh_y = tf.transpose(mesh_x, (0,2,1,3,4))
-    mesh_xy = tf.tile(tf.concat([mesh_x,mesh_y],-1), [batch_size, 1, 1, n_box, 1])
-    return mesh_xy
-
-def _create_mesh_anchor(anchors, batch_size, grid_h, grid_w, n_box):
-    """
-    # Returns
-        mesh_xy : Tensor, shape of (batch_size, grid_h, grid_w, n_box, 2)
-            [..., 0] means "anchor_w"
-            [..., 1] means "anchor_h"
-    """
-    mesh_anchor = tf.tile(anchors, [batch_size*grid_h*grid_w])
-    mesh_anchor = tf.reshape(mesh_anchor, [batch_size, grid_h, grid_w, n_box, 2])
-    mesh_anchor = tf.cast(mesh_anchor, tf.float32)
-    return mesh_anchor
-
-
 def adjust_pred_tensor(y_pred):
 
     mesh_xy = _create_mesh_xy(*y_pred.shape[:4])
@@ -51,6 +26,8 @@ def adjust_true_tensor(y_true):
 def conf_delta_tensor(y_true, y_pred, anchors, ignore_thresh):
 
     pred_box_xy, pred_box_wh, pred_box_conf = y_pred[..., :2], y_pred[..., 2:4], y_pred[..., 4]
+
+    
     anchor_grid = _create_mesh_anchor(anchors, *y_pred.shape[:4])
     true_wh = y_true[:,:,:,:,2:4]
     true_wh = anchor_grid * tf.exp(true_wh)
@@ -116,3 +93,29 @@ def loss_class_tensor(object_mask, pred_box_class, true_box_class, class_scale):
                   class_scale
     loss_class = tf.reduce_sum(class_delta,               list(range(1,5)))
     return loss_class
+
+
+def _create_mesh_xy(batch_size, grid_h, grid_w, n_box):
+    """
+    # Returns
+        mesh_xy : Tensor, shape of (batch_size, grid_h, grid_w, n_box, 2)
+            [..., 0] means "grid_w"
+            [..., 1] means "grid_h"
+    """
+    mesh_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+    mesh_y = tf.transpose(mesh_x, (0,2,1,3,4))
+    mesh_xy = tf.tile(tf.concat([mesh_x,mesh_y],-1), [batch_size, 1, 1, n_box, 1])
+    return mesh_xy
+
+def _create_mesh_anchor(anchors, batch_size, grid_h, grid_w, n_box):
+    """
+    # Returns
+        mesh_xy : Tensor, shape of (batch_size, grid_h, grid_w, n_box, 2)
+            [..., 0] means "anchor_w"
+            [..., 1] means "anchor_h"
+    """
+    mesh_anchor = tf.tile(anchors, [batch_size*grid_h*grid_w])
+    mesh_anchor = tf.reshape(mesh_anchor, [batch_size, grid_h, grid_w, n_box, 2])
+    mesh_anchor = tf.cast(mesh_anchor, tf.float32)
+    return mesh_anchor
+
