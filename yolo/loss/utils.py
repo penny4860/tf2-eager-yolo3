@@ -11,11 +11,13 @@ def adjust_pred_tensor(y_pred):
     cell_y = tf.transpose(cell_x, (0,2,1,3,4))
     cell_grid = tf.tile(tf.concat([cell_x,cell_y],-1), [batch_size, 1, 1, 3, 1])
     
-    pred_box_xy    = cell_grid + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
-    pred_box_wh    = y_pred[..., 2:4]                                                       # t_wh
-    pred_box_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
-    pred_box_class = y_pred[..., 5:]                                                        # adjust class probabilities      
-    return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
+    pred_xy    = cell_grid + tf.sigmoid(y_pred[..., :2])            # sigma(t_xy) + c_xy
+    pred_wh    = y_pred[..., 2:4]                                                       # t_wh
+    pred_conf  = tf.sigmoid(y_pred[..., 4])                          # adjust confidence
+    pred_classes = y_pred[..., 5:]                                              
+    
+    preds = tf.concat([pred_xy, pred_wh, tf.expand_dims(pred_conf, axis=-1), pred_classes], axis=-1)
+    return preds
 
 def adjust_true_tensor(y_true):
     true_box_xy    = y_true[..., 0:2] # (sigma(t_xy) + c_xy)
@@ -24,7 +26,10 @@ def adjust_true_tensor(y_true):
     true_box_class = tf.argmax(y_true[..., 5:], -1)
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
-def conf_delta_tensor(y_true, pred_box_xy, pred_box_wh, pred_box_conf, anchors, ignore_thresh):
+def conf_delta_tensor(y_true, y_pred, anchors, ignore_thresh):
+
+    pred_box_xy, pred_box_wh, pred_box_conf = y_pred[..., :2], y_pred[..., 2:4], y_pred[..., 4]
+    
     batch_size, grid_size, _, n_box = y_true.shape[:4]
     cell_box = tf.tile(anchors, [batch_size*grid_size*grid_size])
     cell_box = tf.reshape(cell_box, [batch_size, grid_size, grid_size, n_box, 2])

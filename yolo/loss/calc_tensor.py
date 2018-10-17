@@ -57,28 +57,23 @@ class LossTensorCalculator(object):
         object_mask = tf.expand_dims(y_true[..., 4], 4)
 
         # 2. Adjust prediction (bxy, twh)
-        pred_xy, pred_wh, pred_conf, pred_classes = adjust_pred_tensor(y_pred)
+        preds = adjust_pred_tensor(y_pred)
 
         # 3. Adjust ground truth (bxy, twh)
         true_xy, true_wh, true_conf, true_class = adjust_true_tensor(y_true)
+        # trues = tf.concat([true_xy, true_wh, true_conf, tf.cast(true_class, tf.float32)], axis=-1)
 
         # 4. conf_delta tensor
-        conf_delta = conf_delta_tensor(y_true,
-                                         pred_xy,
-                                         pred_wh,
-                                         pred_conf,
-                                         anchors,
-                                         self.ignore_thresh)
+        conf_delta = conf_delta_tensor(y_true, preds, anchors, self.ignore_thresh)
 
         # 5. loss tensor
         wh_scale =  wh_scale_tensor(true_wh, anchors, self.image_size)
         
-        pred_box = tf.concat([pred_xy, pred_wh], axis=-1)
         true_box = tf.concat([true_xy, true_wh], axis=-1)
 
-        loss_box = loss_coord_tensor(object_mask, pred_box, true_box, wh_scale, self.xywh_scale)
-        loss_conf = loss_conf_tensor(object_mask, pred_conf, true_conf, self.obj_scale, self.noobj_scale, conf_delta)
-        loss_class = loss_class_tensor(object_mask, pred_classes, true_class, self.class_scale)
+        loss_box = loss_coord_tensor(object_mask, preds[..., :4], true_box, wh_scale, self.xywh_scale)
+        loss_conf = loss_conf_tensor(object_mask, preds[..., 4], true_conf, self.obj_scale, self.noobj_scale, conf_delta)
+        loss_class = loss_class_tensor(object_mask, preds[..., 5:], true_class, self.class_scale)
         loss = loss_box + loss_conf + loss_class
         return loss*self.grid_scale
 
