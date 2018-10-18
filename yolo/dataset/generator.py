@@ -6,10 +6,41 @@ from tensorflow.keras.utils import Sequence
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
 from yolo.dataset.annotation import parse_annotation
+from yolo import COCO_ANCHORS
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
 DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
+
+
+def create_generator(image_dir,
+                     annotation_dir,
+                     labels_naming=["raccoon"],
+                     anchors=COCO_ANCHORS,
+                     min_net_size=288,
+                     max_net_size=288,
+                     shuffle=True,
+                     jitter=True):
+    """
+    # Args
+        image_dir : str
+        annotation_dir : str
+        labels_naming : list of strs
+        anchors : list of integer (length 18)
+    # Returns
+        generator : tensorflow.keras.utils.Sequence
+            generator[0] -> xs, ys_1, ys_2, ys_3
+    """
+    train_anns = parse_annotation(annotation_dir,
+                                  image_dir,
+                                  labels_naming=labels_naming)
+    generator = BatchGenerator(train_anns,
+                               anchors=anchors,
+                               min_net_size=min_net_size,
+                               max_net_size=max_net_size,
+                               shuffle=shuffle,
+                               jitter=jitter)
+    return generator
 
 
 class BatchGenerator(Sequence):
@@ -148,18 +179,6 @@ def _assign_box(yolo, box_index, box, label):
 
 def normalize(image):
     return image/255.
-
-
-def create_generator(image_dir, annotation_dir):
-    train_anns = parse_annotation(annotation_dir,
-                                  image_dir,
-                                  labels_naming=["raccoon"])
-    generator = BatchGenerator(train_anns,
-                               anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
-                               min_net_size=288,
-                               max_net_size=288,
-                               shuffle=False)
-    return generator
 
 
 if __name__ == '__main__':
