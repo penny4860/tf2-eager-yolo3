@@ -1,20 +1,54 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
+
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
+from yolo.dataset.annotation import parse_annotation
+from yolo import COCO_ANCHORS
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
 DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
 
 
+def create_generator(image_dir,
+                     annotation_dir,
+                     batch_size,
+                     labels_naming=["raccoon"],
+                     anchors=COCO_ANCHORS,
+                     min_net_size=288,
+                     max_net_size=288,
+                     shuffle=True,
+                     jitter=True):
+    """
+    # Args
+        image_dir : str
+        annotation_dir : str
+        labels_naming : list of strs
+        anchors : list of integer (length 18)
+    # Returns
+        generator : tensorflow.keras.utils.Sequence
+            generator[0] -> xs, ys_1, ys_2, ys_3
+    """
+    train_anns = parse_annotation(annotation_dir,
+                                  image_dir,
+                                  labels_naming=labels_naming)
+    generator = BatchGenerator(train_anns,
+                               anchors=anchors,
+                               batch_size=batch_size,
+                               min_net_size=min_net_size,
+                               max_net_size=max_net_size,
+                               shuffle=shuffle,
+                               jitter=jitter)
+    return generator
+
+
 class BatchGenerator(Sequence):
     def __init__(self, 
         annotations, 
         anchors,   
-        max_box_per_image=30,
         batch_size=2,
         min_net_size=320,
         max_net_size=608,    
@@ -23,7 +57,6 @@ class BatchGenerator(Sequence):
     ):
         self.annotations          = annotations
         self._batch_size         = batch_size
-        self.max_box_per_image  = max_box_per_image
         self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.shuffle            = shuffle
@@ -31,25 +64,16 @@ class BatchGenerator(Sequence):
         self.anchors            = create_anchor_boxes(anchors)
         self.net_size = DEFAULT_NETWORK_SIZE
 
-        if shuffle: np.random.shuffle(self.annotations)
+        if shuffle:
+            self.annotations.shuffle()
             
     def __len__(self):
         return int(np.ceil(float(len(self.annotations))/self._batch_size))           
 
     def __getitem__(self, idx):
-        # get image input size, change every 10 batches
+        
         net_size = self._get_net_size(idx)
-        base_grid_h, base_grid_w = net_size//DOWNSAMPLE_RATIO, net_size//DOWNSAMPLE_RATIO
-
-        # determine the first and the last indices of the batch
-        x_batch = []
-
-        # initialize the inputs and the outputs
-        n_classes = self.annotations.n_classes()
-        yolo_1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
-        yolo_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
-        yolo_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
-        yolos = [yolo_3, yolo_2, yolo_1]
+        xs, list_ys = _create_empty_xy(self._batch_size, net_size, self.annotations.n_classes())
 
         for i in range(self._batch_size):
             # 1. get input file & its annotation
@@ -60,16 +84,18 @@ class BatchGenerator(Sequence):
             # 2. read image in fixed size
             img_augmenter = ImgAugment(net_size, net_size, False)
             img, boxes = img_augmenter.imread(fname, boxes)
-            
-            x_batch.append(normalize(img))
 
+            # 3. Append xs            
+            xs.append(normalize(img))
+
+            # 4. Append ys            
             for original_box, label in zip(boxes, labels):
-                max_anchor, scale_index, box_index = find_match_anchor(original_box, self.anchors)
+                max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
                 
-                yolobox = yolo_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
-                assign_box(yolos[scale_index][i], box_index, yolobox, label)
+                _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
+                _assign_box(list_ys[scale_index][i], box_index, _coded_box, label)
 
-        return np.array(x_batch), yolo_1, yolo_2, yolo_3
+        return np.array(xs), list_ys[2], list_ys[1], list_ys[0]
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
@@ -80,10 +106,26 @@ class BatchGenerator(Sequence):
         return self.net_size
 
     def on_epoch_end(self):
-        if self.shuffle: np.random.shuffle(self.annotations)
+        if self.shuffle:
+            self.annotations.shuffle()
 
 
-def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
+def _create_empty_xy(batch_size, net_size, n_classes, n_boxes=3):
+    # get image input size, change every 10 batches
+    base_grid_h, base_grid_w = net_size//DOWNSAMPLE_RATIO, net_size//DOWNSAMPLE_RATIO
+
+    # determine the first and the last indices of the batch
+    xs = []
+
+    # initialize the inputs and the outputs
+    ys_1 = np.zeros((batch_size, 1*base_grid_h,  1*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 1
+    ys_2 = np.zeros((batch_size, 2*base_grid_h,  2*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 2
+    ys_3 = np.zeros((batch_size, 4*base_grid_h,  4*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 3
+    list_ys = [ys_3, ys_2, ys_1]
+    return xs, list_ys
+
+
+def _encode_box(yolo, original_box, anchor_box, net_w, net_h):
     
     x1, y1, x2, y2 = original_box
     _, _, anchor_w, anchor_h = anchor_box
@@ -105,7 +147,7 @@ def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
     return box
 
 
-def find_match_anchor(box, anchor_boxes):
+def _find_match_anchor(box, anchor_boxes):
     """
     # Args
         box : array, shape of (4,)
@@ -123,7 +165,7 @@ def find_match_anchor(box, anchor_boxes):
     return max_anchor, scale_index, box_index
 
 
-def assign_box(yolo, box_index, box, label):
+def _assign_box(yolo, box_index, box, label):
     center_x, center_y, _, _ = box
 
     # determine the location of the cell responsible for this object
@@ -141,31 +183,17 @@ def normalize(image):
     return image/255.
 
 
-import os
-from yolo import PROJECT_ROOT
-def create_generator(image_dir, annotation_dir):
-    from yolo.dataset.annotation import parse_annotation
-    train_anns = parse_annotation(annotation_dir,
-                                  image_dir,
-                                  labels_naming=["raccoon"])
-    generator = BatchGenerator(train_anns,
-                               anchors=[17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
-                               min_net_size=288,
-                               max_net_size=288,
-                               shuffle=False)
-    return generator
-
-
 if __name__ == '__main__':
-    def test(x_batch, t_batch, yolo_1, yolo_2, yolo_3):
-        expected_x_batch = np.load(os.path.join(PROJECT_ROOT, "samples//x_batch.npy"))
-        expected_t_batch = np.load(os.path.join(PROJECT_ROOT, "samples//t_batch.npy"))
-        expected_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_1.npy"))
-        expected_yolo_2 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_2.npy"))
-        expected_yolo_3 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_3.npy"))
+    import os
+    from yolo import PROJECT_ROOT
+    def test(x_batch, yolo_1, yolo_2, yolo_3):
+        expected_x_batch = np.load("x_batch.npy")
+        expected_yolo_1 = np.load("yolo_1.npy")
+        expected_yolo_2 = np.load("yolo_2.npy")
+        expected_yolo_3 = np.load("yolo_3.npy")
         
-        for a, b in zip([x_batch, t_batch, yolo_1, yolo_2, yolo_3],
-                        [expected_x_batch, expected_t_batch, expected_yolo_1, expected_yolo_2, expected_yolo_3]):
+        for a, b in zip([x_batch, yolo_1, yolo_2, yolo_3],
+                        [expected_x_batch, expected_yolo_1, expected_yolo_2, expected_yolo_3]):
             if np.allclose(a, b):
                 print("Test Passed")
             else:
@@ -174,7 +202,10 @@ if __name__ == '__main__':
     ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
     generator = create_generator(img_dir, ann_dir)
-    x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[0]
-    test(x_batch, t_batch, yolo_1, yolo_2, yolo_3)
+    test(*generator[0])
     
+
+
+
+
 

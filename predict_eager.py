@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 tf.enable_eager_execution()
 from yolo.utils.box import draw_boxes
 from yolo.net.yolonet import Yolonet
-from yolo import RACCOON_ANCHORS
+from yolo import COCO_ANCHORS
 from yolo.frontend import YoloDetector
 
 WEIGHTS_FNAME = "weights.h5"
@@ -15,8 +15,8 @@ if __name__ == '__main__':
     import os
     from yolo import PROJECT_ROOT
     import cv2
-    image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-1.jpg")
-    image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-12.jpg")
+    image_path = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs", "raccoon-1.jpg")
+    image_path = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs", "raccoon-12.jpg")
 
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     detector = YoloDetector(model)
 
     # 3. predict
-    boxes = detector.detect(image, RACCOON_ANCHORS)
+    boxes = detector.detect(image, COCO_ANCHORS)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels=["ani"], obj_thresh=0.0)
