@@ -15,8 +15,8 @@ if __name__ == '__main__':
     import os
     from yolo import PROJECT_ROOT
     import cv2
-    image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-1.jpg")
-    image_path = os.path.join(PROJECT_ROOT, "samples", "imgs", "raccoon-12.jpg")
+    image_path = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs", "raccoon-1.jpg")
+    image_path = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs", "raccoon-12.jpg")
 
     image = cv2.imread(image_path)
     image = image[:,:,::-1]

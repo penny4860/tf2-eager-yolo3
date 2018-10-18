@@ -13,8 +13,8 @@ if __name__ == '__main__':
     from yolo import PROJECT_ROOT
 
     # 1. create generator
-    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
+    ann_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "anns")
+    img_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs")
     generator = create_generator(img_dir, ann_dir,
                                  batch_size=2,
                                  labels_naming=["raccoon"])
