@@ -39,7 +39,11 @@ $ activate yolo3 # in linux "source activate yolo3"
 
 ### 2. Training from scratch
 
-(To be added)
+This project provides a way to train digit detector from scratch. If you follow the command below, you can build a digit detector with just two images. Please refer to the [train_from_scratch.ipynb](https://github.com/penny4860/tf-eager-yolo3/tree/master/examples/train_from_scratch.ipynb). If you follow the instructions, you can train the digit detector as shown below.
+
+<img src="imgs/svhn.jpg" height="250">
+
+Now you can add more images to train a digit detector with good generalization performance.
 
 ## Copyright
 
