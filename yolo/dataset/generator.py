@@ -42,14 +42,14 @@ class BatchGenerator(Sequence):
         base_grid_h, base_grid_w = net_size//DOWNSAMPLE_RATIO, net_size//DOWNSAMPLE_RATIO
 
         # determine the first and the last indices of the batch
-        x_batch = []
+        xs = []
 
         # initialize the inputs and the outputs
         n_classes = self.annotations.n_classes()
-        y1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
-        y2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
-        y3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
-        yolos = [y3, y2, y1]
+        ys_1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
+        ys_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
+        ys_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
+        list_ys = [ys_3, ys_2, ys_1]
 
         for i in range(self._batch_size):
             # 1. get input file & its annotation
@@ -61,15 +61,15 @@ class BatchGenerator(Sequence):
             img_augmenter = ImgAugment(net_size, net_size, False)
             img, boxes = img_augmenter.imread(fname, boxes)
             
-            x_batch.append(normalize(img))
+            xs.append(normalize(img))
 
             for original_box, label in zip(boxes, labels):
                 max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
                 
-                _coded_box = _encode_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
-                _assign_box(yolos[scale_index][i], box_index, _coded_box, label)
+                _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
+                _assign_box(list_ys[scale_index][i], box_index, _coded_box, label)
 
-        return np.array(x_batch), y1, y2, y3
+        return np.array(xs), ys_1, ys_2, ys_3
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
