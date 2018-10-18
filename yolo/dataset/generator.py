@@ -46,10 +46,10 @@ class BatchGenerator(Sequence):
 
         # initialize the inputs and the outputs
         n_classes = self.annotations.n_classes()
-        yolo_1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
-        yolo_2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
-        yolo_3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
-        yolos = [yolo_3, yolo_2, yolo_1]
+        y1 = np.zeros((self._batch_size, 1*base_grid_h,  1*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 1
+        y2 = np.zeros((self._batch_size, 2*base_grid_h,  2*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 2
+        y3 = np.zeros((self._batch_size, 4*base_grid_h,  4*base_grid_w, len(self.anchors)//3, 4+1+n_classes)) # desired network output 3
+        yolos = [y3, y2, y1]
 
         for i in range(self._batch_size):
             # 1. get input file & its annotation
@@ -64,12 +64,12 @@ class BatchGenerator(Sequence):
             x_batch.append(normalize(img))
 
             for original_box, label in zip(boxes, labels):
-                max_anchor, scale_index, box_index = find_match_anchor(original_box, self.anchors)
+                max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
                 
-                yolobox = yolo_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
-                assign_box(yolos[scale_index][i], box_index, yolobox, label)
+                _coded_box = _encode_box(yolos[scale_index], original_box, max_anchor, net_size, net_size)
+                _assign_box(yolos[scale_index][i], box_index, _coded_box, label)
 
-        return np.array(x_batch), yolo_1, yolo_2, yolo_3
+        return np.array(x_batch), y1, y2, y3
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
@@ -83,7 +83,7 @@ class BatchGenerator(Sequence):
         if self.shuffle: np.random.shuffle(self.annotations)
 
 
-def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
+def _encode_box(yolo, original_box, anchor_box, net_w, net_h):
     
     x1, y1, x2, y2 = original_box
     _, _, anchor_w, anchor_h = anchor_box
@@ -105,7 +105,7 @@ def yolo_box(yolo, original_box, anchor_box, net_w, net_h):
     return box
 
 
-def find_match_anchor(box, anchor_boxes):
+def _find_match_anchor(box, anchor_boxes):
     """
     # Args
         box : array, shape of (4,)
@@ -123,7 +123,7 @@ def find_match_anchor(box, anchor_boxes):
     return max_anchor, scale_index, box_index
 
 
-def assign_box(yolo, box_index, box, label):
+def _assign_box(yolo, box_index, box, label):
     center_x, center_y, _, _ = box
 
     # determine the location of the cell responsible for this object
