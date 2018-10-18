@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
+
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
+from yolo.dataset.annotation import parse_annotation
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
 DOWNSAMPLE_RATIO = 32
@@ -148,10 +150,7 @@ def normalize(image):
     return image/255.
 
 
-import os
-from yolo import PROJECT_ROOT
 def create_generator(image_dir, annotation_dir):
-    from yolo.dataset.annotation import parse_annotation
     train_anns = parse_annotation(annotation_dir,
                                   image_dir,
                                   labels_naming=["raccoon"])
@@ -164,6 +163,8 @@ def create_generator(image_dir, annotation_dir):
 
 
 if __name__ == '__main__':
+    import os
+    from yolo import PROJECT_ROOT
     def test(x_batch, yolo_1, yolo_2, yolo_3):
         expected_x_batch = np.load("x_batch.npy")
         expected_yolo_1 = np.load("yolo_1.npy")
