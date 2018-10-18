@@ -157,15 +157,14 @@ def create_generator(image_dir, annotation_dir):
 
 
 if __name__ == '__main__':
-    def test(x_batch, t_batch, yolo_1, yolo_2, yolo_3):
-        expected_x_batch = np.load(os.path.join(PROJECT_ROOT, "samples//x_batch.npy"))
-        expected_t_batch = np.load(os.path.join(PROJECT_ROOT, "samples//t_batch.npy"))
-        expected_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_1.npy"))
-        expected_yolo_2 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_2.npy"))
-        expected_yolo_3 = np.load(os.path.join(PROJECT_ROOT, "samples//yolo_3.npy"))
+    def test(x_batch, yolo_1, yolo_2, yolo_3):
+        expected_x_batch = np.load("x_batch.npy")
+        expected_yolo_1 = np.load("yolo_1.npy")
+        expected_yolo_2 = np.load("yolo_2.npy")
+        expected_yolo_3 = np.load("yolo_3.npy")
         
-        for a, b in zip([x_batch, t_batch, yolo_1, yolo_2, yolo_3],
-                        [expected_x_batch, expected_t_batch, expected_yolo_1, expected_yolo_2, expected_yolo_3]):
+        for a, b in zip([x_batch, yolo_1, yolo_2, yolo_3],
+                        [expected_x_batch, expected_yolo_1, expected_yolo_2, expected_yolo_3]):
             if np.allclose(a, b):
                 print("Test Passed")
             else:
@@ -174,7 +173,10 @@ if __name__ == '__main__':
     ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
     generator = create_generator(img_dir, ann_dir)
-    x_batch, t_batch, yolo_1, yolo_2, yolo_3 = generator[0]
-    test(x_batch, t_batch, yolo_1, yolo_2, yolo_3)
+    test(*generator[0])
     
+
+
+
+
 
