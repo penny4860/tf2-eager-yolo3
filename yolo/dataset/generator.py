@@ -15,6 +15,7 @@ DEFAULT_NETWORK_SIZE = 288
 
 def create_generator(image_dir,
                      annotation_dir,
+                     batch_size,
                      labels_naming=["raccoon"],
                      anchors=COCO_ANCHORS,
                      min_net_size=288,
@@ -36,6 +37,7 @@ def create_generator(image_dir,
                                   labels_naming=labels_naming)
     generator = BatchGenerator(train_anns,
                                anchors=anchors,
+                               batch_size=batch_size,
                                min_net_size=min_net_size,
                                max_net_size=max_net_size,
                                shuffle=shuffle,
@@ -47,7 +49,6 @@ class BatchGenerator(Sequence):
     def __init__(self, 
         annotations, 
         anchors,   
-        max_box_per_image=30,
         batch_size=2,
         min_net_size=320,
         max_net_size=608,    
@@ -56,7 +57,6 @@ class BatchGenerator(Sequence):
     ):
         self.annotations          = annotations
         self._batch_size         = batch_size
-        self.max_box_per_image  = max_box_per_image
         self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.shuffle            = shuffle
@@ -64,7 +64,8 @@ class BatchGenerator(Sequence):
         self.anchors            = create_anchor_boxes(anchors)
         self.net_size = DEFAULT_NETWORK_SIZE
 
-        if shuffle: np.random.shuffle(self.annotations)
+        if shuffle:
+            self.annotations.shuffle()
             
     def __len__(self):
         return int(np.ceil(float(len(self.annotations))/self._batch_size))           
@@ -105,7 +106,8 @@ class BatchGenerator(Sequence):
         return self.net_size
 
     def on_epoch_end(self):
-        if self.shuffle: np.random.shuffle(self.annotations)
+        if self.shuffle:
+            self.annotations.shuffle()
 
 
 def _create_empty_xy(batch_size, net_size, n_classes, n_boxes=3):
