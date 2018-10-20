@@ -13,8 +13,8 @@ DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
 
 
-def create_generator(image_dir,
-                     annotation_dir,
+def create_generator(ann_fnames,
+                     image_root,
                      batch_size,
                      labels_naming=["raccoon"],
                      anchors=COCO_ANCHORS,
@@ -32,11 +32,7 @@ def create_generator(image_dir,
         generator : tensorflow.keras.utils.Sequence
             generator[0] -> xs, ys_1, ys_2, ys_3
     """
-    import glob
-    import os
-    ann_fnames = glob.glob(os.path.join(annotation_dir, "*.xml"))
-    print(ann_fnames)
-    generator = BatchGenerator(ann_fnames, image_dir, labels=["raccoon"], anchors=anchors, min_net_size=min_net_size,
+    generator = BatchGenerator(ann_fnames, image_root, labels=["raccoon"], anchors=anchors, min_net_size=min_net_size,
                                jitter=jitter)
     
     def gen():
@@ -180,6 +176,7 @@ def normalize(image):
 if __name__ == '__main__':
     tf.enable_eager_execution()
     import os
+    import glob
     from yolo import PROJECT_ROOT
     def test(x_batch, yolo_1, yolo_2, yolo_3):
         expected_x_batch = np.load("x_batch.npy")
@@ -197,7 +194,8 @@ if __name__ == '__main__':
 
     ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
+    ann_fnames = glob.glob(os.path.join(ann_dir, "*.xml"))
 
-    iterator = create_generator(img_dir, ann_dir, 2, jitter=False)
+    iterator = create_generator(ann_fnames, img_dir, 2, jitter=False)
     test(*iterator.get_next())
 
