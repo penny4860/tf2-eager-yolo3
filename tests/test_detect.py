@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 import cv2
 import os
 
@@ -10,7 +9,7 @@ from yolo import COCO_ANCHORS, PROJECT_ROOT
 from yolo.frontend import YoloDetector
 
 
-def test_detect():
+def test_detect(setup_tf_eager):
     # Download if not exits weight file
     weights_path = os.path.join(PROJECT_ROOT, "tests", "samples", "yolov3.weights")
     image_path   = os.path.join(PROJECT_ROOT, "tests", "samples", "sample.jpeg")
@@ -33,7 +32,6 @@ def test_detect():
 
 import pytest
 if __name__ == '__main__':
-    tf.enable_eager_execution()
     pytest.main([__file__, "-v", "-s"])
  
 
