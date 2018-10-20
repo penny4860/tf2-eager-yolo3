@@ -73,29 +73,25 @@ class BatchGenerator(Sequence):
     def __getitem__(self, idx):
         
         net_size = self._get_net_size(idx)
-        xs, list_ys = _create_empty_xy(self._batch_size, net_size, self.annotations.n_classes())
+        list_ys = _create_empty_xy(net_size, self.annotations.n_classes())
 
-        for i in range(self._batch_size):
-            # 1. get input file & its annotation
-            fname = self.annotations.fname(self._batch_size*idx + i)
-            boxes = self.annotations.boxes(self._batch_size*idx + i)
-            labels = self.annotations.code_labels(self._batch_size*idx + i)
+        # 1. get input file & its annotation
+        fname = self.annotations.fname(idx)
+        boxes = self.annotations.boxes(idx)
+        labels = self.annotations.code_labels(idx)
 
-            # 2. read image in fixed size
-            img_augmenter = ImgAugment(net_size, net_size, self.jitter)
-            img, boxes = img_augmenter.imread(fname, boxes)
+        # 2. read image in fixed size
+        img_augmenter = ImgAugment(net_size, net_size, self.jitter)
+        img, boxes = img_augmenter.imread(fname, boxes)
 
-            # 3. Append xs            
-            xs.append(normalize(img))
+        # 4. Append ys
+        for original_box, label in zip(boxes, labels):
+            max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
+            
+            _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
+            _assign_box(list_ys[scale_index], box_index, _coded_box, label)
 
-            # 4. Append ys            
-            for original_box, label in zip(boxes, labels):
-                max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
-                
-                _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
-                _assign_box(list_ys[scale_index][i], box_index, _coded_box, label)
-
-        return np.array(xs), list_ys[2], list_ys[1], list_ys[0]
+        return normalize(img), list_ys[2], list_ys[1], list_ys[0]
 
     def _get_net_size(self, idx):
         if idx%10 == 0:
@@ -110,19 +106,16 @@ class BatchGenerator(Sequence):
             self.annotations.shuffle()
 
 
-def _create_empty_xy(batch_size, net_size, n_classes, n_boxes=3):
+def _create_empty_xy(net_size, n_classes, n_boxes=3):
     # get image input size, change every 10 batches
     base_grid_h, base_grid_w = net_size//DOWNSAMPLE_RATIO, net_size//DOWNSAMPLE_RATIO
 
-    # determine the first and the last indices of the batch
-    xs = []
-
     # initialize the inputs and the outputs
-    ys_1 = np.zeros((batch_size, 1*base_grid_h,  1*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 1
-    ys_2 = np.zeros((batch_size, 2*base_grid_h,  2*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 2
-    ys_3 = np.zeros((batch_size, 4*base_grid_h,  4*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 3
+    ys_1 = np.zeros((1*base_grid_h,  1*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 1
+    ys_2 = np.zeros((2*base_grid_h,  2*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 2
+    ys_3 = np.zeros((4*base_grid_h,  4*base_grid_w, n_boxes, 4+1+n_classes)) # desired network output 3
     list_ys = [ys_3, ys_2, ys_1]
-    return xs, list_ys
+    return list_ys
 
 
 def _encode_box(yolo, original_box, anchor_box, net_w, net_h):
@@ -131,7 +124,7 @@ def _encode_box(yolo, original_box, anchor_box, net_w, net_h):
     _, _, anchor_w, anchor_h = anchor_box
     
     # determine the yolo to be responsible for this bounding box
-    grid_h, grid_w = yolo.shape[1:3]
+    grid_h, grid_w = yolo.shape[:2]
     
     # determine the position of the bounding box on the grid
     center_x = .5*(x1 + x2)
@@ -204,5 +197,25 @@ if __name__ == '__main__':
     generator = create_generator(img_dir, ann_dir, 2,
                                  shuffle=False,
                                  jitter=False)
-    test(*generator[0])
+    # test(*generator[0])
+    def gen():
+        i = -1
+        while True:
+            i += 1
+            yield generator[i]
+    
+    import tensorflow as tf
+    tf.enable_eager_execution()
+    n_features = 6
+    ds = tf.data.Dataset.from_generator(gen,
+                                        (tf.float32, tf.float32, tf.float32, tf.float32),
+                                        (tf.TensorShape([None, None, 3]),
+                                         tf.TensorShape([None, None, 3, n_features]),
+                                         tf.TensorShape([None, None, 3, n_features]),
+                                         tf.TensorShape([None, None, 3, n_features])))
+    ds = ds.batch(2)  # Batch size to use
+    
+    xs, ys_1, ys_2, ys_3 = ds.make_one_shot_iterator().get_next()
+    test(xs, ys_1, ys_2, ys_3)
+
 
