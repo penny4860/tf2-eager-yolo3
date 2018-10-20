@@ -9,17 +9,14 @@ from yolo import COCO_ANCHORS, PROJECT_ROOT
 from yolo.frontend import YoloDetector
 
 
-def test_detect(setup_tf_eager):
-    # Download if not exits weight file
-    weights_path = os.path.join(PROJECT_ROOT, "tests", "samples", "yolov3.weights")
-    image_path   = os.path.join(PROJECT_ROOT, "tests", "samples", "sample.jpeg")
+def test_detect(setup_tf_eager, setup_darknet_weights):
     
-    download_if_not_exists(weights_path,
-                           "https://pjreddie.com/media/files/yolov3.weights")
+    darknet_weights = setup_darknet_weights
+    image_path   = os.path.join(PROJECT_ROOT, "tests", "samples", "sample.jpeg")
 
     # 1. create yolo model & load weights
     yolov3 = Yolonet()
-    yolov3.load_darknet_params(weights_path)
+    yolov3.load_darknet_params(darknet_weights)
 
     # 2. preprocess the image
     image = cv2.imread(image_path)
