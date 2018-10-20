@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 import cv2
 
+from yolo.utils.utils import download_if_not_exists
 from yolo.utils.box import draw_boxes
 from yolo.net.yolonet import Yolonet
 from yolo import COCO_ANCHORS
@@ -16,23 +17,20 @@ argparser = argparse.ArgumentParser(
     description='test yolov3 network with coco weights')
 
 argparser.add_argument(
-    '-w',
-    '--weights',
-    default="yolov3.weights",
-    help='path to weights file')
-
-argparser.add_argument(
     '-i',
     '--image',
-    default="imgs/sample.jpeg",
+    default="tests/samples/sample.jpeg",
     help='path to image file')
 
 
 if __name__ == '__main__':
     args = argparser.parse_args()
 
-    weights_path = args.weights
     image_path   = args.image
+    # Download if not exits weight file
+    weights_path = "yolov3.weights"
+    download_if_not_exists(weights_path,
+                           "https://pjreddie.com/media/files/yolov3.weights")
 
     # set some parameters
     labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", \

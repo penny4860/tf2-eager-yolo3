@@ -1,0 +1,41 @@
+dist: trusty
+sudo: required
+
+language: python
+python:
+  - "3.6"
+
+#cache:
+#    directories:
+#    - bin #cache .weights files
+    
+# command to install dependencies
+install: 
+  - sudo apt-get update
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n yolo python=3.6 anaconda=5.1.0
+  - source activate yolo
+  - pip install tensorflow==1.8.0
+  - pip install opencv-python
+  - pip install imgaug
+  - pip install pytest-cov
+  - pip install codecov
+  - pip install -e .
+
+# command to run tests
+script: pytest -x --cov=yolo tests
+
+#Upload code coverage statistics
+after_success:
+  - codecov
+
+
+
+
+

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/penny4860/tf-eager-yolo3.svg?branch=master)](https://travis-ci.org/penny4860/tf-eager-yolo3) [![codecov](https://codecov.io/gh/penny4860/tf-eager-yolo3/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/tf-eager-yolo3)
+
 
 # Yolo-v3 using tensorflow eager
 
@@ -29,11 +31,11 @@ $ activate yolo3 # in linux "source activate yolo3"
 
 ### 1. Object detection using original yolo3-weights
 
-* Download the pretrained weight file from [yolov3.weights](https://pjreddie.com/media/files/yolov3.weights).
 
 * Run object detection through the following command.
-	* ```project/root> python pred.py -w yolov3.weights -i imgs/sample.jpeg```
-
+	* ```project/root> python pred.py -i tests/samples/sample.jpeg```
+	* Running this script will download the [original yolo3-weights file](https://pjreddie.com/media/files/yolov3.weights) and display the object detection results for the input image.
+	
 * You can see the following results:
 	* <img src="imgs/dog_detected.jpeg" height="600">
 
