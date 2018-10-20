@@ -19,3 +19,12 @@ def setup_darknet_weights():
                            "https://pjreddie.com/media/files/yolov3.weights")
 
     return weights_path
+
+
+@pytest.fixture(scope='session')
+def setup_train_dirs():
+    ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
+    img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
+    return img_dir, ann_dir
+
+

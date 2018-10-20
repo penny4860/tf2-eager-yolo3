@@ -5,17 +5,16 @@ import tensorflow as tf
 
 from yolo.dataset.generator import create_generator
 from yolo.net.yolonet import Yolonet
-from yolo import PROJECT_ROOT
 from yolo.train import train
 
 
-def test_train(setup_tf_eager, setup_darknet_weights):
+def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     
+    img_dir, ann_dir = setup_train_dirs
     darknet_weights = setup_darknet_weights
 
     # 1. create generator
-    ann_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs")
+    setup_train_dirs
     generator = create_generator(img_dir, ann_dir,
                                  batch_size=2,
                                  labels_naming=["raccoon"],
