@@ -15,9 +15,43 @@ from yolo.utils.box import draw_boxes
 from yolo.dataset.generator import create_generator
 
 
+
+
 YOLOV3_WEIGHTS = "yolov3.weights"
 
 if __name__ == '__main__':
+    
+    config = {
+    "model" : {
+        "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+        "labels":               ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        "coord_scale" :         1.0,
+        "class_scale" :         1.0,
+        "object_scale" :         5.0,
+        "no_object_scale" :     1.0
+    },
+    "pretrained" : {
+        "keras_format":             "",
+        "darknet_format":           "",
+    },
+    "train" : {
+        "min_size":           416,
+        "max_size":           416,
+        "actual_epoch":         20,
+        "train_image_folder":   "tests/dataset/svhn/imgs/",
+        "train_annot_folder":   "tests/dataset/svhn/anns/",
+        "train_times":          5,
+        "valid_image_folder":   "tests/dataset/svhn/imgs/",
+        "valid_annot_folder":   "tests/dataset/svhn/anns/",
+        "valid_times":          1,
+        "batch_size":           2,
+        "learning_rate":        1e-4,
+        "saved_folder":           "svhn",
+        "jitter":                false,
+        "first_trainable_layer": "input_1",
+        "is_only_detect" :         true
+    }
+}
 
     # 1. create generator
     ann_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "anns")
