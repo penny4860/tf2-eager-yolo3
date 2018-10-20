@@ -23,7 +23,7 @@ install:
   - source activate yolo
   - pip install tensorflow==1.9.0
   - pip install opencv-python
-  - pip install imgaug
+  - pip install imgaug==0.2.6
   - pip install tqdm
   - pip install pytest-cov
   - pip install codecov

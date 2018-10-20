@@ -3,3 +3,5 @@
 *eclipse*
 *.pyc
 *tf_eager_yolov3.egg-info
+*.coverage
+*.pytest_cache
