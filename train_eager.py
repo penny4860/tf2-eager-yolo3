@@ -28,8 +28,8 @@ argparser.add_argument(
 
 
 if __name__ == '__main__':
-    
-    with open(argparser.config) as data_file:    
+    args = argparser.parse_args()
+    with open(args.config) as data_file:    
         config = json.load(data_file)
     
     # 1. create generator
