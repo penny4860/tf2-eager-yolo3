@@ -47,27 +47,30 @@ if __name__ == '__main__':
         
     print(config)
     
-#     # 1. create generator
-#     ann_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "anns")
-#     img_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs")
-#     generator = create_generator(img_dir, ann_dir,
-#                                  batch_size=2,
-#                                  labels_naming=["raccoon"],
-#                                  anchors=COCO_ANCHORS)
-#  
-#     # 2. create model
-#     model = Yolonet(n_classes=1)
-#     model.load_darknet_params(YOLOV3_WEIGHTS, True)
-#      
-#     # 3. define optimizer    
-#     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-#       
-#     # 4. training
-#     train(generator, optimizer, model, 100, 1, fname="weights")
-# 
-#     # 5. prepare sample images
-#     img_fnames = [os.path.join(img_dir, "raccoon-1.jpg"), os.path.join(img_dir, "raccoon-12.jpg")]
-#     imgs = [cv2.imread(fname)[:,:,::-1] for fname in img_fnames]
+    # 1. create generator
+    generator = create_generator(config["train"]["train_image_folder"],
+                                 config["train"]["train_annot_folder"],
+                                 batch_size=config["train"]["batch_size"],
+                                 labels_naming=["model"]["labels"],
+                                 anchors=["model"]["anchors"])
+    # 2. create model
+    model = Yolonet(n_classes=len(["model"]["labels"]))
+    model.load_darknet_params(["pretrained"]["darknet_format"], skip_detect_layer=True)
+
+    # 3. define optimizer    
+    optimizer = tf.train.AdamOptimizer(learning_rate=["train"]["learning_rate"])
+       
+    # 4. training
+    train(generator,
+          optimizer,
+          model,
+          num_epoches=config["train"]["num_epoch"],
+          verbose=1,
+          fname=os.path.join(config["train"]["save_folder"], "weights"))
+
+    # 5. prepare sample images
+    img_fnames = [os.path.join(img_dir, "raccoon-1.jpg"), os.path.join(img_dir, "raccoon-12.jpg")]
+    imgs = [cv2.imread(fname)[:,:,::-1] for fname in img_fnames]
 # 
 #     # 6. create new model & load trained weights
 #     model = Yolonet(n_classes=1)
