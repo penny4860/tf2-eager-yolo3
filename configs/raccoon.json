@@ -5,7 +5,7 @@
     },
     "pretrained" : {
         "keras_format":             "",
-        "darknet_format":           "yolov3.weights",
+        "darknet_format":           "yolov3.weights"
     },
     "train" : {
         "min_size":             416,
