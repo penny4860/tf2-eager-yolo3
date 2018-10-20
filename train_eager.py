@@ -6,6 +6,9 @@ tf.enable_eager_execution()
 import matplotlib.pyplot as plt
 import cv2
 import os
+import argparse
+import json
+import glob
 
 from yolo.net import Yolonet
 from yolo.train import train
@@ -13,35 +16,20 @@ from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
 from yolo.dataset.generator import create_generator
 
-# {
-#     "model" : {
-#         "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
-#         "labels":               ["raccoon"]
-#     },
-#     "pretrained" : {
-#         "keras_format":             "",
-#         "darknet_format":           "yolov3.weights",
-#     },
-#     "train" : {
-#         "min_size":             416,
-#         "max_size":             416,
-#         "num_epoch":            100,
-#         "verbose":              1,
-#         "train_image_folder":   "tests/dataset/raccoon/imgs/",
-#         "train_annot_folder":   "tests/dataset/raccoon/anns/",
-#         "batch_size":           2,
-#         "learning_rate":        1e-4,
-#         "save_folder":         "raccoon",
-#         "jitter":               false
-#     }
-# }
 
+argparser = argparse.ArgumentParser(
+    description='train yolo-v3 network')
+
+argparser.add_argument(
+    '-c',
+    '--config',
+    default="configs/raccoon.json",
+    help='config file')
 
 
 if __name__ == '__main__':
     
-    import json
-    with open('configs/raccoon.json') as data_file:    
+    with open(argparser.config) as data_file:    
         config = json.load(data_file)
     
     # 1. create generator
@@ -67,7 +55,6 @@ if __name__ == '__main__':
           verbose=1)
 
     # 5. prepare sample images
-    import glob
     img_fnames = glob.glob(os.path.join(config["train"]["train_image_folder"], "*.*"))
     imgs = [cv2.imread(fname)[:,:,::-1] for fname in img_fnames]
 
