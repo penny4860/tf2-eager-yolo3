@@ -22,9 +22,9 @@ install:
   - conda create -q -n yolo python=3.6 anaconda=5.1.0
   - source activate yolo
   - pip install tensorflow==1.9.0
-  - pip install opencv-python
+  - pip install opencv-python==3.4.3.18
   - pip install imgaug==0.2.6
-  - pip install scikit-learn==0.19.1
+  - pip install scipy==1.0.0
   - pip install tqdm
   - pip install pytest-cov
   - pip install codecov
