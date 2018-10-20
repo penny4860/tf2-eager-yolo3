@@ -18,7 +18,8 @@ def test_train(setup_tf_eager, setup_darknet_weights):
     img_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "imgs")
     generator = create_generator(img_dir, ann_dir,
                                  batch_size=2,
-                                 labels_naming=["raccoon"])
+                                 labels_naming=["raccoon"],
+                                 jitter=False)
  
     # 2. create model
     model = Yolonet(n_classes=1)
