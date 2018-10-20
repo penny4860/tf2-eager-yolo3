@@ -199,13 +199,10 @@ if __name__ == '__main__':
             else:
                 print("Test Failed")
 
-    ann_dir = os.path.join(PROJECT_ROOT, "samples", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "samples", "imgs")
-    generator = create_generator(img_dir, ann_dir)
+    ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
+    img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
+    generator = create_generator(img_dir, ann_dir, 2,
+                                 shuffle=False,
+                                 jitter=False)
     test(*generator[0])
-    
-
-
-
-
 
