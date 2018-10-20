@@ -9,7 +9,6 @@ import os
 
 from yolo.net import Yolonet
 from yolo.train import train
-from yolo import COCO_ANCHORS, PROJECT_ROOT
 from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
 from yolo.dataset.generator import create_generator
@@ -78,7 +77,7 @@ if __name__ == '__main__':
     detector = YoloDetector(model)
  
     # 7. predict & plot
-    boxes = detector.detect(imgs[0], COCO_ANCHORS)
+    boxes = detector.detect(imgs[0], config["model"]["anchors"])
     image = draw_boxes(imgs[0], boxes, labels=config["model"]["labels"])
     plt.imshow(image)
     plt.show()
