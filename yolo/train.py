@@ -6,7 +6,10 @@ from yolo.net import Yolonet
 from yolo.loss import loss_fn
 
 
-def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weights"):
+def train(generator, optimizer, model, save_dname, num_epoches=500, verbose=10):
+    import os
+    save_fname = os.path.join(save_dname, "weights")
+    
     def grads_fn(images_tensor, list_y_trues):
         with tf.GradientTape() as tape:
             logits = model(images_tensor)
@@ -35,7 +38,7 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
             if min_loss_value > loss_value:
                 print("    update weight {}".format(loss_value))
                 min_loss_value = loss_value
-                model.save_weights("{}.h5".format(fname))
+                model.save_weights("{}.h5".format(save_fname))
     
     return history
 

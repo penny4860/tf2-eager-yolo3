@@ -65,7 +65,7 @@ if __name__ == '__main__':
           model,
           num_epoches=config["train"]["num_epoch"],
           verbose=1,
-          fname=os.path.join(config["train"]["save_folder"], "weights"))
+          save_dname=config["train"]["save_folder"])
 
     # 5. prepare sample images
     import glob
