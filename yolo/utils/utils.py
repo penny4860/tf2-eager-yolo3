@@ -2,9 +2,11 @@
 
 import requests
 import os
-import tqdm
+from tqdm import tqdm
 
 def download_file(filename, url):
+    print("Download {} from {}".format(filename, url))
+    
     chunkSize = 1024
     r = requests.get(url, stream=True)
     with open(filename, 'wb') as f:
