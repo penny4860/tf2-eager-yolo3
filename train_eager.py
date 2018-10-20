@@ -57,7 +57,7 @@ if __name__ == '__main__':
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 3. define optimizer    
-    optimizer = tf.train.AdamOptimizer(learning_rate=["train"]["learning_rate"])
+    optimizer = tf.train.AdamOptimizer(learning_rate=float(["train"]["learning_rate"]))
         
     # 4. training
     train(generator,
