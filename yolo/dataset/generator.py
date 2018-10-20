@@ -56,6 +56,8 @@ def create_generator(image_dir,
                                          tf.TensorShape([None, None, 3, n_features])))
     ds = ds.batch(batch_size)
     # ds = ds.shuffle(buffer_size=256, reshuffle_each_iteration=shuffle)
+    # Todo : shuffle 적용
+    # multi-scale generate
     iterator = ds.make_one_shot_iterator()
     return iterator
 
@@ -199,8 +201,9 @@ if __name__ == '__main__':
                                  shuffle=False,
                                  jitter=False)
     # test(*generator[0])
-    
-    xs, ys_1, ys_2, ys_3 = iterator.get_next()
-    test(xs, ys_1, ys_2, ys_3)
+    for i in range(100):
+        xs, ys_1, ys_2, ys_3 = iterator.get_next()
+        test(xs, ys_1, ys_2, ys_3)
+        print(xs.shape)
 
 
