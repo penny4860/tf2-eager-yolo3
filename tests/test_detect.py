@@ -3,7 +3,6 @@
 import cv2
 import os
 
-from yolo.utils.utils import download_if_not_exists
 from yolo.net.yolonet import Yolonet
 from yolo import COCO_ANCHORS, PROJECT_ROOT
 from yolo.frontend import YoloDetector
