@@ -14,6 +14,7 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
         return tape.gradient(loss, model.variables)
 
     min_loss_value = np.inf        
+    history = []
     for i in range(num_epoches):
         x_batch, yolo_1, yolo_2, yolo_3 = generator[i]
 
@@ -28,13 +29,15 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
         if i==0 or (i+1)%verbose==0:
             logits = model(images_tensor)
             loss_value = loss_fn(list_y_trues, logits)
+            history.append(loss_value)
             print("{}-th loss = {}".format(i, loss_value))
             
             if min_loss_value > loss_value:
                 print("    update weight {}".format(loss_value))
                 min_loss_value = loss_value
                 model.save_weights("{}.h5".format(fname))
-
+    
+    return history
 
 if __name__ == '__main__':
     tf.enable_eager_execution()
