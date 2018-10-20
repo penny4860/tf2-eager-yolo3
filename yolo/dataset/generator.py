@@ -78,7 +78,9 @@ class BatchGenerator(object):
 
     def __getitem__(self, idx):
         
-        net_size = self._get_net_size(idx)
+        # net_size = self._get_net_size(idx)
+        net_size = self.min_net_size
+        
         list_ys = _create_empty_xy(net_size, self.annotations.n_classes())
 
         # 1. get input file & its annotation
