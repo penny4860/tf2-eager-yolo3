@@ -37,7 +37,7 @@ $ activate yolo3 # in linux "source activate yolo3"
 	* Running this script will download the [original yolo3-weights file](https://pjreddie.com/media/files/yolov3.weights) and display the object detection results for the input image.
 	
 * You can see the following results:
-	* <img src="imgs/dog_detected.jpeg" height="600">
+	* <img src="imgs/dog_detected.jpeg" height="600"> 
 
 ### 2. Training from scratch
 
