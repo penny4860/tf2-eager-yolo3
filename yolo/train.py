@@ -2,11 +2,25 @@
 
 import numpy as np
 import tensorflow as tf
-from yolo.net import Yolonet
+import os
+
 from yolo.loss import loss_fn
 
 
-def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weights"):
+def _setup(save_dname):
+    if not os.path.exists(save_dname):
+        os.makedirs(save_dname)
+    if save_dname:
+        save_fname = os.path.join(save_dname, "weights")
+    else:
+        save_fname = None
+    return save_fname
+
+def train(generator, model, learning_rate=1e-4, num_epoches=500, verbose=10, save_dname=None):
+    
+    save_fname = _setup(save_dname)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    
     def grads_fn(images_tensor, list_y_trues):
         with tf.GradientTape() as tape:
             logits = model(images_tensor)
@@ -32,28 +46,13 @@ def train(generator, optimizer, model, num_epoches=500, verbose=10, fname="weigh
             history.append(loss_value)
             print("{}-th loss = {}".format(i, loss_value))
             
-            if min_loss_value > loss_value:
+            if save_fname is not None and min_loss_value > loss_value:
                 print("    update weight {}".format(loss_value))
                 min_loss_value = loss_value
-                model.save_weights("{}.h5".format(fname))
+                model.save_weights("{}.h5".format(save_fname))
     
     return history
 
 if __name__ == '__main__':
     tf.enable_eager_execution()
-    from yolo.samples import sample_images, sample_list_y_trues, sample_true_boxes
-    
-    # 1. setup dataset
-    images_tensor = tf.constant(sample_images())
-    true_boxes = tf.constant(sample_true_boxes())
-    list_y_trues = [tf.constant(arr) for arr in sample_list_y_trues()]
-
-    # 2. create model
-    model = Yolonet(18)
-
-    # 3. define optimizer    
-    optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    
-    # 4. training
-    # train(images_tensor, list_y_trues, true_boxes, optimizer, model, 2, 1)
-
+    pass

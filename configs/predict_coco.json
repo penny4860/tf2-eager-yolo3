@@ -1,0 +1,22 @@
+{
+    "model" : {
+        "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
+        "labels":               ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
+    },
+    "pretrained" : {
+        "keras_format":             "",
+        "darknet_format":           "yolov3.weights"
+    },
+    "train" : {
+        "min_size":             416,
+        "max_size":             416,
+        "num_epoch":            1,
+        "verbose":              1,
+        "train_image_folder":   "",
+        "train_annot_folder":   "",
+        "batch_size":           2,
+        "learning_rate":        1e-4,
+        "save_folder":         "",
+        "jitter":               false
+    }
+}
