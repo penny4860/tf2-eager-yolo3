@@ -44,22 +44,21 @@ if __name__ == '__main__':
     import json
     with open('configs/raccoon.json') as data_file:    
         config = json.load(data_file)
-        
-    print(config)
     
     # 1. create generator
     generator = create_generator(config["train"]["train_image_folder"],
                                  config["train"]["train_annot_folder"],
                                  batch_size=config["train"]["batch_size"],
-                                 labels_naming=["model"]["labels"],
-                                 anchors=["model"]["anchors"])
+                                 labels_naming=config["model"]["labels"],
+                                 anchors=config["model"]["anchors"],
+                                 jitter=config["train"]["jitter"])
     # 2. create model
-    model = Yolonet(n_classes=len(["model"]["labels"]))
-    model.load_darknet_params(["pretrained"]["darknet_format"], skip_detect_layer=True)
-
+    model = Yolonet(n_classes=len(config["model"]["labels"]))
+    model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
+ 
     # 3. define optimizer    
     optimizer = tf.train.AdamOptimizer(learning_rate=["train"]["learning_rate"])
-       
+        
     # 4. training
     train(generator,
           optimizer,
@@ -69,18 +68,19 @@ if __name__ == '__main__':
           fname=os.path.join(config["train"]["save_folder"], "weights"))
 
     # 5. prepare sample images
-    img_fnames = [os.path.join(img_dir, "raccoon-1.jpg"), os.path.join(img_dir, "raccoon-12.jpg")]
+    import glob
+    img_fnames = glob.glob(os.path.join(config["train"]["train_image_folder"], "*.*"))
     imgs = [cv2.imread(fname)[:,:,::-1] for fname in img_fnames]
-# 
-#     # 6. create new model & load trained weights
-#     model = Yolonet(n_classes=1)
-#     model.load_weights("weights.h5")
-#     detector = YoloDetector(model)
-# 
-#     # 7. predict & plot
-#     boxes = detector.detect(imgs[0], COCO_ANCHORS)
-#     image = draw_boxes(imgs[0], boxes, labels=["ani"], obj_thresh=0.0)
-#     plt.imshow(image)
-#     plt.show()
+
+    # 6. create new model & load trained weights
+    model = Yolonet(n_classes=len(config["model"]["labels"]))
+    model.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
+    detector = YoloDetector(model)
+ 
+    # 7. predict & plot
+    boxes = detector.detect(imgs[0], COCO_ANCHORS)
+    image = draw_boxes(imgs[0], boxes, labels=config["model"]["labels"])
+    plt.imshow(image)
+    plt.show()
 
 
