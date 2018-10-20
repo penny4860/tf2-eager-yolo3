@@ -8,9 +8,9 @@ from yolo.loss import loss_fn
 
 
 def _setup(save_dname):
-    if not os.path.exists(save_dname):
-        os.makedirs(save_dname)
     if save_dname:
+        if not os.path.exists(save_dname):
+            os.makedirs(save_dname)
         save_fname = os.path.join(save_dname, "weights")
     else:
         save_fname = None
