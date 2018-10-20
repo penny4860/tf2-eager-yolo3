@@ -24,7 +24,6 @@ install:
   - pip install tensorflow==1.9.0
   - pip install opencv-python==3.4.3.18
   - pip install imgaug==0.2.6
-  - pip install scipy==1.0.0
   - pip install tqdm
   - pip install pytest-cov
   - pip install codecov

@@ -14,10 +14,11 @@ I have implemented yolo-v3 detector using tensorflow eager execution.
 * python 3.6
 * anaconda 5.1.0
 * tensorflow 1.9.0
-* opencv 3.3.0
-* imgaug
+* opencv 3.4.3.18
+* imgaug 0.2.6
 * tqdm
 * Etc.
+
 
 I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
 
@@ -25,9 +26,11 @@ I recommend that you create and use an anaconda env that is independent of your 
 $ conda create -n yolo3 python=3.6 anaconda=5.1.0
 $ activate yolo3 # in linux "source activate yolo3"
 (yolo) $ pip install tensorflow==1.9.0
-(yolo) $ pip install opencv-python
-(yolo) $ pip install imgaug
+(yolo) $ pip install opencv-python==3.4.3.18
+(yolo) $ pip install imgaug==0.2.6
 (yolo) $ pip install tqdm
+(yolo) $ pip install pytest-cov
+(yolo) $ pip install codecov
 (yolo) $ pip install -e .
 ```
 
