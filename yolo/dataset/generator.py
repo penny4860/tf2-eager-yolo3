@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
-from yolo.dataset.annotation import parse_annotation
+from yolo.dataset.annotation import parse_one_ann
 from yolo import COCO_ANCHORS
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
@@ -32,20 +32,18 @@ def create_generator(image_dir,
         generator : tensorflow.keras.utils.Sequence
             generator[0] -> xs, ys_1, ys_2, ys_3
     """
-    train_anns = parse_annotation(annotation_dir,
-                                  image_dir,
-                                  labels_naming=labels_naming)
-    generator = BatchGenerator(train_anns,
-                               anchors=anchors,
-                               min_net_size=min_net_size,
-                               max_net_size=max_net_size,
-                               jitter=jitter)
+    import glob
+    import os
+    ann_fnames = glob.glob(os.path.join(annotation_dir, "*.xml"))
+    print(ann_fnames)
+    generator = BatchGenerator(ann_fnames, image_dir, labels=["raccoon"], anchors=anchors, min_net_size=min_net_size,
+                               jitter=False)
     
     def gen():
         i = -1
         while True:
             i += 1
-            yield generator[i]
+            yield generator.get(i)
     
     n_features = len(labels_naming) + 4 + 1
     ds = tf.data.Dataset.from_generator(gen,
@@ -62,52 +60,54 @@ def create_generator(image_dir,
     return iterator
 
 
+# ann_fnames = glob.glob(ann_dir+"/*.xml")
+# img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
+
+
 class BatchGenerator(object):
     def __init__(self, 
-                 annotations, 
+                 ann_fnames,
+                 img_dir,
+                 labels,
                  anchors,   
                  min_net_size=320,
                  max_net_size=608,    
                  jitter=True):
-        self.annotations          = annotations
+
+        self.ann_fnames = ann_fnames
+        self.img_dir = img_dir
+        self.lable_names = labels
         self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.jitter             = jitter
         self.anchors            = create_anchor_boxes(anchors)
         self.net_size = DEFAULT_NETWORK_SIZE
 
-    def __getitem__(self, idx):
+    def get(self, i):
+
+        index = i % len(self.ann_fnames)        
+        fname, boxes, coded_labels = parse_one_ann(self.ann_fnames[index], self.img_dir, self.lable_names)
+
         
         # net_size = self._get_net_size(idx)
         net_size = self.min_net_size
         
-        list_ys = _create_empty_xy(net_size, self.annotations.n_classes())
+        list_ys = _create_empty_xy(net_size, len(self.lable_names))
 
         # 1. get input file & its annotation
-        fname = self.annotations.fname(idx)
-        boxes = self.annotations.boxes(idx)
-        labels = self.annotations.code_labels(idx)
 
         # 2. read image in fixed size
         img_augmenter = ImgAugment(net_size, net_size, self.jitter)
-        img, boxes = img_augmenter.imread(fname, boxes)
+        img, boxes_ = img_augmenter.imread(fname, boxes)
 
         # 4. Append ys
-        for original_box, label in zip(boxes, labels):
+        for original_box, label in zip(boxes_, coded_labels):
             max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
             
             _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
             _assign_box(list_ys[scale_index], box_index, _coded_box, label)
 
         return normalize(img), list_ys[2], list_ys[1], list_ys[0]
-
-    def _get_net_size(self, idx):
-        if idx%10 == 0:
-            net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
-                                                         self.max_net_size/DOWNSAMPLE_RATIO+1)
-            print("resizing: ", net_size, net_size)
-            self.net_size = net_size
-        return self.net_size
 
 
 def _create_empty_xy(net_size, n_classes, n_boxes=3):
@@ -196,16 +196,11 @@ if __name__ == '__main__':
                 print("Test Passed")
             else:
                 print("Test Failed")
+                print(np.sum(a-b))
 
     ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
-    iterator = create_generator(img_dir, ann_dir, 2,
-                                 shuffle=False,
-                                 jitter=False)
-    # test(*generator[0])
-    for i in range(100):
-        xs, ys_1, ys_2, ys_3 = iterator.get_next()
-        test(xs, ys_1, ys_2, ys_3)
-        print(xs.shape)
 
+    iterator = create_generator(img_dir, ann_dir, 2)
+    test(*iterator.get_next())
 
