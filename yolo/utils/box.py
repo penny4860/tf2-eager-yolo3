@@ -236,3 +236,47 @@ def find_match_box(centroid_box, centroid_boxes):
     return match_index
 
 
+
+if __name__ == '__main__':
+    import tensorflow as tf
+    tf.enable_eager_execution()
+    import os
+    from yolo import PROJECT_ROOT, COCO_ANCHORS
+    from yolo.net.yolonet import Yolonet
+    import matplotlib.pyplot as plt
+    from yolo.frontend import YoloDetector
+    # 1. Define Parameters
+    
+    # Pretrained weight file is at https://pjreddie.com/media/files/yolov3.weights
+    # Download darknet weight file and locate it to PROJECT ROOT
+    YOLOV3_WEIGHTS = os.path.join(PROJECT_ROOT, "yolov3.weights")
+    LABELS = ["1", "2", "3", "9"]
+
+    # 2. create model & load darknet pretrained weighted file
+    model = Yolonet(n_classes=len(LABELS))
+    model.load_darknet_params(YOLOV3_WEIGHTS, True)
+    # 6. Load test images
+    DEFAULT_IMAGE_FOLDER = os.path.join(PROJECT_ROOT, "samples", "svhn", "imgs")
+    
+    img_files = [os.path.join(DEFAULT_IMAGE_FOLDER, "1.png"), os.path.join(DEFAULT_IMAGE_FOLDER, "2.png")]
+    # 7. predict 
+    
+    model.load_weights("svhn.h5")
+    detector = YoloDetector(model)
+
+    DEFAULT_IMAGE_FOLDER = os.path.join(PROJECT_ROOT, "samples", "svhn", "imgs")
+    img_files = [os.path.join(DEFAULT_IMAGE_FOLDER, "1.png"), os.path.join(DEFAULT_IMAGE_FOLDER, "2.png")]
+    imgs = []
+    for fname in img_files:
+        img = cv2.imread(fname)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        imgs.append(img)
+    
+    for img in imgs:
+        boxes = detector.detect(img, COCO_ANCHORS)
+        image = draw_scaled_boxes(img, boxes, labels=LABELS)
+        plt.imshow(image)
+        plt.show()
+
+
+
