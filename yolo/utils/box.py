@@ -99,24 +99,23 @@ def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
     return boxes
 
 
-def draw_scaled_boxes(image, boxes, labels, obj_thresh=0.0, desired_size=400):
-    img_size = min(image.shape[:2])
-    if img_size < desired_size:
-        scale_factor = float(desired_size) / img_size
-    else:
-        scale_factor = 1.0
+def draw_boxes(image, boxes, labels, obj_thresh=0.0, desired_size=None):
     
+    def _set_scale_factor():
+        if desired_size:
+            img_size = min(image.shape[:2])
+            if img_size < desired_size:
+                scale_factor = float(desired_size) / img_size
+            else:
+                scale_factor = 1.0
+        else:
+            scale_factor = 1.0
+        return scale_factor
+    
+    scale_factor = _set_scale_factor()
     h, w = image.shape[:2]
     img_scaled = cv2.resize(image, (int(w*scale_factor), int(h*scale_factor)))
-    if boxes != []:
-        boxes_scaled = boxes*scale_factor
-        boxes_scaled = boxes_scaled.astype(np.int)
-    else:
-        boxes_scaled = boxes
-    return draw_boxes(img_scaled, boxes_scaled, labels, obj_thresh)
-
-
-def draw_boxes(image, boxes, labels, obj_thresh=0.0):
+    
     for box in boxes:
         label = np.argmax(box.classes)
         label_str = labels[label]
@@ -124,18 +123,18 @@ def draw_boxes(image, boxes, labels, obj_thresh=0.0):
             print(label_str + ': ' + str(box.classes[label]*100) + '%')
                 
             # Todo: check this code
-            if image.dtype == np.uint8:
-                image = image.astype(np.int32)
-            x1, y1, x2, y2 = box.as_minmax().astype(np.int32)
+            if img_scaled.dtype == np.uint8:
+                img_scaled = img_scaled.astype(np.int32)
+            x1, y1, x2, y2 = (box.as_minmax() * scale_factor).astype(np.int32)
             
-            cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
-            cv2.putText(image, 
-                        label_str + ' ' + str(box.get_score()), 
+            cv2.rectangle(img_scaled, (x1,y1), (x2,y2), (0,255,0), 3)
+            cv2.putText(img_scaled, 
+                        "{}:  {:.2f}".format(label_str, box.get_score()),
                         (x1, y1 - 13), 
                         cv2.FONT_HERSHEY_SIMPLEX, 
-                        1e-3 * image.shape[0], 
+                        1e-3 * img_scaled.shape[0], 
                         (0,255,0), 2)
-    return image      
+    return img_scaled      
 
 
 def centroid_box_iou(box1, box2):
@@ -274,7 +273,7 @@ if __name__ == '__main__':
     
     for img in imgs:
         boxes = detector.detect(img, COCO_ANCHORS)
-        image = draw_scaled_boxes(img, boxes, labels=LABELS)
+        image = draw_boxes(img, boxes, labels=LABELS, desired_size=400)
         plt.imshow(image)
         plt.show()
 
