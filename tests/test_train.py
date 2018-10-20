@@ -14,7 +14,6 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     darknet_weights = setup_darknet_weights
 
     # 1. create generator
-    setup_train_dirs
     generator = create_generator(img_dir, ann_dir,
                                  batch_size=2,
                                  labels_naming=["raccoon"],
