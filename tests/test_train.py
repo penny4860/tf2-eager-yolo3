@@ -12,13 +12,9 @@ from yolo.frontend import YoloDetector
 from yolo.train import train
 
 
-def test_train(setup_tf_eager):
+def test_train(setup_tf_eager, setup_darknet_weights):
     
-    # Todo : conftest
-    # Download if not exits weight file
-    weights_path = os.path.join(PROJECT_ROOT, "tests", "samples", "yolov3.weights")
-    download_if_not_exists(weights_path,
-                           "https://pjreddie.com/media/files/yolov3.weights")
+    darknet_weights = setup_darknet_weights
 
     # 1. create generator
     ann_dir = os.path.join(PROJECT_ROOT, "samples", "raccoon", "anns")
@@ -29,7 +25,7 @@ def test_train(setup_tf_eager):
  
     # 2. create model
     model = Yolonet(n_classes=1)
-    model.load_darknet_params(weights_path, True)
+    model.load_darknet_params(darknet_weights, True)
      
     # 3. define optimizer    
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
