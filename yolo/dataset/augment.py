@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from imgaug import augmenters as iaa
 
 import numpy as np
 np.random.seed(1337)
@@ -112,6 +111,7 @@ def resize_image(image, boxes, desired_w, desired_h):
 
 
 def _create_augment_pipeline():
+    from imgaug import augmenters as iaa
     
     ### augmentors by https://github.com/aleju/imgaug
     sometimes = lambda aug: iaa.Sometimes(0.5, aug)

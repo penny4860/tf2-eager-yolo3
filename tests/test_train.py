@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import cv2
 import os
 import tensorflow as tf
 
 from yolo.dataset.generator import create_generator
-from yolo.utils.utils import download_if_not_exists
 from yolo.net.yolonet import Yolonet
-from yolo import COCO_ANCHORS, PROJECT_ROOT
-from yolo.frontend import YoloDetector
+from yolo import PROJECT_ROOT
 from yolo.train import train
 
 
