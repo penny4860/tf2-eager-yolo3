@@ -82,7 +82,7 @@ class BatchGenerator(Sequence):
             labels = self.annotations.code_labels(self._batch_size*idx + i)
 
             # 2. read image in fixed size
-            img_augmenter = ImgAugment(net_size, net_size, False)
+            img_augmenter = ImgAugment(net_size, net_size, self.jitter)
             img, boxes = img_augmenter.imread(fname, boxes)
 
             # 3. Append xs            
