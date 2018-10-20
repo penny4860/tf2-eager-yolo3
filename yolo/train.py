@@ -16,9 +16,10 @@ def _setup(save_dname):
         save_fname = None
     return save_fname
 
-def train(generator, optimizer, model, num_epoches=500, verbose=10, save_dname=None):
+def train(generator, model, learning_rate=1e-4, num_epoches=500, verbose=10, save_dname=None):
     
     save_fname = _setup(save_dname)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     
     def grads_fn(images_tensor, list_y_trues):
         with tf.GradientTape() as tape:
