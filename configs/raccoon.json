@@ -16,7 +16,7 @@
         "train_annot_folder":   "tests/dataset/raccoon/anns/",
         "batch_size":           2,
         "learning_rate":        1e-4,
-        "save_folder":         "raccoon",
+        "save_folder":         "configs/raccoon",
         "jitter":               false
     }
 }
