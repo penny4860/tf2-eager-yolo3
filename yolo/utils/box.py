@@ -21,28 +21,6 @@ def correct_yolo_boxes(boxes, image_h, image_w):
         boxes[i].h = int(boxes[i].h * image_h)
 
 
-def draw_boxes(image, boxes, labels, obj_thresh=0.0):
-    for box in boxes:
-        label = np.argmax(box.classes)
-        label_str = labels[label]
-        if box.classes[label] > obj_thresh:
-            print(label_str + ': ' + str(box.classes[label]*100) + '%')
-                
-            # Todo: check this code
-            if image.dtype == np.uint8:
-                image = image.astype(np.int32)
-            x1, y1, x2, y2 = box.as_minmax().astype(np.int32)
-            
-            cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
-            cv2.putText(image, 
-                        label_str + ' ' + str(box.get_score()), 
-                        (x1, y1 - 13), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 
-                        1e-3 * image.shape[0], 
-                        (0,255,0), 2)
-    return image      
-
-
 # Todo : BoundBox & its related method extraction
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
@@ -121,34 +99,42 @@ def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
     return boxes
 
 
-def draw_scaled_boxes(image, boxes, probs, labels, desired_size=400):
-    img_size = min(image.shape[:2])
-    if img_size < desired_size:
-        scale_factor = float(desired_size) / img_size
-    else:
-        scale_factor = 1.0
+def draw_boxes(image, boxes, labels, obj_thresh=0.0, desired_size=None):
     
+    def _set_scale_factor():
+        if desired_size:
+            img_size = min(image.shape[:2])
+            if img_size < desired_size:
+                scale_factor = float(desired_size) / img_size
+            else:
+                scale_factor = 1.0
+        else:
+            scale_factor = 1.0
+        return scale_factor
+    
+    scale_factor = _set_scale_factor()
     h, w = image.shape[:2]
     img_scaled = cv2.resize(image, (int(w*scale_factor), int(h*scale_factor)))
-    if boxes != []:
-        boxes_scaled = boxes*scale_factor
-        boxes_scaled = boxes_scaled.astype(np.int)
-    else:
-        boxes_scaled = boxes
-    return draw_boxes(img_scaled, boxes_scaled, probs, labels)
-        
-
-# def draw_boxes(image, boxes, probs, labels):
-#     for box, classes in zip(boxes, probs):
-#         x1, y1, x2, y2 = box
-#         cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
-#         cv2.putText(image, 
-#                     '{}:  {:.2f}'.format(labels[np.argmax(classes)], classes.max()), 
-#                     (x1, y1 - 13), 
-#                     cv2.FONT_HERSHEY_SIMPLEX, 
-#                     1e-3 * image.shape[0], 
-#                     (0,255,0), 2)
-#     return image        
+    
+    for box in boxes:
+        label = np.argmax(box.classes)
+        label_str = labels[label]
+        if box.classes[label] > obj_thresh:
+            print(label_str + ': ' + str(box.classes[label]*100) + '%')
+                
+            # Todo: check this code
+            if img_scaled.dtype == np.uint8:
+                img_scaled = img_scaled.astype(np.int32)
+            x1, y1, x2, y2 = (box.as_minmax() * scale_factor).astype(np.int32)
+            
+            cv2.rectangle(img_scaled, (x1,y1), (x2,y2), (0,255,0), 3)
+            cv2.putText(img_scaled, 
+                        "{}:  {:.2f}".format(label_str, box.get_score()),
+                        (x1, y1 - 13), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 
+                        1e-3 * img_scaled.shape[0], 
+                        (0,255,0), 2)
+    return img_scaled      
 
 
 def centroid_box_iou(box1, box2):
@@ -247,5 +233,10 @@ def find_match_box(centroid_box, centroid_boxes):
             match_index = i
             max_iou     = iou
     return match_index
+
+
+
+if __name__ == '__main__':
+    pass
 
 
