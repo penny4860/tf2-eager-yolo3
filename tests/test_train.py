@@ -23,11 +23,8 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     model = Yolonet(n_classes=1)
     model.load_darknet_params(darknet_weights, True)
      
-    # 3. define optimizer    
-    optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-      
-    # 4. training
-    loss_history = train(generator, optimizer, model, 2, 1)
+    # 3. training
+    loss_history = train(generator, model, num_epoches=2, verbose=1)
     assert loss_history[0] > loss_history[1]
 
 
