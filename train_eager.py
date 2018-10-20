@@ -40,13 +40,23 @@ if __name__ == '__main__':
                                  labels_naming=config["model"]["labels"],
                                  anchors=config["model"]["anchors"],
                                  jitter=config["train"]["jitter"])
+
+    valid_generator = create_generator(ann_fnames,
+                                       config["train"]["train_image_folder"],
+                                       batch_size=config["train"]["batch_size"],
+                                       labels_naming=config["model"]["labels"],
+                                       anchors=config["model"]["anchors"],
+                                       jitter=False,
+                                       shuffle=False)
+    
     # 2. create model
     model = Yolonet(n_classes=len(config["model"]["labels"]))
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 4. training
-    train(generator,
-          model,
+    train(model,
+          generator,
+          valid_generator,
           learning_rate=config["train"]["learning_rate"],
           save_dname=config["train"]["save_folder"],
           num_epoches=config["train"]["num_epoch"],
