@@ -21,7 +21,7 @@ install:
   - conda info -a
   - conda create -q -n yolo python=3.6 anaconda=5.1.0
   - source activate yolo
-  - pip install tensorflow==1.8.0
+  - pip install tensorflow==1.9.0
   - pip install opencv-python
   - pip install imgaug
   - pip install tqdm
