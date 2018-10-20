@@ -24,9 +24,10 @@ I recommend that you create and use an anaconda env that is independent of your 
 ```
 $ conda create -n yolo3 python=3.6 anaconda=5.1.0
 $ activate yolo3 # in linux "source activate yolo3"
-(yolo) $ pip install tensorflow==1.8.0
+(yolo) $ pip install tensorflow==1.9.0
 (yolo) $ pip install opencv-python
 (yolo) $ pip install imgaug
+(yolo) $ pip install tqdm
 (yolo) $ pip install -e .
 ```
 
