@@ -37,7 +37,7 @@ def create_generator(image_dir,
     ann_fnames = glob.glob(os.path.join(annotation_dir, "*.xml"))
     print(ann_fnames)
     generator = BatchGenerator(ann_fnames, image_dir, labels=["raccoon"], anchors=anchors, min_net_size=min_net_size,
-                               jitter=False)
+                               jitter=jitter)
     
     def gen():
         i = -1
@@ -59,9 +59,6 @@ def create_generator(image_dir,
     iterator = ds.make_one_shot_iterator()
     return iterator
 
-
-# ann_fnames = glob.glob(ann_dir+"/*.xml")
-# img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
 
 
 class BatchGenerator(object):
@@ -201,6 +198,6 @@ if __name__ == '__main__':
     ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
 
-    iterator = create_generator(img_dir, ann_dir, 2)
+    iterator = create_generator(img_dir, ann_dir, 2, jitter=False)
     test(*iterator.get_next())
 
