@@ -5,6 +5,24 @@ import numpy as np
 from xml.etree.ElementTree import parse
 
 
+def parse_annotation(ann_fname, img_dir, labels_naming=[]):
+    # Todo : labels_naming 이 없으면 모든 labels을 자동으로 parsing
+    parser = PascalVocXmlParser()
+    
+    fname = parser.get_fname(ann_fname)
+
+    annotation = Annotation(os.path.join(img_dir, fname))
+
+    labels = parser.get_labels(ann_fname)
+    boxes = parser.get_boxes(ann_fname)
+    
+    for label, box in zip(labels, boxes):
+        x1, y1, x2, y2 = box
+        if label in labels_naming:
+            annotation.add_object(x1, y1, x2, y2, name=label, code=labels_naming.index(label))
+    return annotation.fname, annotation.boxes, annotation.coded_labels
+
+
 def get_unique_labels(files):
     parser = PascalVocXmlParser()
     labels = []
@@ -13,49 +31,6 @@ def get_unique_labels(files):
         labels = list(set(labels))
     labels.sort()
     return labels
-
-
-def get_train_annotations(labels,
-                          img_folder,
-                          ann_folder,
-                          valid_img_folder = "",
-                          valid_ann_folder = "",
-                          is_only_detect=False):
-    """
-    # Args
-        labels : list of strings
-            ["raccoon", "human", ...]
-        img_folder : str
-        ann_folder : str
-        valid_img_folder : str
-        valid_ann_folder : str
-
-    # Returns
-        train_anns : Annotations instance
-        valid_anns : Annotations instance
-    """
-    # parse annotations of the training set
-    train_anns = parse_annotation(ann_folder,
-                                     img_folder,
-                                     labels,
-                                     is_only_detect)
-
-    # parse annotations of the validation set, if any, otherwise split the training set
-    if os.path.exists(valid_ann_folder):
-        valid_anns = parse_annotation(valid_ann_folder,
-                                         valid_img_folder,
-                                         labels,
-                                         is_only_detect)
-    else:
-        train_valid_split = int(0.8*len(train_anns))
-        train_anns.shuffle()
-        
-        # Todo : Hard coding
-        valid_anns = Annotations(train_anns._label_namings)
-        valid_anns._components = train_anns._components[train_valid_split:]
-        train_anns._components = train_anns._components[:train_valid_split]
-    
-    return train_anns, valid_anns
 
 
 class PascalVocXmlParser(object):
@@ -154,44 +129,6 @@ class PascalVocXmlParser(object):
         tree = parse(fname)
         return tree
 
-def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
-    """
-    # Args
-        ann_dir : str
-        img_dir : str
-        labels_naming : list of strings
-    
-    # Returns
-        all_imgs : list of dict
-    """
-    parser = PascalVocXmlParser()
-    
-    if is_only_detect:
-        annotations = Annotations(["object"])
-    else:
-        annotations = Annotations(labels_naming)
-    for ann in sorted(os.listdir(ann_dir)):
-        annotation_file = os.path.join(ann_dir, ann)
-        fname = parser.get_fname(annotation_file)
-
-        annotation = Annotation(os.path.join(img_dir, fname))
-
-        labels = parser.get_labels(annotation_file)
-        boxes = parser.get_boxes(annotation_file)
-        
-        for label, box in zip(labels, boxes):
-            x1, y1, x2, y2 = box
-            if is_only_detect:
-                annotation.add_object(x1, y1, x2, y2, name="object")
-            else:
-                if label in labels_naming:
-                    annotation.add_object(x1, y1, x2, y2, name=label)
-                    
-        if annotation.boxes is not None:
-            annotations.add(annotation)
-                        
-    return annotations
-            
 
 class Annotation(object):
     """
@@ -203,66 +140,18 @@ class Annotation(object):
     def __init__(self, filename):
         self.fname = filename
         self.labels = []
+        self.coded_labels = []
         self.boxes = None
 
-    def add_object(self, x1, y1, x2, y2, name):
+    def add_object(self, x1, y1, x2, y2, name, code):
         self.labels.append(name)
+        self.coded_labels.append(code)
+        
         if self.boxes is None:
             self.boxes = np.array([x1, y1, x2, y2]).reshape(-1,4)
         else:
             box = np.array([x1, y1, x2, y2]).reshape(-1,4)
             self.boxes = np.concatenate([self.boxes, box])
-
-class Annotations(object):
-    def __init__(self, label_namings):
-        self._components = []
-        self._label_namings = label_namings
-
-    def n_classes(self):
-        return len(self._label_namings)
-
-    def add(self, annotation):
-        self._components.append(annotation)
-
-    def shuffle(self):
-        np.random.shuffle(self._components)
-    
-    def fname(self, i):
-        index = self._valid_index(i)
-        return self._components[index].fname
-    
-    def boxes(self, i):
-        index = self._valid_index(i)
-        return self._components[index].boxes
-
-    def labels(self, i):
-        """
-        # Returns
-            labels : list of strings
-        """
-        index = self._valid_index(i)
-        return self._components[index].labels
-
-    def code_labels(self, i):
-        """
-        # Returns
-            code_labels : list of int
-        """
-        str_labels = self.labels(i)
-        labels = []
-        for label in str_labels:
-            labels.append(self._label_namings.index(label))
-        return labels
-
-    def _valid_index(self, i):
-        valid_index = i % len(self._components)
-        return valid_index
-
-    def __len__(self):
-        return len(self._components)
-
-    def __getitem__(self, idx):
-        return self._components[idx]
 
 
 if __name__ == '__main__':

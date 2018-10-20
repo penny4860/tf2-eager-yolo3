@@ -3,6 +3,7 @@
 import tensorflow as tf
 import os
 import pytest
+import glob
 
 from yolo import PROJECT_ROOT
 from yolo.utils.utils import download_if_not_exists
@@ -23,8 +24,9 @@ def setup_darknet_weights():
 
 @pytest.fixture(scope='session')
 def setup_train_dirs():
+    img_root = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
     ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
-    img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
-    return img_dir, ann_dir
+    ann_fnames = glob.glob(os.path.join(ann_dir, "*.xml"))
+    return ann_fnames, img_root
 
 

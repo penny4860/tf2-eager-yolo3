@@ -16,7 +16,7 @@ def _setup(save_dname):
         save_fname = None
     return save_fname
 
-def train(generator, model, learning_rate=1e-4, num_epoches=500, verbose=10, save_dname=None):
+def train(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, verbose=10, save_dname=None):
     
     save_fname = _setup(save_dname)
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -30,19 +30,17 @@ def train(generator, model, learning_rate=1e-4, num_epoches=500, verbose=10, sav
     min_loss_value = np.inf        
     history = []
     for i in range(num_epoches):
-        x_batch, yolo_1, yolo_2, yolo_3 = generator[i]
+        xs, yolo_1, yolo_2, yolo_3 = train_iterator.get_next()
+        ys = [yolo_1, yolo_2, yolo_3]
 
-        images_tensor = tf.constant(x_batch.astype(np.float32))
-        list_y_trues = [tf.constant(yolo_1.astype(np.float32)),
-                        tf.constant(yolo_2.astype(np.float32)),
-                        tf.constant(yolo_3.astype(np.float32))]
-        
-        grads = grads_fn(images_tensor, list_y_trues)
+        grads = grads_fn(xs, ys)
         optimizer.apply_gradients(zip(grads, model.variables))
 
         if i==0 or (i+1)%verbose==0:
-            logits = model(images_tensor)
-            loss_value = loss_fn(list_y_trues, logits)
+            xs, yolo_1, yolo_2, yolo_3 = valid_iterator.get_next()
+            
+            ys_ = model(xs)
+            loss_value = loss_fn(ys, ys_)
             history.append(loss_value)
             print("{}-th loss = {}".format(i, loss_value))
             

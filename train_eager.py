@@ -33,23 +33,31 @@ if __name__ == '__main__':
         config = json.load(data_file)
     
     # 1. create generator
-    generator = create_generator(config["train"]["train_image_folder"],
-                                 config["train"]["train_annot_folder"],
+    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
+    generator = create_generator(ann_fnames,
+                                 config["train"]["train_image_folder"],
                                  batch_size=config["train"]["batch_size"],
                                  labels_naming=config["model"]["labels"],
                                  anchors=config["model"]["anchors"],
                                  jitter=config["train"]["jitter"])
+
+    valid_generator = create_generator(ann_fnames,
+                                       config["train"]["train_image_folder"],
+                                       batch_size=config["train"]["batch_size"],
+                                       labels_naming=config["model"]["labels"],
+                                       anchors=config["model"]["anchors"],
+                                       jitter=False,
+                                       shuffle=False)
+    
     # 2. create model
     model = Yolonet(n_classes=len(config["model"]["labels"]))
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
-    # 3. define optimizer    
-    optimizer = tf.train.AdamOptimizer(learning_rate=float(config["train"]["learning_rate"]))
-        
     # 4. training
-    train(generator,
-          optimizer,
-          model,
+    train(model,
+          generator,
+          valid_generator,
+          learning_rate=config["train"]["learning_rate"],
           save_dname=config["train"]["save_folder"],
           num_epoches=config["train"]["num_epoch"],
           verbose=1)
