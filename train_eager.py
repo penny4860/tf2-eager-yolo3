@@ -57,15 +57,15 @@ if __name__ == '__main__':
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 3. define optimizer    
-    optimizer = tf.train.AdamOptimizer(learning_rate=float(["train"]["learning_rate"]))
+    optimizer = tf.train.AdamOptimizer(learning_rate=float(config["train"]["learning_rate"]))
         
     # 4. training
     train(generator,
           optimizer,
           model,
+          save_dname=config["train"]["save_folder"],
           num_epoches=config["train"]["num_epoch"],
-          verbose=1,
-          save_dname=config["train"]["save_folder"])
+          verbose=1)
 
     # 5. prepare sample images
     import glob
