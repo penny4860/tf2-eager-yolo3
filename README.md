@@ -38,7 +38,7 @@ $ activate yolo3 # in linux "source activate yolo3"
 
 
 * Run object detection through the following command.
-	* ```project/root> python pred.py -i tests/samples/sample.jpeg```
+	* ```project/root> python pred.py -c configs/predict_coco.json -i tests/samples/sample.jpeg```
 	* Running this script will download the [original yolo3-weights file](https://pjreddie.com/media/files/yolov3.weights) and display the object detection results for the input image.
 	
 * You can see the following results:
