@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
-from yolo.dataset.annotation import parse_one_ann
+from yolo.dataset.annotation import parse_annotation
 from yolo import COCO_ANCHORS
 
 # ratio between network input's size and network output's size, 32 for YOLOv3
@@ -83,7 +83,7 @@ class BatchGenerator(object):
     def get(self, i):
 
         index = i % len(self.ann_fnames)        
-        fname, boxes, coded_labels = parse_one_ann(self.ann_fnames[index], self.img_dir, self.lable_names)
+        fname, boxes, coded_labels = parse_annotation(self.ann_fnames[index], self.img_dir, self.lable_names)
 
         
         # net_size = self._get_net_size(idx)
