@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from tensorflow.keras.utils import Sequence
+import tensorflow as tf
 
 from yolo.dataset.augment import ImgAugment
 from yolo.utils.box import create_anchor_boxes
@@ -37,38 +37,42 @@ def create_generator(image_dir,
                                   labels_naming=labels_naming)
     generator = BatchGenerator(train_anns,
                                anchors=anchors,
-                               batch_size=batch_size,
                                min_net_size=min_net_size,
                                max_net_size=max_net_size,
-                               shuffle=shuffle,
                                jitter=jitter)
-    return generator
+    
+    def gen():
+        i = -1
+        while True:
+            i += 1
+            yield generator[i]
+    
+    n_features = len(labels_naming) + 4 + 1
+    ds = tf.data.Dataset.from_generator(gen,
+                                        (tf.float32, tf.float32, tf.float32, tf.float32),
+                                        (tf.TensorShape([None, None, 3]),
+                                         tf.TensorShape([None, None, 3, n_features]),
+                                         tf.TensorShape([None, None, 3, n_features]),
+                                         tf.TensorShape([None, None, 3, n_features])))
+    ds = ds.batch(batch_size)
+    # ds = ds.shuffle(buffer_size=256, reshuffle_each_iteration=shuffle)
+    iterator = ds.make_one_shot_iterator()
+    return iterator
 
 
-class BatchGenerator(Sequence):
+class BatchGenerator(object):
     def __init__(self, 
-        annotations, 
-        anchors,   
-        batch_size=2,
-        min_net_size=320,
-        max_net_size=608,    
-        shuffle=True, 
-        jitter=True, 
-    ):
+                 annotations, 
+                 anchors,   
+                 min_net_size=320,
+                 max_net_size=608,    
+                 jitter=True):
         self.annotations          = annotations
-        self._batch_size         = batch_size
         self.min_net_size       = (min_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
-        self.shuffle            = shuffle
         self.jitter             = jitter
         self.anchors            = create_anchor_boxes(anchors)
         self.net_size = DEFAULT_NETWORK_SIZE
-
-        if shuffle:
-            self.annotations.shuffle()
-            
-    def __len__(self):
-        return int(np.ceil(float(len(self.annotations))/self._batch_size))           
 
     def __getitem__(self, idx):
         
@@ -100,10 +104,6 @@ class BatchGenerator(Sequence):
             print("resizing: ", net_size, net_size)
             self.net_size = net_size
         return self.net_size
-
-    def on_epoch_end(self):
-        if self.shuffle:
-            self.annotations.shuffle()
 
 
 def _create_empty_xy(net_size, n_classes, n_boxes=3):
@@ -177,6 +177,7 @@ def normalize(image):
 
 
 if __name__ == '__main__':
+    tf.enable_eager_execution()
     import os
     from yolo import PROJECT_ROOT
     def test(x_batch, yolo_1, yolo_2, yolo_3):
@@ -194,28 +195,12 @@ if __name__ == '__main__':
 
     ann_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "anns")
     img_dir = os.path.join(PROJECT_ROOT, "tests", "dataset", "raccoon", "imgs")
-    generator = create_generator(img_dir, ann_dir, 2,
+    iterator = create_generator(img_dir, ann_dir, 2,
                                  shuffle=False,
                                  jitter=False)
     # test(*generator[0])
-    def gen():
-        i = -1
-        while True:
-            i += 1
-            yield generator[i]
     
-    import tensorflow as tf
-    tf.enable_eager_execution()
-    n_features = 6
-    ds = tf.data.Dataset.from_generator(gen,
-                                        (tf.float32, tf.float32, tf.float32, tf.float32),
-                                        (tf.TensorShape([None, None, 3]),
-                                         tf.TensorShape([None, None, 3, n_features]),
-                                         tf.TensorShape([None, None, 3, n_features]),
-                                         tf.TensorShape([None, None, 3, n_features])))
-    ds = ds.batch(2)  # Batch size to use
-    
-    xs, ys_1, ys_2, ys_3 = ds.make_one_shot_iterator().get_next()
+    xs, ys_1, ys_2, ys_3 = iterator.get_next()
     test(xs, ys_1, ys_2, ys_3)
 
 
