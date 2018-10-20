@@ -154,6 +154,25 @@ class PascalVocXmlParser(object):
         tree = parse(fname)
         return tree
 
+
+def parse_one_ann(ann_fname, img_dir, labels_naming=[]):
+    # Todo : labels_naming 이 없으면 모든 labels을 자동으로 parsing
+    parser = PascalVocXmlParser()
+    
+    fname = parser.get_fname(ann_fname)
+
+    annotation = Annotation(os.path.join(img_dir, fname))
+
+    labels = parser.get_labels(ann_fname)
+    boxes = parser.get_boxes(ann_fname)
+    
+    for label, box in zip(labels, boxes):
+        x1, y1, x2, y2 = box
+        if label in labels_naming:
+            annotation.add_object(x1, y1, x2, y2, name=label, code=labels_naming.index(label))
+    return annotation.fname, annotation.boxes, annotation.coded_labels
+
+
 def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
     """
     # Args
@@ -203,15 +222,20 @@ class Annotation(object):
     def __init__(self, filename):
         self.fname = filename
         self.labels = []
+        self.coded_labels = []
         self.boxes = None
 
-    def add_object(self, x1, y1, x2, y2, name):
+    def add_object(self, x1, y1, x2, y2, name, code):
         self.labels.append(name)
+        self.coded_labels.append(code)
+        
         if self.boxes is None:
             self.boxes = np.array([x1, y1, x2, y2]).reshape(-1,4)
         else:
             box = np.array([x1, y1, x2, y2]).reshape(-1,4)
             self.boxes = np.concatenate([self.boxes, box])
+
+
 
 class Annotations(object):
     def __init__(self, label_namings):
