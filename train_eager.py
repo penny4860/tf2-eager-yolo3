@@ -11,10 +11,10 @@ import json
 import glob
 
 from yolo.net import Yolonet
-from yolo.train import train
+from yolo.train import train_fn
 from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
-from yolo.dataset.generator import create_generator
+from yolo.dataset.generator import BatchGenerator
 
 
 argparser = argparse.ArgumentParser(
@@ -34,14 +34,15 @@ if __name__ == '__main__':
     
     # 1. create generator
     ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
-    generator = create_generator(ann_fnames,
-                                 config["train"]["train_image_folder"],
-                                 batch_size=config["train"]["batch_size"],
-                                 labels_naming=config["model"]["labels"],
-                                 anchors=config["model"]["anchors"],
-                                 jitter=config["train"]["jitter"])
+    print(len(ann_fnames))
+    train_generator = BatchGenerator(ann_fnames,
+                                     config["train"]["train_image_folder"],
+                                     batch_size=config["train"]["batch_size"],
+                                     labels_naming=config["model"]["labels"],
+                                     anchors=config["model"]["anchors"],
+                                     jitter=config["train"]["jitter"])
 
-    valid_generator = create_generator(ann_fnames,
+    valid_generator = BatchGenerator(ann_fnames,
                                        config["train"]["train_image_folder"],
                                        batch_size=config["train"]["batch_size"],
                                        labels_naming=config["model"]["labels"],
@@ -49,18 +50,19 @@ if __name__ == '__main__':
                                        jitter=False,
                                        shuffle=False)
     
+    print(train_generator.steps_per_epoch)
+    
     # 2. create model
     model = Yolonet(n_classes=len(config["model"]["labels"]))
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
-    # 4. training
-    train(model,
-          generator,
-          valid_generator,
-          learning_rate=config["train"]["learning_rate"],
-          save_dname=config["train"]["save_folder"],
-          num_epoches=config["train"]["num_epoch"],
-          verbose=1)
+    # 4. traini
+    train_fn(model,
+             train_generator,
+             valid_generator,
+             learning_rate=config["train"]["learning_rate"],
+             save_dname=config["train"]["save_folder"],
+             num_epoches=config["train"]["num_epoch"])
 
     # 5. prepare sample images
     img_fnames = glob.glob(os.path.join(config["train"]["train_image_folder"], "*.*"))
