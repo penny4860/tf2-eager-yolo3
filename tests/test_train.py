@@ -28,7 +28,7 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     loss_history = train_fn(model,
                             generator,
                             valid_generator,
-                            num_epoches=3, verbose=1)
+                            num_epoches=3)
     assert loss_history[0] > loss_history[-1]
 
 
