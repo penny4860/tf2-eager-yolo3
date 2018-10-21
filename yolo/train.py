@@ -7,6 +7,31 @@ import os
 from yolo.loss import loss_fn
 
 
+def _loop_train(model, optimizer, iterator):
+    # one epoch
+    
+    n_steps = iterator.steps_per_epoch
+    for _ in range(n_steps):
+        xs, yolo_1, yolo_2, yolo_3 = iterator.get_next()
+        ys = [yolo_1, yolo_2, yolo_3]
+
+        grads = _grad_fn(model, xs, ys)
+        optimizer.apply_gradients(zip(grads, model.variables))
+
+
+def _loop_validation(model, iterator):
+    # one epoch
+    n_steps = iterator.steps_per_epoch
+    loss_value = 0
+    for _ in range(n_steps):
+        xs, yolo_1, yolo_2, yolo_3 = iterator.get_next()
+        ys = [yolo_1, yolo_2, yolo_3]
+        ys_ = model(xs)
+        loss_value += loss_fn(ys, ys_)
+    loss_value /= iterator.steps_per_epoch
+    return loss_value
+
+
 def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, save_dname=None):
     
     save_fname = _setup(save_dname)
@@ -16,23 +41,12 @@ def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoc
     min_loss_value = np.inf        
     history = []
     for i in range(num_epoches):
-        
-        # one epoch
-        for _ in range(train_iterator.steps_per_epoch):
-            xs, yolo_1, yolo_2, yolo_3 = train_iterator.get_next()
-            ys = [yolo_1, yolo_2, yolo_3]
-    
-            grads = _grad_fn(model, xs, ys)
-            optimizer.apply_gradients(zip(grads, model.variables))
 
-        # check validation error
-        loss_value = 0
-        for _ in range(valid_iterator.steps_per_epoch):
-            xs, yolo_1, yolo_2, yolo_3 = valid_iterator.get_next()
-            ys_ = model(xs)
-            loss_value += loss_fn(ys, ys_)
-        loss_value /= valid_iterator.steps_per_epoch
+        # one epoch
+        _loop_train(model, optimizer, train_iterator)
         
+        # check validation error
+        loss_value = _loop_validation(model, valid_iterator)
         
         history.append(loss_value)
         print("{}-th loss = {}".format(i, loss_value))
