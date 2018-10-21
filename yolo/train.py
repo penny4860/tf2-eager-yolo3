@@ -7,7 +7,7 @@ import os
 from yolo.loss import loss_fn
 
 
-def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, verbose=10, save_dname=None):
+def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, save_dname=None):
     
     save_fname = _setup(save_dname)
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -16,24 +16,31 @@ def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoc
     min_loss_value = np.inf        
     history = []
     for i in range(num_epoches):
-        xs, yolo_1, yolo_2, yolo_3 = train_iterator.get_next()
-        ys = [yolo_1, yolo_2, yolo_3]
+        
+        # one epoch
+        for _ in range(train_iterator.steps_per_epoch):
+            xs, yolo_1, yolo_2, yolo_3 = train_iterator.get_next()
+            ys = [yolo_1, yolo_2, yolo_3]
+    
+            grads = _grad_fn(model, xs, ys)
+            optimizer.apply_gradients(zip(grads, model.variables))
 
-        grads = _grad_fn(model, xs, ys)
-        optimizer.apply_gradients(zip(grads, model.variables))
-
-        if i==0 or (i+1)%verbose==0:
+        # check validation error
+        loss_value = 0
+        for _ in range(valid_iterator.steps_per_epoch):
             xs, yolo_1, yolo_2, yolo_3 = valid_iterator.get_next()
-            
             ys_ = model(xs)
-            loss_value = loss_fn(ys, ys_)
-            history.append(loss_value)
-            print("{}-th loss = {}".format(i, loss_value))
-            
-            if save_fname is not None and min_loss_value > loss_value:
-                print("    update weight {}".format(loss_value))
-                min_loss_value = loss_value
-                model.save_weights("{}.h5".format(save_fname))
+            loss_value += loss_fn(ys, ys_)
+        loss_value /= valid_iterator.steps_per_epoch
+        
+        
+        history.append(loss_value)
+        print("{}-th loss = {}".format(i, loss_value))
+        
+        if save_fname is not None and min_loss_value > loss_value:
+            print("    update weight {}".format(loss_value))
+            min_loss_value = loss_value
+            model.save_weights("{}.h5".format(save_fname))
     
     return history
 
