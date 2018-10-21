@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from yolo.dataset.generator import create_generator
 from yolo.net.yolonet import Yolonet
-from yolo.train import train
+from yolo.train import train_fn
 
 
 def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
@@ -28,10 +28,10 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     model.load_darknet_params(darknet_weights, True)
      
     # 3. training
-    loss_history = train(model,
-                         generator,
-                         valid_generator,
-                         num_epoches=3, verbose=1)
+    loss_history = train_fn(model,
+                            generator,
+                            valid_generator,
+                            num_epoches=3, verbose=1)
     assert loss_history[0] > loss_history[-1]
 
 

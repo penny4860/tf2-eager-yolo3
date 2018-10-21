@@ -11,7 +11,7 @@ import json
 import glob
 
 from yolo.net import Yolonet
-from yolo.train import train
+from yolo.train import train_fn
 from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
 from yolo.dataset.generator import create_generator
@@ -54,13 +54,13 @@ if __name__ == '__main__':
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 4. training
-    train(model,
-          generator,
-          valid_generator,
-          learning_rate=config["train"]["learning_rate"],
-          save_dname=config["train"]["save_folder"],
-          num_epoches=config["train"]["num_epoch"],
-          verbose=1)
+    train_fn(model,
+             generator,
+             valid_generator,
+             learning_rate=config["train"]["learning_rate"],
+             save_dname=config["train"]["save_folder"],
+             num_epoches=config["train"]["num_epoch"],
+             verbose=1)
 
     # 5. prepare sample images
     img_fnames = glob.glob(os.path.join(config["train"]["train_image_folder"], "*.*"))
