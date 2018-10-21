@@ -56,14 +56,13 @@ if __name__ == '__main__':
     model = Yolonet(n_classes=len(config["model"]["labels"]))
     model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
-    # 4. training
+    # 4. traini
     train_fn(model,
              train_generator,
              valid_generator,
              learning_rate=config["train"]["learning_rate"],
              save_dname=config["train"]["save_folder"],
-             num_epoches=config["train"]["num_epoch"],
-             verbose=1)
+             num_epoches=config["train"]["num_epoch"])
 
     # 5. prepare sample images
     img_fnames = glob.glob(os.path.join(config["train"]["train_image_folder"], "*.*"))
