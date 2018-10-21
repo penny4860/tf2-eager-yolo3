@@ -13,25 +13,6 @@ DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
 
 
-def create_sample_gen_fn(ann_fnames,
-                         image_root,
-                         labels,
-                         anchors,
-                         min_net_size,
-                         jitter):
-    generator = SampleGenerator(ann_fnames,
-                                image_root,
-                                labels=labels,
-                                anchors=anchors,
-                                min_net_size=min_net_size,
-                                jitter=jitter)
-    def gen():
-        i = -1
-        while True:
-            i += 1
-            yield generator.get(i)
-    return gen
-
 class BatchGenerator(object):
     def __init__(self, ann_fnames,
                      image_root,
@@ -55,13 +36,34 @@ class BatchGenerator(object):
         self.steps_per_epoch = int(len(ann_fnames) / batch_size)
 
         ds = ds.batch(batch_size)
+        # Todo: shuffle 이 되는지 확인하자.
         if shuffle:
             ds = ds.shuffle(buffer_size=len(ann_fnames))
-        # multi-scale generate
+        # Todo : input image를 multi-scale 로 할 수 있는 방법 
         self.iterator = ds.make_one_shot_iterator()
     
     def get_next(self):
         return self.iterator.get_next()
+
+
+def create_sample_gen_fn(ann_fnames,
+                         image_root,
+                         labels,
+                         anchors,
+                         min_net_size,
+                         jitter):
+    generator = SampleGenerator(ann_fnames,
+                                image_root,
+                                labels=labels,
+                                anchors=anchors,
+                                min_net_size=min_net_size,
+                                jitter=jitter)
+    def gen():
+        i = -1
+        while True:
+            i += 1
+            yield generator.get(i)
+    return gen
 
         
 class SampleGenerator(object):
