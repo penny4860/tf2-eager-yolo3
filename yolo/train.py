@@ -23,7 +23,7 @@ def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoc
 
         # 3. update weights
         history.append(loss_value)
-        if save_fname is not None and loss_value == history.min():
+        if save_fname is not None and loss_value == min(history):
             print("    update weight {}".format(loss_value))
             model.save_weights("{}.h5".format(save_fname))
     
