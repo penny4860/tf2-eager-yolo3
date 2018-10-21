@@ -1,10 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import tensorflow as tf
 import os
 
 from yolo.loss import loss_fn
+
+
+def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, save_dname=None):
+    
+    save_fname = _setup(save_dname)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    
+    history = []
+    for i in range(num_epoches):
+
+        # 1. update params
+        _loop_train(model, optimizer, train_iterator)
+        
+        # 2. monitor validation loss
+        loss_value = _loop_validation(model, valid_iterator)
+        print("{}-th loss = {}".format(i, loss_value))
+
+        # 3. update weights
+        history.append(loss_value)
+        if save_fname is not None and loss_value == history.min():
+            print("    update weight {}".format(loss_value))
+            model.save_weights("{}.h5".format(save_fname))
+    
+    return history
 
 
 def _loop_train(model, optimizer, iterator):
@@ -30,33 +53,6 @@ def _loop_validation(model, iterator):
         loss_value += loss_fn(ys, ys_)
     loss_value /= iterator.steps_per_epoch
     return loss_value
-
-
-def train_fn(model, train_iterator, valid_iterator, learning_rate=1e-4, num_epoches=500, save_dname=None):
-    
-    save_fname = _setup(save_dname)
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    
-
-    min_loss_value = np.inf        
-    history = []
-    for i in range(num_epoches):
-
-        # one epoch
-        _loop_train(model, optimizer, train_iterator)
-        
-        # check validation error
-        loss_value = _loop_validation(model, valid_iterator)
-        
-        history.append(loss_value)
-        print("{}-th loss = {}".format(i, loss_value))
-        
-        if save_fname is not None and min_loss_value > loss_value:
-            print("    update weight {}".format(loss_value))
-            min_loss_value = loss_value
-            model.save_weights("{}.h5".format(save_fname))
-    
-    return history
 
 
 def _setup(save_dname):
