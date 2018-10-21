@@ -13,7 +13,27 @@ DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
 
 
-def create_generator(ann_fnames,
+def create_sample_gen_fn(ann_fnames,
+                         image_root,
+                         labels,
+                         anchors,
+                         min_net_size,
+                         jitter):
+    generator = SampleGenerator(ann_fnames,
+                                image_root,
+                                labels=labels,
+                                anchors=anchors,
+                                min_net_size=min_net_size,
+                                jitter=jitter)
+    def gen():
+        i = -1
+        while True:
+            i += 1
+            yield generator.get(i)
+    return gen
+
+class BatchGenerator(object):
+    def __init__(self, ann_fnames,
                      image_root,
                      batch_size,
                      labels_naming=["raccoon"],
@@ -22,42 +42,29 @@ def create_generator(ann_fnames,
                      max_net_size=288,
                      shuffle=True,
                      jitter=True):
-    """
-    # Args
-        image_dir : str
-        annotation_dir : str
-        labels_naming : list of strs
-        anchors : list of integer (length 18)
-    # Returns
-        generator : tensorflow.keras.utils.Sequence
-            generator[0] -> xs, ys_1, ys_2, ys_3
-    """
-    generator = BatchGenerator(ann_fnames, image_root, labels=["raccoon"], anchors=anchors, min_net_size=min_net_size,
-                               jitter=jitter)
+
+        gen = create_sample_gen_fn(ann_fnames, image_root, labels_naming, anchors, min_net_size, jitter)
+        n_features = len(labels_naming) + 4 + 1
+        ds = tf.data.Dataset.from_generator(gen,
+                                            (tf.float32, tf.float32, tf.float32, tf.float32),
+                                            (tf.TensorShape([None, None, 3]),
+                                             tf.TensorShape([None, None, 3, n_features]),
+                                             tf.TensorShape([None, None, 3, n_features]),
+                                             tf.TensorShape([None, None, 3, n_features])))
+        self.n_samples = len(ann_fnames)
+        self.steps_per_epoch = int(len(ann_fnames) / batch_size)
+
+        ds = ds.batch(batch_size)
+        if shuffle:
+            ds = ds.shuffle(buffer_size=len(ann_fnames))
+        # multi-scale generate
+        self.iterator = ds.make_one_shot_iterator()
     
-    def gen():
-        i = -1
-        while True:
-            i += 1
-            yield generator.get(i)
-    
-    n_features = len(labels_naming) + 4 + 1
-    ds = tf.data.Dataset.from_generator(gen,
-                                        (tf.float32, tf.float32, tf.float32, tf.float32),
-                                        (tf.TensorShape([None, None, 3]),
-                                         tf.TensorShape([None, None, 3, n_features]),
-                                         tf.TensorShape([None, None, 3, n_features]),
-                                         tf.TensorShape([None, None, 3, n_features])))
-    ds = ds.batch(batch_size)
-    # ds = ds.shuffle(buffer_size=256, reshuffle_each_iteration=shuffle)
-    # Todo : shuffle 적용
-    # multi-scale generate
-    iterator = ds.make_one_shot_iterator()
-    return iterator
+    def get_next(self):
+        return self.iterator.get_next()
 
-
-
-class BatchGenerator(object):
+        
+class SampleGenerator(object):
     def __init__(self, 
                  ann_fnames,
                  img_dir,
