@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
-import tensorflow as tf
-
-from yolo.dataset.generator import create_generator
 from yolo.net.yolonet import Yolonet
 from yolo.train import train_fn
+from yolo.dataset.generator import BatchGenerator
 
 
 def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
@@ -14,11 +11,11 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     darknet_weights = setup_darknet_weights
 
     # 1. create generator
-    generator = create_generator(ann_fnames, image_root,
+    generator = BatchGenerator(ann_fnames, image_root,
                                  batch_size=2,
                                  labels_naming=["raccoon"],
                                  jitter=False)
-    valid_generator = create_generator(ann_fnames, image_root,
+    valid_generator = BatchGenerator(ann_fnames, image_root,
                                        batch_size=2,
                                        labels_naming=["raccoon"],
                                        jitter=False)
