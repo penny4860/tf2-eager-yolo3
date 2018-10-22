@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/penny4860/tf-eager-yolo3.svg?branch=master)](https://travis-ci.org/penny4860/tf-eager-yolo3) [![codecov](https://codecov.io/gh/penny4860/tf-eager-yolo3/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/tf-eager-yolo3)
 
-
-# Yolo-v3 using tensorflow eager
+# Tensorflow eager implementation of Yolo-v3
 
 I have implemented yolo-v3 detector using tensorflow eager execution.
 
