@@ -59,14 +59,14 @@ def boxes_to_array(bound_boxes):
     
     # Returns
         centroid_boxes : (N, 4)
-        probs : (N, nb_classes)
+        probs : (N,)
     """
     centroid_boxes = []
     probs = []
     for box in bound_boxes:
         centroid_boxes.append([box.x, box.y, box.w, box.h])
         probs.append(box.classes)
-    return np.array(centroid_boxes), np.array(probs)
+    return np.array(centroid_boxes), np.max(np.array(probs), axis=1)
 
 
 def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
