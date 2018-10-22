@@ -51,7 +51,7 @@ This project provides a way to train a detector from scratch. If you follow the 
 * ```project/root> python train_eager.py -c configs/svhn.json```
 	* <img src="imgs/svhn.jpg" height="250">
 
-After training, you can evaluate the performance of the detector with the following command.
+After training, you can evaluate the performance of the detector with the following command. 
 
 * ```project/root> python eval.py -c configs/svhn.json```
 	* Running this script will evaluate the annotation dataset specified in ```train_annot_folder```. The evaluation results are output in the following manner.
