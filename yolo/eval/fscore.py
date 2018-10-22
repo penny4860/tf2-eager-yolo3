@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from yolo.backend.utils.eval._box_match import BoxMatcher
+from yolo.eval._box_match import BoxMatcher
 
 def count_true_positives(detect_boxes, true_boxes, detect_labels=None, true_labels=None):
     """
