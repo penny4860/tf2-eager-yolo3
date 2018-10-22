@@ -3,7 +3,6 @@
 import tensorflow as tf
 tf.enable_eager_execution()
 
-import matplotlib.pyplot as plt
 import cv2
 import os
 import argparse
@@ -12,7 +11,6 @@ import glob
 
 from yolo.net import Yolonet
 from yolo.frontend import YoloDetector
-from yolo.utils.box import boxes_to_array, to_minmax, draw_boxes
 
 argparser = argparse.ArgumentParser(
     description='train yolo-v3 network')
@@ -52,18 +50,7 @@ if __name__ == '__main__':
         n_truth += len(true_boxes)
         n_pred += len(boxes)
 
-        print(n_true_positives, n_truth, n_pred, probs)
-        image = draw_boxes(image, boxes, labels, probs, class_labels=config["model"]["labels"])
-        plt.imshow(image)
-        plt.show()
-    
-    print(n_true_positives, n_truth, n_pred)
     print(calc_score(n_true_positives, n_truth, n_pred))
-
-
-# Todo 1: detector.detect 의 리턴 타입을 np array 로 
-# Todo 2: draw_boxes() 의 입력 타입을 np array 로 
-
 
 
 
