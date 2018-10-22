@@ -47,8 +47,10 @@ $ activate yolo3 # in linux "source activate yolo3"
 ### 2. Training from scratch
 
 This project provides a way to train a detector from scratch. If you follow the command below, you can build a digit detector with just two images. If you follow the instructions, you can train the digit detector as shown below.
-	* ```project/root> python train_eager.py -c configs/predict_coco.json -i tests/samples/sample.jpeg```
-	* <img src="imgs/svhn.jpg" height="250">
+
+* ```project/root> python train_eager.py -c configs/predict_coco.json -i tests/samples/sample.jpeg```
+
+<img src="imgs/svhn.jpg" height="250">
 
 Now you can add more images to train a digit detector with good generalization performance.
 
