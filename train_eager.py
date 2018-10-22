@@ -78,8 +78,8 @@ if __name__ == '__main__':
     detector = YoloDetector(model)
  
     # 7. predict & plot
-    boxes = detector.detect(imgs[0], config["model"]["anchors"])
-    image = draw_boxes(imgs[0], boxes, labels=config["model"]["labels"])
+    boxes, labels, probs = detector.detect(imgs[0], config["model"]["anchors"])
+    image = draw_boxes(imgs[0], boxes, labels, class_labels=config["model"]["labels"])
     plt.imshow(image)
     plt.show()
 
