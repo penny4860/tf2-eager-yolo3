@@ -46,22 +46,24 @@ if __name__ == '__main__':
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
 
-        boxes_ = detector.detect(image, config["model"]["anchors"])
-        boxes, _ = boxes_to_array(boxes_)
-        boxes = to_minmax(boxes)
-        labels = np.array([b.get_label() for b in boxes_])
+        boxes, labels, probs = detector.detect(image, config["model"]["anchors"])
         
         n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
         n_truth += len(true_boxes)
         n_pred += len(boxes)
 
-#         print(n_true_positives, n_truth, n_pred)
-#         image = draw_boxes(image, boxes_, labels=config["model"]["labels"])
-#         plt.imshow(image)
-#         plt.show()
+        print(n_true_positives, n_truth, n_pred, probs)
+        image = draw_boxes(image, boxes, labels, probs, class_labels=config["model"]["labels"])
+        plt.imshow(image)
+        plt.show()
     
     print(n_true_positives, n_truth, n_pred)
     print(calc_score(n_true_positives, n_truth, n_pred))
+
+
+# Todo 1: detector.detect 의 리턴 타입을 np array 로 
+# Todo 2: draw_boxes() 의 입력 타입을 np array 로 
+
 
 
 

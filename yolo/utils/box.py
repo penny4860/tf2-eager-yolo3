@@ -98,8 +98,16 @@ def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
     boxes = [box for box in boxes if box.get_score() > obj_threshold]
     return boxes
 
-
-def draw_boxes(image, boxes, labels, obj_thresh=0.0, desired_size=None):
+#         image = draw_boxes(image, boxes, labels, probs, class_labels=config["model"]["labels"])
+def draw_boxes(image, boxes, labels, probs, class_labels, obj_thresh=0.0, desired_size=None):
+    """
+    # Args
+        image : array, shape of (H, W, 3)
+        boxes : array, shape of (N, 4)
+        labels : array, shape of (N,)
+        probs : array, shape of (N,)
+        class_labels : list, lenght of (n_classes)
+    """
     
     def _set_scale_factor():
         if desired_size:
@@ -116,20 +124,19 @@ def draw_boxes(image, boxes, labels, obj_thresh=0.0, desired_size=None):
     h, w = image.shape[:2]
     img_scaled = cv2.resize(image, (int(w*scale_factor), int(h*scale_factor)))
     
-    for box in boxes:
-        label = np.argmax(box.classes)
-        label_str = labels[label]
-        if box.classes[label] > obj_thresh:
-            print(label_str + ': ' + str(box.classes[label]*100) + '%')
+    for box, label, prob in zip(boxes, labels, probs):
+        label_str = class_labels[label]
+        if prob > obj_thresh:
+            print(label_str + ': ' + str(prob*100) + '%')
                 
             # Todo: check this code
             if img_scaled.dtype == np.uint8:
                 img_scaled = img_scaled.astype(np.int32)
-            x1, y1, x2, y2 = (box.as_minmax() * scale_factor).astype(np.int32)
+            x1, y1, x2, y2 = (box * scale_factor).astype(np.int32)
             
             cv2.rectangle(img_scaled, (x1,y1), (x2,y2), (0,255,0), 3)
             cv2.putText(img_scaled, 
-                        "{}:  {:.2f}".format(label_str, box.get_score()),
+                        "{}:  {:.2f}".format(label_str, prob),
                         (x1, y1 - 13), 
                         cv2.FONT_HERSHEY_SIMPLEX, 
                         1e-3 * img_scaled.shape[0], 
