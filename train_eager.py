@@ -79,7 +79,7 @@ if __name__ == '__main__':
  
     # 7. predict & plot
     boxes, labels, probs = detector.detect(imgs[0], config["model"]["anchors"])
-    image = draw_boxes(imgs[0], boxes, labels, class_labels=config["model"]["labels"])
+    image = draw_boxes(imgs[0], boxes, labels, probs, class_labels=config["model"]["labels"])
     plt.imshow(image)
     plt.show()
 
