@@ -50,10 +50,10 @@ if __name__ == '__main__':
     image = image[:,:,::-1]
 
     d = YoloDetector(yolov3)
-    boxes = d.detect(image, COCO_ANCHORS, net_size=416)
+    boxes, labels, probs = d.detect(image, COCO_ANCHORS, net_size=416)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, config["model"]["labels"], obj_thresh=0.5)
+    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
 
     # 5. plot    
     plt.imshow(image)

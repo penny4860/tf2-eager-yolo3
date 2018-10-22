@@ -22,7 +22,7 @@ def test_detect(setup_tf_eager, setup_darknet_weights):
     image = image[:,:,::-1]
 
     d = YoloDetector(yolov3)
-    boxes = d.detect(image, COCO_ANCHORS, net_size=416)
+    boxes, labels, probs = d.detect(image, COCO_ANCHORS, net_size=416)
     assert len(boxes) == 31
 
 
