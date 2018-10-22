@@ -15,7 +15,7 @@ from yolo.train import train_fn
 from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
 from yolo.dataset.generator import BatchGenerator
-
+from yolo.utils.utils import download_if_not_exists
 
 argparser = argparse.ArgumentParser(
     description='train yolo-v3 network')
@@ -31,6 +31,10 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     with open(args.config) as data_file:    
         config = json.load(data_file)
+
+    # Download if not exits weight file
+    download_if_not_exists(config["pretrained"]["darknet_format"],
+                           "https://pjreddie.com/media/files/yolov3.weights")
     
     # 1. create generator
     ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
