@@ -48,9 +48,14 @@ $ activate yolo3 # in linux "source activate yolo3"
 
 This project provides a way to train a detector from scratch. If you follow the command below, you can build a digit detector with just two images. If you follow the instructions, you can train the digit detector as shown below.
 
-* ```project/root> python train_eager.py -c configs/predict_coco.json -i tests/samples/sample.jpeg```
+* ```project/root> python train_eager.py -c configs/svhn.json```
+	* <img src="imgs/svhn.jpg" height="250">
 
-<img src="imgs/svhn.jpg" height="250">
+After training, you can evaluate the performance of the detector with the following command.
+
+* ```project/root> python eval.py -c configs/svhn.json```
+	* Running this script will evaluate the annotation dataset specified in ```train_annot_folder```. The evaluation results are output in the following manner.
+	* ```{'fscore': 1.0, 'precision': 1.0, 'recall': 1.0}```
 
 Now you can add more images to train a digit detector with good generalization performance.
 
