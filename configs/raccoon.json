@@ -8,7 +8,7 @@
         "darknet_format":           "yolov3.weights"
     },
     "train" : {
-        "min_size":             416,
+        "min_size":             288,
         "max_size":             416,
         "num_epoch":            100,
         "train_image_folder":   "tests/dataset/raccoon/imgs/",
