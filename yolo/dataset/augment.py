@@ -30,7 +30,6 @@ class ImgAugment(object):
         """
         # 1. read image file
         image = cv2.imread(img_file)
-        print(img_file, image)
     
         # 2. make jitter on image
         boxes_ = np.copy(boxes)
