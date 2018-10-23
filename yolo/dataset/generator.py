@@ -24,7 +24,14 @@ class BatchGenerator(object):
                      shuffle=True,
                      jitter=True):
 
-        gen = create_sample_gen_fn(ann_fnames, image_root, labels_naming, anchors, min_net_size, jitter)
+        gen = create_sample_gen_fn(ann_fnames,
+                                   image_root,
+                                   labels_naming,
+                                   anchors,
+                                   min_net_size,
+                                   max_net_size,
+                                   jitter,
+                                   batch_size*10)
         n_features = len(labels_naming) + 4 + 1
         ds = tf.data.Dataset.from_generator(gen,
                                             (tf.float32, tf.float32, tf.float32, tf.float32),
@@ -35,10 +42,10 @@ class BatchGenerator(object):
         self.n_samples = len(ann_fnames)
         self.steps_per_epoch = int(len(ann_fnames) / batch_size)
 
-        ds = ds.batch(batch_size)
         # Todo: shuffle 이 되는지 확인하자.
         if shuffle:
             ds = ds.shuffle(buffer_size=len(ann_fnames))
+        ds = ds.batch(batch_size)
         # Todo : input image를 multi-scale 로 할 수 있는 방법 
         self.iterator = ds.make_one_shot_iterator()
     
@@ -51,13 +58,17 @@ def create_sample_gen_fn(ann_fnames,
                          labels,
                          anchors,
                          min_net_size,
-                         jitter):
+                         max_net_size,
+                         jitter,
+                         resize_freq):
     generator = SampleGenerator(ann_fnames,
                                 image_root,
                                 labels=labels,
                                 anchors=anchors,
                                 min_net_size=min_net_size,
-                                jitter=jitter)
+                                max_net_size=max_net_size,
+                                jitter=jitter,
+                                resize_freq=resize_freq)
     def gen():
         i = -1
         while True:
@@ -74,7 +85,8 @@ class SampleGenerator(object):
                  anchors,   
                  min_net_size=320,
                  max_net_size=608,    
-                 jitter=True):
+                 jitter=True,
+                 resize_freq=15):
 
         self.ann_fnames = ann_fnames
         self.img_dir = img_dir
@@ -83,17 +95,15 @@ class SampleGenerator(object):
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.jitter             = jitter
         self.anchors            = create_anchor_boxes(anchors)
-        self.net_size = DEFAULT_NETWORK_SIZE
+        self.net_size = min_net_size
+        self.resize_freq = resize_freq
 
     def get(self, i):
 
         index = i % len(self.ann_fnames)        
         fname, boxes, coded_labels = parse_annotation(self.ann_fnames[index], self.img_dir, self.lable_names)
+        net_size = self._get_net_size(i)
 
-        
-        # net_size = self._get_net_size(idx)
-        net_size = self.min_net_size
-        
         list_ys = _create_empty_xy(net_size, len(self.lable_names))
 
         # 1. get input file & its annotation
@@ -111,6 +121,14 @@ class SampleGenerator(object):
 
         return normalize(img), list_ys[2], list_ys[1], list_ys[0]
 
+    def _get_net_size(self, idx):
+        if idx % self.resize_freq == 0:
+            net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
+                                                          self.max_net_size/DOWNSAMPLE_RATIO+1)
+            print("resizing: ", net_size, net_size)
+            self.net_size = net_size
+        print(idx, self.resize_freq, self.net_size, self.min_net_size, self.max_net_size)
+        return self.net_size
 
 def _create_empty_xy(net_size, n_classes, n_boxes=3):
     # get image input size, change every 10 batches
