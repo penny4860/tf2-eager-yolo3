@@ -102,6 +102,8 @@ class SampleGenerator(object):
 
         index = i % len(self.ann_fnames)        
         fname, boxes, coded_labels = parse_annotation(self.ann_fnames[index], self.img_dir, self.lable_names)
+        print(fname)
+        
         net_size = self._get_net_size(i)
 
         list_ys = _create_empty_xy(net_size, len(self.lable_names))
