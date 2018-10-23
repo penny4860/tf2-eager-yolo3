@@ -1,7 +1,8 @@
 {
     "model" : {
         "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
-        "labels":               ["raccoon"]
+        "labels":               ["raccoon"],
+        "net_size":            	352
     },
     "pretrained" : {
         "keras_format":             "",
@@ -16,6 +17,6 @@
         "batch_size":           3,
         "learning_rate":        1e-4,
         "save_folder":         "configs/raccoon",
-        "jitter":               false
+        "jitter":               true
     }
 }
