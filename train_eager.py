@@ -44,13 +44,18 @@ if __name__ == '__main__':
                                      batch_size=config["train"]["batch_size"],
                                      labels_naming=config["model"]["labels"],
                                      anchors=config["model"]["anchors"],
-                                     jitter=config["train"]["jitter"])
+                                     min_net_size=config["train"]["min_size"],
+                                     max_net_size=config["train"]["max_size"],
+                                     jitter=config["train"]["jitter"],
+                                     shuffle=True)
 
     valid_generator = BatchGenerator(ann_fnames,
                                        config["train"]["train_image_folder"],
                                        batch_size=config["train"]["batch_size"],
                                        labels_naming=config["model"]["labels"],
                                        anchors=config["model"]["anchors"],
+                                       min_net_size=config["model"]["net_size"],
+                                       max_net_size=config["model"]["net_size"],
                                        jitter=False,
                                        shuffle=False)
     
