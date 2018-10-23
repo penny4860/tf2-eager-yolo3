@@ -125,9 +125,8 @@ class SampleGenerator(object):
         if idx % self.resize_freq == 0:
             net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
                                                           self.max_net_size/DOWNSAMPLE_RATIO+1)
-            print("resizing: ", net_size, net_size)
+            print("resizing: {}, index: {}".format(net_size, idx))
             self.net_size = net_size
-        print(idx, self.resize_freq, self.net_size, self.min_net_size, self.max_net_size)
         return self.net_size
 
 def _create_empty_xy(net_size, n_classes, n_boxes=3):
