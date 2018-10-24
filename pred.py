@@ -19,13 +19,13 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--config',
-    default="configs/predict_coco.json",
+    default="configs/raccoon.json",
     help='config file')
 
 argparser.add_argument(
     '-i',
     '--image',
-    default="tests/samples/sample.jpeg",
+    default="raccoon-12.jpg",
     help='path to image file')
 
 
@@ -42,18 +42,22 @@ if __name__ == '__main__':
                            "https://pjreddie.com/media/files/yolov3.weights")
 
     # 1. create yolo model & load weights
-    yolov3 = Yolonet()
-    yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
+    yolov3 = Yolonet(n_classes=len(config["model"]["labels"]))
+    import os
+#     yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
+    yolov3.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
 
     # 2. preprocess the image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
 
     d = YoloDetector(yolov3)
-    boxes, labels, probs = d.detect(image, COCO_ANCHORS, net_size=416)
+    boxes, labels, probs = d.detect(image, config["model"]["anchors"], net_size=config["model"]["net_size"])
+    print(len(boxes))
+    print(probs)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
+    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0)
 
     # 5. plot    
     plt.imshow(image)
