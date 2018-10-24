@@ -37,9 +37,11 @@ if __name__ == '__main__':
                            "https://pjreddie.com/media/files/yolov3.weights")
     
     # 1. create generator
-    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
-    print(len(ann_fnames))
-    train_generator = BatchGenerator(ann_fnames,
+    train_ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
+    valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))
+    
+    print(len(train_ann_fnames), len(valid_ann_fnames))
+    train_generator = BatchGenerator(train_ann_fnames,
                                      config["train"]["train_image_folder"],
                                      batch_size=config["train"]["batch_size"],
                                      labels_naming=config["model"]["labels"],
@@ -49,8 +51,8 @@ if __name__ == '__main__':
                                      jitter=config["train"]["jitter"],
                                      shuffle=True)
 
-    valid_generator = BatchGenerator(ann_fnames,
-                                       config["train"]["train_image_folder"],
+    valid_generator = BatchGenerator(valid_ann_fnames,
+                                       config["train"]["valid_image_folder"],
                                        batch_size=config["train"]["batch_size"],
                                        labels_naming=config["model"]["labels"],
                                        anchors=config["model"]["anchors"],
