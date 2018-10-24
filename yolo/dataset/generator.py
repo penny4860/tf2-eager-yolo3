@@ -125,7 +125,7 @@ class SampleGenerator(object):
         if idx % self.resize_freq == 0:
             net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
                                                           self.max_net_size/DOWNSAMPLE_RATIO+1)
-            print("resizing: {}, index: {}".format(net_size, idx))
+            # print("resizing: {}, index: {}".format(net_size, idx))
             self.net_size = net_size
         return self.net_size
 
