@@ -11,7 +11,7 @@ IDX_OBJECTNESS = 4
 IDX_CLASS_PROB = 5
 
 
-def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.7, nms_thresh=0.5):
+def postprocess_ouput(yolos, anchors, net_size, image_h, image_w, obj_thresh=0.5, nms_thresh=0.5):
     """
     # Args
         yolos : list of arrays
