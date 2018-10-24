@@ -58,6 +58,17 @@ After training, you can evaluate the performance of the detector with the follow
 
 Now you can add more images to train a digit detector with good generalization performance.
 
+## Other Results
+
+### 1. Raccoon dataset : https://github.com/experiencor/raccoon_dataset
+
+<img src="imgs/raccoon.jpg" height="300">
+
+* Pretrained weight file is stored at [raccoon](https://drive.google.com/drive/folders/1qCi8ZUkUSWNmd-sSjvu0cK5cIG8-Ogoz)
+* Evaluation (200-images)
+	* fscore / precision / recall: 0.97, 0.96, 0.98
+
+
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
