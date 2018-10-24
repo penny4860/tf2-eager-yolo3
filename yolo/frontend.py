@@ -28,9 +28,12 @@ class YoloDetector(object):
         yolos = self._model.predict(new_image)
         boxes_ = postprocess_ouput(yolos, anchors, net_size, image_h, image_w)
         
-        boxes, probs = boxes_to_array(boxes_)
-        boxes = to_minmax(boxes)
-        labels = np.array([b.get_label() for b in boxes_])
+        if len(boxes_) > 0:
+            boxes, probs = boxes_to_array(boxes_)
+            boxes = to_minmax(boxes)
+            labels = np.array([b.get_label() for b in boxes_])
+        else:
+            boxes, labels, probs = [], [], []
         return boxes, labels, probs
 
 

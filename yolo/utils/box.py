@@ -78,6 +78,8 @@ def nms_boxes(boxes, nms_threshold=0.3, obj_threshold=0.3):
         boxes : list of BoundBox
             non maximum supressed BoundBox instances
     """
+    if len(boxes) == 0:
+        return boxes
     # suppress non-maximal boxes
     n_classes = len(boxes[0].classes)
     for c in range(n_classes):
