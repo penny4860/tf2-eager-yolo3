@@ -8,6 +8,7 @@ import os
 import argparse
 import json
 import glob
+from tqdm import tqdm
 
 from yolo.net import Yolonet
 from yolo.frontend import YoloDetector
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     n_truth = 0
     n_pred = 0
     ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
-    for ann_fname in ann_fnames: 
+    for ann_fname in tqdm(ann_fnames): 
         img_fname, true_boxes, true_labels = parse_annotation(ann_fname, config["train"]["train_image_folder"], config["model"]["labels"])
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
