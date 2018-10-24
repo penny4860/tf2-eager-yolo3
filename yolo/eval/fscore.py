@@ -26,8 +26,8 @@ def calc_score(n_true_positives, n_truth, n_pred):
         detect_boxes : list of box-arrays
         true_boxes : list of box-arrays
     """
-    precision = n_true_positives / n_pred
-    recall = n_true_positives / n_truth
+    precision = n_true_positives / max(n_pred, 1e-5)
+    recall = n_true_positives / max(n_truth, 1e-5)
     if precision + recall == 0:
         fscore = 0
     else:
