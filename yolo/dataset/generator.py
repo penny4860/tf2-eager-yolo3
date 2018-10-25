@@ -38,7 +38,7 @@ class BatchGenerator(object):
         self.batch_size = batch_size
         self.shuffle = shuffle
         
-        self.steps_for_epoch = int(len(ann_fnames) / batch_size)
+        self.steps_per_epoch = int(len(ann_fnames) / batch_size)
 
         self._end_epoch = False
         self._index = 0
@@ -67,7 +67,7 @@ class BatchGenerator(object):
             self._epoch += 1
             self._end_epoch = False
         
-        return np.array(xs), np.array(ys_1), np.array(ys_2), np.array(ys_3)
+        return np.array(xs).astype(np.float32), np.array(ys_1).astype(np.float32), np.array(ys_2).astype(np.float32), np.array(ys_3).astype(np.float32)
 
     def _get(self, net_size):
 
