@@ -8,85 +8,25 @@ from yolo.utils.box import create_anchor_boxes
 from yolo.dataset.annotation import parse_annotation
 from yolo import COCO_ANCHORS
 
+from random import shuffle
+
+
 # ratio between network input's size and network output's size, 32 for YOLOv3
 DOWNSAMPLE_RATIO = 32
 DEFAULT_NETWORK_SIZE = 288
 
 
 class BatchGenerator(object):
-    def __init__(self, ann_fnames,
-                     image_root,
-                     batch_size,
-                     labels_naming=["raccoon"],
-                     anchors=COCO_ANCHORS,
-                     min_net_size=288,
-                     max_net_size=288,
-                     shuffle=True,
-                     jitter=True):
-
-        gen = create_sample_gen_fn(ann_fnames,
-                                   image_root,
-                                   labels_naming,
-                                   anchors,
-                                   min_net_size,
-                                   max_net_size,
-                                   jitter,
-                                   batch_size*10)
-        n_features = len(labels_naming) + 4 + 1
-        ds = tf.data.Dataset.from_generator(gen,
-                                            (tf.float32, tf.float32, tf.float32, tf.float32),
-                                            (tf.TensorShape([None, None, 3]),
-                                             tf.TensorShape([None, None, 3, n_features]),
-                                             tf.TensorShape([None, None, 3, n_features]),
-                                             tf.TensorShape([None, None, 3, n_features])))
-        self.n_samples = len(ann_fnames)
-        self.steps_per_epoch = int(len(ann_fnames) / batch_size)
-
-        # Todo: shuffle 이 되는지 확인하자.
-        if shuffle:
-            ds = ds.shuffle(buffer_size=len(ann_fnames))
-        ds = ds.batch(batch_size)
-        # Todo : input image를 multi-scale 로 할 수 있는 방법 
-        self.iterator = ds.make_one_shot_iterator()
-    
-    def get_next(self):
-        return self.iterator.get_next()
-
-
-def create_sample_gen_fn(ann_fnames,
-                         image_root,
-                         labels,
-                         anchors,
-                         min_net_size,
-                         max_net_size,
-                         jitter,
-                         resize_freq):
-    generator = SampleGenerator(ann_fnames,
-                                image_root,
-                                labels=labels,
-                                anchors=anchors,
-                                min_net_size=min_net_size,
-                                max_net_size=max_net_size,
-                                jitter=jitter,
-                                resize_freq=resize_freq)
-    def gen():
-        i = -1
-        while True:
-            i += 1
-            yield generator.get(i)
-    return gen
-
-        
-class SampleGenerator(object):
     def __init__(self, 
                  ann_fnames,
                  img_dir,
                  labels,
-                 anchors,   
+                 batch_size,
+                 anchors=COCO_ANCHORS,   
                  min_net_size=320,
                  max_net_size=608,    
                  jitter=True,
-                 resize_freq=15):
+                 shuffle=True):
 
         self.ann_fnames = ann_fnames
         self.img_dir = img_dir
@@ -95,18 +35,45 @@ class SampleGenerator(object):
         self.max_net_size       = (max_net_size//DOWNSAMPLE_RATIO)*DOWNSAMPLE_RATIO
         self.jitter             = jitter
         self.anchors            = create_anchor_boxes(anchors)
-        self.net_size = min_net_size
-        self.resize_freq = resize_freq
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        
+        self.steps_for_epoch = int(len(ann_fnames) / batch_size)
 
-    def get(self, i):
+        self._end_epoch = False
+        self._index = 0
+        self._epoch = 0
+        
 
-        index = i % len(self.ann_fnames)        
-        fname, boxes, coded_labels = parse_annotation(self.ann_fnames[index], self.img_dir, self.lable_names)
-        net_size = self._get_net_size(i)
+    def next_batch(self):
+        
+        net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
+                                                      self.max_net_size/DOWNSAMPLE_RATIO+1)
+        
+        xs = []
+        ys_1 = []
+        ys_2 = []
+        ys_3 = []
+        for _ in range(self.batch_size):
+            x, y1, y2, y3 = self._get(net_size)
+            xs.append(x)
+            ys_1.append(y1)
+            ys_2.append(y2)
+            ys_3.append(y3)
+        
+        if self._end_epoch == True:
+            if self.shuffle:
+                shuffle(self.ann_fnames)
+            self._epoch += 1
+            self._end_epoch = False
+        
+        return np.array(xs), np.array(ys_1), np.array(ys_2), np.array(ys_3)
 
-        list_ys = _create_empty_xy(net_size, len(self.lable_names))
+    def _get(self, net_size):
 
         # 1. get input file & its annotation
+        fname, boxes, coded_labels = parse_annotation(self.ann_fnames[self._index], self.img_dir, self.lable_names)
+        list_ys = _create_empty_xy(net_size, len(self.lable_names))
 
         # 2. read image in fixed size
         img_augmenter = ImgAugment(net_size, net_size, self.jitter)
@@ -119,15 +86,13 @@ class SampleGenerator(object):
             _coded_box = _encode_box(list_ys[scale_index], original_box, max_anchor, net_size, net_size)
             _assign_box(list_ys[scale_index], box_index, _coded_box, label)
 
+        self._index += 1
+        if self._index == len(self.ann_fnames):
+            self._index = 0
+            self._end_epoch = True
+        
         return normalize(img), list_ys[2], list_ys[1], list_ys[0]
 
-    def _get_net_size(self, idx):
-        if idx % self.resize_freq == 0:
-            net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
-                                                          self.max_net_size/DOWNSAMPLE_RATIO+1)
-            # print("resizing: {}, index: {}".format(net_size, idx))
-            self.net_size = net_size
-        return self.net_size
 
 def _create_empty_xy(net_size, n_classes, n_boxes=3):
     # get image input size, change every 10 batches
