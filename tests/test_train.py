@@ -13,11 +13,11 @@ def test_train(setup_tf_eager, setup_darknet_weights, setup_train_dirs):
     # 1. create generator
     generator = BatchGenerator(ann_fnames, image_root,
                                  batch_size=2,
-                                 labels_naming=["raccoon"],
+                                 labels=["raccoon"],
                                  jitter=False)
     valid_generator = BatchGenerator(ann_fnames, image_root,
                                        batch_size=2,
-                                       labels_naming=["raccoon"],
+                                       labels=["raccoon"],
                                        jitter=False)
  
     # 2. create model
