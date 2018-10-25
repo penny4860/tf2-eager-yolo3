@@ -50,7 +50,7 @@ if __name__ == '__main__':
     image = image[:,:,::-1]
 
     d = YoloDetector(yolov3)
-    boxes, labels, probs = d.detect(image, COCO_ANCHORS, net_size=416)
+    boxes, labels, probs = d.detect(image, config["model"]["anchors"], net_size=config["model"]["net_size"])
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
