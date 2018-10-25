@@ -2,7 +2,7 @@
     "model" : {
         "anchors":              [17,18, 28,24, 36,34, 42,44, 56,51, 72,66, 90,95, 92,154, 139,281],
         "labels":               ["raccoon"],
-        "net_size":            	288
+        "net_size":            	352
     },
     "pretrained" : {
         "keras_format":             "",
@@ -10,13 +10,13 @@
     },
     "train" : {
         "min_size":             288,
-        "max_size":             288,
+        "max_size":             416,
         "num_epoch":            100,
         "train_image_folder":   "../dataset/raccoon/imgs",
         "train_annot_folder":   "../dataset/raccoon/anns/train",
         "valid_image_folder":   "../dataset/raccoon/imgs",
         "valid_annot_folder":   "../dataset/raccoon/anns/train",
-        "batch_size":           8,
+        "batch_size":           2,
         "learning_rate":        1e-4,
         "save_folder":         "configs/raccoon",
         "jitter":               false
