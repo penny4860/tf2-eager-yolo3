@@ -42,7 +42,6 @@ class BatchGenerator(object):
 
         self._end_epoch = False
         self._index = 0
-        self._epoch = 0
         
 
     def next_batch(self):
@@ -64,7 +63,6 @@ class BatchGenerator(object):
         if self._end_epoch == True:
             if self.shuffle:
                 shuffle(self.ann_fnames)
-            self._epoch += 1
             self._end_epoch = False
         
         return np.array(xs).astype(np.float32), np.array(ys_1).astype(np.float32), np.array(ys_2).astype(np.float32), np.array(ys_3).astype(np.float32)
@@ -73,13 +71,13 @@ class BatchGenerator(object):
 
         # 1. get input file & its annotation
         fname, boxes, coded_labels = parse_annotation(self.ann_fnames[self._index], self.img_dir, self.lable_names)
-        list_ys = _create_empty_xy(net_size, len(self.lable_names))
 
         # 2. read image in fixed size
         img_augmenter = ImgAugment(net_size, net_size, self.jitter)
         img, boxes_ = img_augmenter.imread(fname, boxes)
 
-        # 4. Append ys
+        # 3. Append ys
+        list_ys = _create_empty_xy(net_size, len(self.lable_names))
         for original_box, label in zip(boxes_, coded_labels):
             max_anchor, scale_index, box_index = _find_match_anchor(original_box, self.anchors)
             
