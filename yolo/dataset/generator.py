@@ -71,8 +71,6 @@ class BatchGenerator(object):
 
         # 1. get input file & its annotation
         fname, boxes, coded_labels = parse_annotation(self.ann_fnames[self._index], self.img_dir, self.lable_names)
-        
-        print(self._index, fname)
 
         # 2. read image in fixed size
         img_augmenter = ImgAugment(net_size, net_size, self.jitter)
