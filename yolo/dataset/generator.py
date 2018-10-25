@@ -40,21 +40,28 @@ class BatchGenerator(object):
         
         self.steps_per_epoch = int(len(ann_fnames) / batch_size)
 
+        self._epoch = 0
         self._end_epoch = False
         self._index = 0
-        
+        self._initial_net_size()
+
+    def _initial_net_size(self):
+        self._net_size = ((self.min_net_size + self.max_net_size) / 2 / DOWNSAMPLE_RATIO) * DOWNSAMPLE_RATIO
+
+    def _update_net_size(self):
+        self._net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
+                                                            self.max_net_size/DOWNSAMPLE_RATIO+1)
 
     def next_batch(self):
-        
-        net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
-                                                      self.max_net_size/DOWNSAMPLE_RATIO+1)
-        
+        if self._epoch >= 5:
+            self._update_net_size()
+
         xs = []
         ys_1 = []
         ys_2 = []
         ys_3 = []
         for _ in range(self.batch_size):
-            x, y1, y2, y3 = self._get(net_size)
+            x, y1, y2, y3 = self._get()
             xs.append(x)
             ys_1.append(y1)
             ys_2.append(y2)
@@ -64,10 +71,13 @@ class BatchGenerator(object):
             if self.shuffle:
                 shuffle(self.ann_fnames)
             self._end_epoch = False
+            self._epoch += 1
         
         return np.array(xs).astype(np.float32), np.array(ys_1).astype(np.float32), np.array(ys_2).astype(np.float32), np.array(ys_3).astype(np.float32)
 
-    def _get(self, net_size):
+    def _get(self):
+        
+        net_size = self._net_size
 
         # 1. get input file & its annotation
         fname, boxes, coded_labels = parse_annotation(self.ann_fnames[self._index], self.img_dir, self.lable_names)
