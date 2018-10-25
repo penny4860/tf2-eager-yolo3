@@ -46,7 +46,9 @@ class BatchGenerator(object):
         self._initial_net_size()
 
     def _initial_net_size(self):
-        self._net_size = ((self.min_net_size + self.max_net_size) / 2 / DOWNSAMPLE_RATIO) * DOWNSAMPLE_RATIO
+        self._net_size = DOWNSAMPLE_RATIO * (self.min_net_size/DOWNSAMPLE_RATIO + self.max_net_size/DOWNSAMPLE_RATIO) // 2
+        self._net_size = int(self._net_size)
+        print(self.min_net_size, self.max_net_size, self._net_size)
 
     def _update_net_size(self):
         self._net_size = DOWNSAMPLE_RATIO*np.random.randint(self.min_net_size/DOWNSAMPLE_RATIO, \
