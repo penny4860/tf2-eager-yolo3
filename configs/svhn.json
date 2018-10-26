@@ -16,7 +16,7 @@
         "train_annot_folder":   "../dataset/svhn/voc_format_annotation/train",
         "valid_image_folder":   "../dataset/svhn/train_imgs",
         "valid_annot_folder":   "../dataset/svhn/voc_format_annotation/train",
-        "batch_size":           2,
+        "batch_size":           16,
         "learning_rate":        1e-4,
         "save_folder":         "configs/svhn",
         "jitter":               false
