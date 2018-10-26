@@ -38,7 +38,7 @@ if __name__ == '__main__':
     
     # 1. create generator
     train_ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))[:1000]
-    valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))[1000:1200]
+    valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))[:1000]
     
     print(len(train_ann_fnames), len(valid_ann_fnames))
     train_generator = BatchGenerator(train_ann_fnames,
