@@ -16,7 +16,7 @@ def get_unique_labels(files):
     return labels
 
 if __name__ == '__main__':
-    ann_root = os.path.join(os.path.dirname(PROJECT_ROOT), "dataset", "udacity", "anns")
+    ann_root = os.path.join(os.path.dirname(PROJECT_ROOT), "dataset", "svhn", "voc_format_annotation", "train")
     
     # 1. create generator
     train_ann_fnames = glob.glob(os.path.join(ann_root, "*.xml"))
