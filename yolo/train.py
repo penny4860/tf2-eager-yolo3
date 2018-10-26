@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import os
+from tqdm import tqdm
 
 from yolo.loss import loss_fn
 
@@ -34,7 +35,7 @@ def _loop_train(model, optimizer, generator):
     # one epoch
     
     n_steps = generator.steps_per_epoch
-    for _ in range(n_steps):
+    for _ in tqdm(range(n_steps)):
         xs, yolo_1, yolo_2, yolo_3 = generator.next_batch()
         ys = [yolo_1, yolo_2, yolo_3]
 
