@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from yolo.net import Yolonet
 from yolo.frontend import YoloDetector
+from yolo.utils.box import draw_boxes
 
 argparser = argparse.ArgumentParser(
     description='train yolo-v3 network')
@@ -21,6 +22,11 @@ argparser.add_argument(
     '--config',
     default="configs/svhn.json",
     help='config file')
+
+argparser.add_argument(
+    '-s',
+    '--save',
+    default=False)
 
 
 if __name__ == '__main__':
@@ -51,12 +57,10 @@ if __name__ == '__main__':
         n_truth += len(true_boxes)
         n_pred += len(boxes)
         
-        # 4. draw detected boxes
-        from yolo.utils.box import draw_boxes
-        image_ = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0, desired_size=416)
-        
-        output_path = os.path.join(config["train"]["save_folder"], os.path.split(img_fname)[-1])
-        cv2.imwrite(output_path, image_)
+        if args.save:
+            image_ = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0, desired_size=416)
+            output_path = os.path.join(config["train"]["save_folder"], os.path.split(img_fname)[-1])
+            cv2.imwrite(output_path, image_)
 
     print(calc_score(n_true_positives, n_truth, n_pred))
 
