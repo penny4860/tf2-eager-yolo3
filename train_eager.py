@@ -65,7 +65,8 @@ if __name__ == '__main__':
     
     # 2. create model
     model = Yolonet(n_classes=len(config["model"]["labels"]))
-    model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
+    model.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
+    # model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 4. traini
     train_fn(model,
