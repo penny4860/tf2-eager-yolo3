@@ -69,6 +69,19 @@ Now you can add more images to train a digit detector with good generalization p
 	* fscore / precision / recall: 0.97, 0.96, 0.98
 
 
+### 2. SVHN dataset : http://ufldl.stanford.edu/housenumbers/
+
+* Image files : http://ufldl.stanford.edu/housenumbers/
+* Annotation files : https://github.com/penny4860/svhn-voc-annotation-format
+	* In this project, I use pascal voc format as annotation information to train object detector. An annotation file of this format can be downloaded from [svhn-voc-annotation-format](https://github.com/penny4860/svhn-voc-annotation-format).
+
+<img src="imgs/svhn.jpg" height="300">
+
+* Pretrained weight file is stored at [svhn](https://drive.google.com/drive/folders/1qCi8ZUkUSWNmd-sSjvu0cK5cIG8-Ogoz)
+* Evaluation (200-images)
+	* fscore / precision / recall: 0.93, 0.89, 0.97
+
+
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
