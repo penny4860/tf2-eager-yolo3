@@ -5,6 +5,7 @@ tf.enable_eager_execution()
 import matplotlib.pyplot as plt
 import argparse
 import cv2
+import os
 
 from yolo.utils.utils import download_if_not_exists
 from yolo.utils.box import draw_boxes
@@ -19,13 +20,13 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--config',
-    default="configs/predict_coco.json",
+    default="configs/svhn.json",
     help='config file')
 
 argparser.add_argument(
     '-i',
     '--image',
-    default="tests/samples/sample.jpeg",
+    default="24.png",
     help='path to image file')
 
 
@@ -42,8 +43,8 @@ if __name__ == '__main__':
                            "https://pjreddie.com/media/files/yolov3.weights")
 
     # 1. create yolo model & load weights
-    yolov3 = Yolonet()
-    yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
+    yolov3 = Yolonet(n_classes=10)
+    yolov3.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
 
     # 2. preprocess the image
     image = cv2.imread(image_path)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     boxes, labels, probs = d.detect(image, config["model"]["anchors"], net_size=config["model"]["net_size"])
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
+    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0, desired_size=416)
 
     # 5. plot    
     plt.imshow(image)
