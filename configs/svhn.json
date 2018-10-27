@@ -1,7 +1,7 @@
 {
     "model" : {
         "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
-        "labels":               ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        "labels":               ["1", "2", "3", "9"],
         "net_size":               288
     },
     "pretrained" : {
@@ -12,11 +12,9 @@
         "min_size":             288,
         "max_size":             288,
         "num_epoch":            35,
-        "train_image_folder":   "../dataset/svhn/train_imgs",
-        "train_annot_folder":   "../dataset/svhn/voc_format_annotation/train",
-        "valid_image_folder":   "../dataset/svhn/train_imgs",
-        "valid_annot_folder":   "../dataset/svhn/voc_format_annotation/train",
-        "batch_size":           16,
+        "train_image_folder":   "tests/dataset/svhn/imgs",
+        "train_annot_folder":   "tests/dataset/svhn/anns",
+        "batch_size":           2,
         "learning_rate":        1e-4,
         "save_folder":         "configs/svhn",
         "jitter":               false
