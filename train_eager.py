@@ -37,8 +37,17 @@ if __name__ == '__main__':
                            "https://pjreddie.com/media/files/yolov3.weights")
     
     # 1. create generator
-    train_ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))[:1000]
-    valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))[:1000]
+    train_ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
+    valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))
+    
+    from yolo.utils.utils import FileSorter
+    FileSorter().sort(train_ann_fnames)
+    FileSorter().sort(valid_ann_fnames)
+    train_ann_fnames = train_ann_fnames[:1000]
+    valid_ann_fnames = valid_ann_fnames[:1000]
+    
+    print(train_ann_fnames[:10])
+    print(valid_ann_fnames[:10])
     
     print(len(train_ann_fnames), len(valid_ann_fnames))
     train_generator = BatchGenerator(train_ann_fnames,
