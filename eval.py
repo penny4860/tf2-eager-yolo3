@@ -39,7 +39,14 @@ if __name__ == '__main__':
     n_true_positives = 0
     n_truth = 0
     n_pred = 0
-    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))[:1000]
+    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
+    
+    from yolo.utils.utils import FileSorter
+    FileSorter().sort(ann_fnames)
+    ann_fnames = ann_fnames[:1000]
+    print(ann_fnames[:10])
+    
+    
     for ann_fname in tqdm(ann_fnames): 
         img_fname, true_boxes, true_labels = parse_annotation(ann_fname, config["train"]["train_image_folder"], config["model"]["labels"])
         true_labels = np.array(true_labels)
