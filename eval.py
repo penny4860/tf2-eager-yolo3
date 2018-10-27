@@ -50,6 +50,13 @@ if __name__ == '__main__':
         n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
         n_truth += len(true_boxes)
         n_pred += len(boxes)
+        
+        # 4. draw detected boxes
+        from yolo.utils.box import draw_boxes
+        image_ = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0, desired_size=416)
+        
+        output_path = os.path.join(config["train"]["save_folder"], os.path.split(img_fname)[-1])
+        cv2.imwrite(output_path, image_)
 
     print(calc_score(n_true_positives, n_truth, n_pred))
     # {'fscore': 0.6143790849673202, 'precision': 0.5729453401494298, 'recall': 0.6622727272727272}
