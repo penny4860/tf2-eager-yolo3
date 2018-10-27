@@ -19,7 +19,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--config',
-    default="configs/raccoon.json",
+    default="configs/svhn.json",
     help='config file')
 
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     n_true_positives = 0
     n_truth = 0
     n_pred = 0
-    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
+    ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))[:1000]
     for ann_fname in tqdm(ann_fnames): 
         img_fname, true_boxes, true_labels = parse_annotation(ann_fname, config["train"]["train_image_folder"], config["model"]["labels"])
         true_labels = np.array(true_labels)
@@ -52,6 +52,6 @@ if __name__ == '__main__':
         n_pred += len(boxes)
 
     print(calc_score(n_true_positives, n_truth, n_pred))
-
+    # {'fscore': 0.6143790849673202, 'precision': 0.5729453401494298, 'recall': 0.6622727272727272}
 
 
