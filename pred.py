@@ -9,7 +9,6 @@ import cv2
 from yolo.utils.utils import download_if_not_exists
 from yolo.utils.box import draw_boxes
 from yolo.net.yolonet import Yolonet
-from yolo import COCO_ANCHORS
 from yolo.frontend import YoloDetector
 
 
@@ -42,7 +41,7 @@ if __name__ == '__main__':
                            "https://pjreddie.com/media/files/yolov3.weights")
 
     # 1. create yolo model & load weights
-    yolov3 = Yolonet()
+    yolov3 = Yolonet(n_classes=len(config["model"]["labels"]))
     yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
 
     # 2. preprocess the image
