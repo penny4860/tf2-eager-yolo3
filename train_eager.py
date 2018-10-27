@@ -23,7 +23,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--config',
-    default="configs/svhn.json",
+    default="configs/raccoon.json",
     help='config file')
 
 
@@ -39,15 +39,6 @@ if __name__ == '__main__':
     # 1. create generator
     train_ann_fnames = glob.glob(os.path.join(config["train"]["train_annot_folder"], "*.xml"))
     valid_ann_fnames = glob.glob(os.path.join(config["train"]["valid_annot_folder"], "*.xml"))
-    
-    from yolo.utils.utils import FileSorter
-    FileSorter().sort(train_ann_fnames)
-    FileSorter().sort(valid_ann_fnames)
-    train_ann_fnames = train_ann_fnames[:1000]
-    valid_ann_fnames = valid_ann_fnames[:1000]
-    
-    print(train_ann_fnames[:10])
-    print(valid_ann_fnames[:10])
     
     print(len(train_ann_fnames), len(valid_ann_fnames))
     train_generator = BatchGenerator(train_ann_fnames,
@@ -74,8 +65,7 @@ if __name__ == '__main__':
     
     # 2. create model
     model = Yolonet(n_classes=len(config["model"]["labels"]))
-    model.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
-    # model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
+    model.load_darknet_params(config["pretrained"]["darknet_format"], skip_detect_layer=True)
  
     # 4. traini
     train_fn(model,
