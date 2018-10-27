@@ -75,10 +75,10 @@ Now you can add more images to train a digit detector with good generalization p
 * Annotation files : https://github.com/penny4860/svhn-voc-annotation-format
 	* In this project, I use pascal voc format as annotation information to train object detector. An annotation file of this format can be downloaded from [svhn-voc-annotation-format](https://github.com/penny4860/svhn-voc-annotation-format).
 
-<img src="imgs/svhn.jpg" height="300">
+<img src="imgs/svhn_1.jpg" height="400">
 
-* Pretrained weight file is stored at [svhn](https://drive.google.com/drive/folders/1qCi8ZUkUSWNmd-sSjvu0cK5cIG8-Ogoz)
-* Evaluation (200-images)
+* Pretrained weight file is stored at [svhn](https://drive.google.com/drive/folders/1c3ikKWNgaMtPHUWQf54taRUgyJhcyX1g)
+* Evaluation (1000-images)
 	* fscore / precision / recall: 0.93, 0.89, 0.97
 
 
