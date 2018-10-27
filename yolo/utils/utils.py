@@ -22,3 +22,24 @@ def download_if_not_exists(filename, url):
         download_file(filename, url)
         return True
     return False
+
+
+class FileSorter:
+    def __init__(self):
+        pass
+    
+    def sort(self, list_of_strs):
+        list_of_strs.sort(key=self._alphanum_key)
+
+    def _tryint(self, s):
+        try:
+            return int(s)
+        except:
+            return s
+    
+    def _alphanum_key(self, s):
+        import re
+        """ Turn a string into a list of string and number chunks.
+            "z23a" -> ["z", 23, "a"]
+        """
+        return [ self._tryint(c) for c in re.split('([0-9]+)', s) ]
