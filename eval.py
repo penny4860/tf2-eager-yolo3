@@ -60,7 +60,7 @@ if __name__ == '__main__':
         if args.save:
             image_ = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.0, desired_size=416)
             output_path = os.path.join(config["train"]["save_folder"], os.path.split(img_fname)[-1])
-            cv2.imwrite(output_path, image_)
+            cv2.imwrite(output_path, image_[:,:,::-1])
 
     print(calc_score(n_true_positives, n_truth, n_pred))
 
