@@ -82,6 +82,15 @@ Now you can add more images to train a digit detector with good generalization p
 	* fscore / precision / recall: 0.93, 0.89, 0.97
 
 
+### 3. udacity self-driving-car dataset : https://github.com/udacity/self-driving-car/tree/master/annotations
+
+<img src="imgs/udacity.jpg" height="600">
+
+* Pretrained weight file is stored at [udacity](https://drive.google.com/drive/folders/1aaFmnxWM4UJX5paiKmSaylOBXsuMNqBL)
+* Evaluation (9217-images)
+	* fscore / precision / recall: 0.72, 0.61, 0.87
+
+
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
