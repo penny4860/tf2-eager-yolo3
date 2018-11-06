@@ -132,8 +132,9 @@ def _encode_box(yolo, original_box, anchor_box, net_w, net_h):
     center_y = center_y / float(net_h) * grid_h # sigma(t_y) + c_y
     
     # determine the sizes of the bounding box
-    w = np.log((x2 - x1) / float(anchor_w)) # t_w
-    h = np.log((y2 - y1) / float(anchor_h)) # t_h
+    w = np.log(max((x2 - x1), 1) / float(anchor_w)) # t_w
+    h = np.log(max((y2 - y1), 1) / float(anchor_h)) # t_h
+    # print("x1, y1, x2, y2", x1, y1, x2, y2)
 
     box = [center_x, center_y, w, h]
     return box

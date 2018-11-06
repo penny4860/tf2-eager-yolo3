@@ -1,0 +1,24 @@
+{
+    "model" : {
+        "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
+        "labels":               ["Truck", "car", "person"],
+        "net_size":               288
+    },
+    "pretrained" : {
+        "keras_format":             "",
+        "darknet_format":           "yolov3.weights"
+    },
+    "train" : {
+        "min_size":             288,
+        "max_size":             288,
+        "num_epoch":            35,
+        "train_image_folder":   "../dataset/udacity/imgs",
+        "train_annot_folder":   "../dataset/udacity/anns",
+        "valid_image_folder":   "../dataset/udacity/imgs",
+        "valid_annot_folder":   "../dataset/udacity/anns",
+        "batch_size":           16,
+        "learning_rate":        1e-4,
+        "save_folder":         "configs/udacity",
+        "jitter":               false
+    }
+}

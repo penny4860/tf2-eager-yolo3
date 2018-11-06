@@ -70,6 +70,7 @@ def _grad_fn(model, images_tensor, list_y_trues):
     with tf.GradientTape() as tape:
         logits = model(images_tensor)
         loss = loss_fn(list_y_trues, logits)
+        # print("loss = ", loss)
     return tape.gradient(loss, model.variables)
 
 
