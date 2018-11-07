@@ -1,0 +1,24 @@
+{
+    "model" : {
+        "anchors":              [10,13, 16,30, 33,23, 30,61, 62,45, 59,119, 116,90, 156,198, 373,326],
+        "labels":               ["Cyclist", "Misc", "Person_sitting", "Tram", "Truck", "Van", "car", "person"],
+        "net_size":               416
+    },
+    "pretrained" : {
+        "keras_format":             "",
+        "darknet_format":           "yolov3.weights"
+    },
+    "train" : {
+        "min_size":             416,
+        "max_size":             416,
+        "num_epoch":            100,
+        "train_image_folder":   "../dataset/kitti/imgs",
+        "train_annot_folder":   "../dataset/kitti/anns",
+        "valid_image_folder":   "../dataset/kitti/imgs",
+        "valid_annot_folder":   "../dataset/kitti/anns",
+        "batch_size":           8,
+        "learning_rate":        1e-4,
+        "save_folder":         "configs/kitti",
+        "jitter":               false
+    }
+}

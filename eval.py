@@ -15,7 +15,7 @@ from yolo.frontend import YoloDetector
 from yolo.utils.box import draw_boxes
 
 argparser = argparse.ArgumentParser(
-    description='train yolo-v3 network')
+    description='evaluate yolo-v3 network')
 
 argparser.add_argument(
     '-c',
@@ -27,6 +27,12 @@ argparser.add_argument(
     '-s',
     '--save',
     default=False)
+
+argparser.add_argument(
+    '-t',
+    '--threshold',
+    type=float,
+    default=0.5)
 
 
 if __name__ == '__main__':
@@ -51,7 +57,7 @@ if __name__ == '__main__':
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
 
-        boxes, labels, probs = detector.detect(image, config["model"]["anchors"])
+        boxes, labels, probs = detector.detect(image, config["model"]["anchors"], config["model"]["net_size"], args.threshold)
         
         n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
         n_truth += len(true_boxes)

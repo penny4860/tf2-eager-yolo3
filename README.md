@@ -82,13 +82,22 @@ Now you can add more images to train a digit detector with good generalization p
 	* fscore / precision / recall: 0.93, 0.89, 0.97
 
 
-### 3. udacity self-driving-car dataset : https://github.com/udacity/self-driving-car/tree/master/annotations
+### 3. Udacity self-driving-car dataset : https://github.com/udacity/self-driving-car/tree/master/annotations
 
-<img src="imgs/udacity.jpg" height="600">
+<img src="imgs/udacity.jpg" height="500">
 
 * Pretrained weight file is stored at [udacity](https://drive.google.com/drive/folders/1aaFmnxWM4UJX5paiKmSaylOBXsuMNqBL)
 * Evaluation (9217-images)
 	* fscore / precision / recall: 0.72, 0.61, 0.87
+
+
+### 4. Kitti object detection dataset : http://www.cvlibs.net/datasets/kitti/eval_object.php
+
+<img src="imgs/kitti.jpg" height="500">
+
+* Pretrained weight file is stored at [kitti](https://drive.google.com/drive/folders/1G4uFyk60c0hlH_4PRPRVSFpUnS582Fde)
+* Evaluation (7481-images)
+	* fscore / precision / recall: 0.93, 0.93, 0.94
 
 
 ## Copyright
