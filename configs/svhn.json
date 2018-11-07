@@ -14,6 +14,8 @@
         "num_epoch":            35,
         "train_image_folder":   "tests/dataset/svhn/imgs",
         "train_annot_folder":   "tests/dataset/svhn/anns",
+        "valid_image_folder":   "tests/dataset/svhn/imgs",
+        "valid_annot_folder":   "tests/dataset/svhn/anns",
         "batch_size":           2,
         "learning_rate":        1e-4,
         "save_folder":         "configs/svhn",

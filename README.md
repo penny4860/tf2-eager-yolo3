@@ -88,7 +88,7 @@ Now you can add more images to train a digit detector with good generalization p
 
 * Pretrained weight file is stored at [udacity](https://drive.google.com/drive/folders/1aaFmnxWM4UJX5paiKmSaylOBXsuMNqBL)
 * Evaluation (9217-images)
-	* fscore / precision / recall: 0.72, 0.61, 0.87
+	* fscore / precision / recall: 0.80, 0.76, 0.87
 
 
 ### 4. Kitti object detection dataset : http://www.cvlibs.net/datasets/kitti/eval_object.php
