@@ -32,10 +32,10 @@ class YoloDetector(object):
             boxes, probs = boxes_to_array(boxes_)
             boxes = to_minmax(boxes)
             labels = np.array([b.get_label() for b in boxes_])
-            
-            boxes = boxes[probs > cls_threshold]
-            labels = labels[probs > cls_threshold]
-            probs = probs[probs > cls_threshold]
+                        
+            boxes = boxes[probs >= cls_threshold]
+            labels = labels[probs >= cls_threshold]
+            probs = probs[probs >= cls_threshold]
         else:
             boxes, labels, probs = [], [], []
         return boxes, labels, probs
