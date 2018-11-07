@@ -35,7 +35,7 @@ if __name__ == '__main__':
     model = config_parser.create_model(skip_detect_layer=False)
     detector = config_parser.create_detector(model)
     
-    # 2. preprocess the image
+    # 2. Load image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
     
