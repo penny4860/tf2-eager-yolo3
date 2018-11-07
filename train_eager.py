@@ -23,7 +23,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--config',
-    default="configs/raccoon.json",
+    default="configs/svhn.json",
     help='config file')
 
 
