@@ -5,7 +5,7 @@
         "net_size":               288
     },
     "pretrained" : {
-        "keras_format":             "",
+        "keras_format":             "configs/svhn/weights.h5",
         "darknet_format":           "yolov3.weights"
     },
     "train" : {
