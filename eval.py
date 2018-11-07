@@ -32,7 +32,7 @@ argparser.add_argument(
     '-t',
     '--threshold',
     type=float,
-    default=0.0)
+    default=0.5)
 
 
 if __name__ == '__main__':
