@@ -37,22 +37,23 @@ if __name__ == '__main__':
         config = json.load(data_file)
     
     # Download if not exits weight file
-    download_if_not_exists(config["pretrained"]["darknet_format"],
-                           "https://pjreddie.com/media/files/yolov3.weights")
-
     # 1. create yolo model & load weights
-    yolov3 = Yolonet(n_classes=len(config["model"]["labels"]))
-    yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
-
+    from yolo.config import ConfigParser
+    config_parser = ConfigParser(args.config)
+    model = config_parser.create_model()
+    print(model)
+    
     # 2. preprocess the image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
+    print(image.shape)
 
-    d = YoloDetector(yolov3)
-    boxes, labels, probs = d.detect(image, config["model"]["anchors"], net_size=config["model"]["net_size"])
+    d = YoloDetector(model, config["model"]["anchors"], net_size=config["model"]["net_size"])
+    boxes, labels, probs = d.detect(image, 0.5)
+    print(boxes)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
+    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"])
 
     # 5. plot    
     plt.imshow(image)
