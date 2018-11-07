@@ -57,7 +57,7 @@ if __name__ == '__main__':
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
 
-        boxes, labels, probs = detector.detect(image, config["model"]["anchors"], args.threshold)
+        boxes, labels, probs = detector.detect(image, config["model"]["anchors"], config["model"]["net_size"], args.threshold)
         
         n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
         n_truth += len(true_boxes)
