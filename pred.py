@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 import argparse
 import cv2
 
-from yolo.utils.utils import download_if_not_exists
 from yolo.utils.box import draw_boxes
-from yolo.net.yolonet import Yolonet
-
+from yolo.config import ConfigParser
 
 
 argparser = argparse.ArgumentParser(
@@ -32,13 +30,7 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     image_path   = args.image
     
-    import json
-    with open(args.config) as data_file:    
-        config = json.load(data_file)
-    
-    # Download if not exits weight file
     # 1. create yolo model & load weights
-    from yolo.config import ConfigParser
     config_parser = ConfigParser(args.config)
     model = config_parser.create_model(skip_detect_layer=False)
     detector = config_parser.create_detector(model)
@@ -51,7 +43,7 @@ if __name__ == '__main__':
     boxes, labels, probs = detector.detect(image, 0.5)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"])
+    image = draw_boxes(image, boxes, labels, probs, config_parser.get_labels())
 
     # 5. plot    
     plt.imshow(image)

@@ -94,3 +94,7 @@ class ConfigParser(object):
         num_epoches=self._train_config["num_epoch"]
         return learning_rate, save_dname, num_epoches
 
+    def get_labels(self):
+        return self._model_config["labels"]
+
+
