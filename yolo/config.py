@@ -33,7 +33,7 @@ import glob
 from yolo.net import Yolonet
 from yolo.dataset.generator import BatchGenerator
 from yolo.utils.utils import download_if_not_exists
-
+from yolo.frontend import YoloDetector
 
 class ConfigParser(object):
     def __init__(self, config_file):
@@ -55,6 +55,10 @@ class ConfigParser(object):
             model.load_darknet_params(self._pretrained_config["darknet_format"], skip_detect_layer)
 
         return model
+
+    def create_detector(self, model):
+        d = YoloDetector(model, self._model_config["anchors"], net_size=self._model_config["net_size"])
+        return d
 
     def create_generator(self):
         train_ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
