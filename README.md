@@ -93,7 +93,7 @@ Now you can add more images to train a digit detector with good generalization p
 
 ### 4. Kitti object detection dataset : http://www.cvlibs.net/datasets/kitti/eval_object.php
 
-<img src="imgs/kitti.jpg" height="500">
+<img src="imgs/kitti.jpg" height="400">
 
 * Pretrained weight file is stored at [kitti](https://drive.google.com/drive/folders/1G4uFyk60c0hlH_4PRPRVSFpUnS582Fde)
 * Evaluation (7481-images)
