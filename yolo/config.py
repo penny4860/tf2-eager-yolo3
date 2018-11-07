@@ -44,7 +44,7 @@ class ConfigParser(object):
         self._pretrained_config = config["pretrained"]
         self._train_config = config["train"]
         
-    def create_model(self):
+    def create_model(self, skip_detect_layer=True):
         model = Yolonet(n_classes=len(self._model_config["labels"]))
         if os.path.exists(self._pretrained_config["keras_format"]):
             model.load_weights(self._pretrained_config["keras_format"])
@@ -52,7 +52,7 @@ class ConfigParser(object):
             download_if_not_exists(self._pretrained_config["darknet_format"],
                                    "https://pjreddie.com/media/files/yolov3.weights")
 
-            model.load_darknet_params(self._pretrained_config["darknet_format"], skip_detect_layer=True)
+            model.load_darknet_params(self._pretrained_config["darknet_format"], skip_detect_layer)
 
         return model
 

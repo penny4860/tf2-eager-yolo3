@@ -40,17 +40,14 @@ if __name__ == '__main__':
     # 1. create yolo model & load weights
     from yolo.config import ConfigParser
     config_parser = ConfigParser(args.config)
-    model = config_parser.create_model()
-    print(model)
+    model = config_parser.create_model(skip_detect_layer=False)
     
     # 2. preprocess the image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
-    print(image.shape)
 
     d = YoloDetector(model, config["model"]["anchors"], net_size=config["model"]["net_size"])
     boxes, labels, probs = d.detect(image, 0.5)
-    print(boxes)
     
     # 4. draw detected boxes
     image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"])
