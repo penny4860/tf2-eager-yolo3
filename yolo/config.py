@@ -118,6 +118,9 @@ class ConfigParser(object):
         num_epoches=self._train_config["num_epoch"]
         return learning_rate, save_dname, num_epoches
 
+    def get_labels(self):
+        return self._model_config["labels"]
+    
     def _get_train_anns(self):
         ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
         return ann_fnames
