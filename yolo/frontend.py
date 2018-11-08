@@ -51,15 +51,16 @@ class YoloDetector(object):
 
 
 class Evaluator(object):
-    def __init__(self, yolo_detector):
+    def __init__(self, yolo_detector, class_labels):
         self._detector = yolo_detector
+        self._cls_labels = class_labels
     
-    def run(self, ann_fnames, img_dname, class_labels, threshold=0.5, save_dname=None):
+    def run(self, ann_fnames, img_dname, threshold=0.5, save_dname=None):
         n_true_positives = 0
         n_truth = 0
         n_pred = 0
         for ann_fname in tqdm(ann_fnames):
-            img_fname, true_boxes, true_labels = parse_annotation(ann_fname, img_dname, class_labels)
+            img_fname, true_boxes, true_labels = parse_annotation(ann_fname, img_dname, self._cls_labels)
             true_labels = np.array(true_labels)
             image = cv2.imread(img_fname)[:,:,::-1]
     
@@ -70,11 +71,13 @@ class Evaluator(object):
             n_pred += len(boxes)
             
             if save_dname:
-                if not os.path.exists(save_dname):
-                    os.makedirs(save_dname)
-                image_ = draw_boxes(image, boxes, labels, probs, class_labels, desired_size=416)
-                output_path = os.path.join(save_dname, os.path.split(img_fname)[-1])
-                cv2.imwrite(output_path, image_[:,:,::-1])
+                self._save_img(save_dname, img_fname, image, boxes, labels, probs)
         return calc_score(n_true_positives, n_truth, n_pred)
 
+    def _save_img(self, save_dname, img_fname, image, boxes, labels, probs):
+        if not os.path.exists(save_dname):
+            os.makedirs(save_dname)
+        image_ = draw_boxes(image, boxes, labels, probs, self._cls_labels, desired_size=416)
+        output_path = os.path.join(save_dname, os.path.split(img_fname)[-1])
+        cv2.imwrite(output_path, image_[:,:,::-1])
 

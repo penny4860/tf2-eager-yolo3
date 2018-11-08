@@ -34,10 +34,9 @@ if __name__ == '__main__':
     model = config_parser.create_model()
     detector = config_parser.create_detector(model)
  
-    evaluator = Evaluator(detector)
+    evaluator = Evaluator(detector, config_parser.get_labels())
     score = evaluator.run(config_parser.get_train_anns(),
-                          config_parser._train_config["train_image_folder"],
-                          config_parser.get_labels())
+                          config_parser._train_config["train_image_folder"])
     
     print(score)
 
