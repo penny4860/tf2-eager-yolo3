@@ -30,7 +30,7 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     config_parser = ConfigParser(args.config)
     model = config_parser.create_model()
-    evaluator = config_parser.create_evaluator(model)
+    evaluator, _ = config_parser.create_evaluator(model)
 
     score = evaluator.run(threshold=args.threshold,
                           save_dname=args.save_dname)

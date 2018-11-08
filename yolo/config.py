@@ -65,8 +65,8 @@ class ConfigParser(object):
         return d
 
     def create_generator(self):
-        train_ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
-        valid_ann_fnames = glob.glob(os.path.join(self._train_config["valid_annot_folder"], "*.xml"))
+        train_ann_fnames = self._get_train_anns()
+        valid_ann_fnames = self._get_valid_anns()
     
         train_generator = BatchGenerator(train_ann_fnames,
                                          self._train_config["train_image_folder"],
@@ -92,21 +92,35 @@ class ConfigParser(object):
         print("Training samples : {}, Validation samples : {}".format(len(train_ann_fnames), len(valid_ann_fnames)))
         return train_generator, valid_generator
 
+    def create_evaluator(self, model):
+
+        detector = self.create_detector(model)
+        train_ann_fnames = self._get_train_anns()
+        valid_ann_fnames = self._get_valid_anns()
+
+        train_evaluator = Evaluator(detector,
+                                    self._model_config["labels"],
+                                    train_ann_fnames,
+                                    self._train_config["train_image_folder"])
+        if len(valid_ann_fnames) > 0:
+            valid_evaluator = Evaluator(detector,
+                                        self._model_config["labels"],
+                                        valid_ann_fnames,
+                                        self._train_config["valid_image_folder"])
+        else:
+            valid_evaluator = None
+        return train_evaluator, valid_evaluator
+
     def get_train_params(self):
         learning_rate=self._train_config["learning_rate"]
         save_dname=self._train_config["save_folder"]
         num_epoches=self._train_config["num_epoch"]
         return learning_rate, save_dname, num_epoches
 
-    def create_evaluator(self, model):
-        detector = self.create_detector(model)
-        evaluator = Evaluator(detector,
-                              self._model_config["labels"],
-                              self._get_train_anns(),
-                              self._train_config["train_image_folder"])
-        return evaluator
-
     def _get_train_anns(self):
         ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
         return ann_fnames
 
+    def _get_valid_anns(self):
+        ann_fnames = glob.glob(os.path.join(self._train_config["valid_annot_folder"], "*.xml"))
+        return ann_fnames
