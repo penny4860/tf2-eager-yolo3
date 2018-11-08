@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# Todo : eval.py 에서 config parser를 사용
 import tensorflow as tf
 tf.enable_eager_execution()
 
@@ -39,6 +39,7 @@ if __name__ == '__main__':
     from yolo.dataset.annotation import parse_annotation
     from yolo.eval.fscore import count_true_positives, calc_score
     import numpy as np
+    from yolo.config import ConfigParser
     
     args = argparser.parse_args()
     with open(args.config) as data_file:    
@@ -46,7 +47,7 @@ if __name__ == '__main__':
 
     model = Yolonet(n_classes=len(config["model"]["labels"]))
     model.load_weights(os.path.join(config["train"]["save_folder"], "weights.h5"))
-    detector = YoloDetector(model)
+    detector = YoloDetector(model, config["model"]["anchors"], config["model"]["net_size"])
  
     n_true_positives = 0
     n_truth = 0
@@ -57,7 +58,7 @@ if __name__ == '__main__':
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
 
-        boxes, labels, probs = detector.detect(image, config["model"]["anchors"], config["model"]["net_size"], args.threshold)
+        boxes, labels, probs = detector.detect(image, args.threshold)
         
         n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
         n_truth += len(true_boxes)
