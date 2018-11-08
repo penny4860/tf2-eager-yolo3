@@ -33,7 +33,8 @@ import glob
 from yolo.net import Yolonet
 from yolo.dataset.generator import BatchGenerator
 from yolo.utils.utils import download_if_not_exists
-from yolo.frontend import YoloDetector, Evaluator
+from yolo.frontend import YoloDetector
+from yolo.evaluate import Evaluator
 
 class ConfigParser(object):
     def __init__(self, config_file):
@@ -117,6 +118,9 @@ class ConfigParser(object):
         num_epoches=self._train_config["num_epoch"]
         return learning_rate, save_dname, num_epoches
 
+    def get_labels(self):
+        return self._model_config["labels"]
+    
     def _get_train_anns(self):
         ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
         return ann_fnames
