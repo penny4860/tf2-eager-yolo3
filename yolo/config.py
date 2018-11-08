@@ -33,7 +33,7 @@ import glob
 from yolo.net import Yolonet
 from yolo.dataset.generator import BatchGenerator
 from yolo.utils.utils import download_if_not_exists
-from yolo.frontend import YoloDetector
+from yolo.frontend import YoloDetector, Evaluator
 
 class ConfigParser(object):
     def __init__(self, config_file):
@@ -98,20 +98,15 @@ class ConfigParser(object):
         num_epoches=self._train_config["num_epoch"]
         return learning_rate, save_dname, num_epoches
 
-    def get_labels(self):
-        return self._model_config["labels"]
+    def create_evaluator(self, model):
+        detector = self.create_detector(model)
+        evaluator = Evaluator(detector,
+                              self._model_config["labels"],
+                              self._get_train_anns(),
+                              self._train_config["train_image_folder"])
+        return evaluator
 
-    def get_train_anns(self):
+    def _get_train_anns(self):
         ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
         return ann_fnames
-
-    def parse_ann(self, ann_fname):
-        from yolo.dataset.annotation import parse_annotation
-        import numpy as np
-        import cv2
-        img_fname, true_boxes, true_labels = parse_annotation(ann_fname, self._train_config["train_image_folder"], self.get_labels())
-        true_labels = np.array(true_labels)
-        image = cv2.imread(img_fname)[:,:,::-1]
-        return image, img_fname, true_boxes, true_labels
-
 

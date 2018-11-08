@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Todo : eval.py 에서 config parser를 사용
 import tensorflow as tf
 tf.enable_eager_execution()
 
@@ -28,15 +27,13 @@ argparser.add_argument(
 
 if __name__ == '__main__':
     from yolo.config import ConfigParser
-    from yolo.frontend import Evaluator
     args = argparser.parse_args()
     config_parser = ConfigParser(args.config)
     model = config_parser.create_model()
-    detector = config_parser.create_detector(model)
- 
-    evaluator = Evaluator(detector, config_parser.get_labels())
-    score = evaluator.run(config_parser.get_train_anns(),
-                          config_parser._train_config["train_image_folder"])
+    evaluator = config_parser.create_evaluator(model)
+
+    score = evaluator.run(threshold=args.threshold,
+                          save_dname=args.save_dname)
     
     print(score)
 

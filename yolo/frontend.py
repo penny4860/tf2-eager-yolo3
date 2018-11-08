@@ -51,16 +51,18 @@ class YoloDetector(object):
 
 
 class Evaluator(object):
-    def __init__(self, yolo_detector, class_labels):
+    def __init__(self, yolo_detector, class_labels, ann_fnames, img_dname):
         self._detector = yolo_detector
         self._cls_labels = class_labels
+        self._ann_fnames = ann_fnames
+        self._img_dname = img_dname
     
-    def run(self, ann_fnames, img_dname, threshold=0.5, save_dname=None):
+    def run(self, threshold=0.5, save_dname=None):
         n_true_positives = 0
         n_truth = 0
         n_pred = 0
-        for ann_fname in tqdm(ann_fnames):
-            img_fname, true_boxes, true_labels = parse_annotation(ann_fname, img_dname, self._cls_labels)
+        for ann_fname in tqdm(self._ann_fnames):
+            img_fname, true_boxes, true_labels = parse_annotation(ann_fname, self._img_dname, self._cls_labels)
             true_labels = np.array(true_labels)
             image = cv2.imread(img_fname)[:,:,::-1]
     
