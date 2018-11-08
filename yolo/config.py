@@ -33,7 +33,8 @@ import glob
 from yolo.net import Yolonet
 from yolo.dataset.generator import BatchGenerator
 from yolo.utils.utils import download_if_not_exists
-from yolo.frontend import YoloDetector, Evaluator
+from yolo.frontend import YoloDetector
+from yolo.evaluate import Evaluator
 
 class ConfigParser(object):
     def __init__(self, config_file):
