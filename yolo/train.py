@@ -7,7 +7,7 @@ from tqdm import tqdm
 from yolo.loss import loss_fn
 
 
-def train_fn(model, train_generator, valid_generator, learning_rate=1e-4, num_epoches=500, save_dname=None):
+def train_fn(model, train_generator, valid_generator=None, learning_rate=1e-4, num_epoches=500, save_dname=None):
     
     save_fname = _setup(save_dname)
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -16,11 +16,15 @@ def train_fn(model, train_generator, valid_generator, learning_rate=1e-4, num_ep
     for i in range(num_epoches):
 
         # 1. update params
-        _loop_train(model, optimizer, train_generator)
+        train_loss = _loop_train(model, optimizer, train_generator)
         
         # 2. monitor validation loss
-        loss_value = _loop_validation(model, valid_generator)
-        print("{}-th loss = {}".format(i, loss_value))
+        if valid_generator:
+            valid_loss = _loop_validation(model, valid_generator)
+            loss_value = valid_loss
+        else:
+            loss_value = train_loss
+        print("{}-th loss = {}, train_loss = {}".format(i, loss_value, train_loss))
 
         # 3. update weights
         history.append(loss_value)
@@ -35,12 +39,15 @@ def _loop_train(model, optimizer, generator):
     # one epoch
     
     n_steps = generator.steps_per_epoch
+    loss_value = 0
     for _ in tqdm(range(n_steps)):
         xs, yolo_1, yolo_2, yolo_3 = generator.next_batch()
         ys = [yolo_1, yolo_2, yolo_3]
-
-        grads = _grad_fn(model, xs, ys)
+        grads, loss = _grad_fn(model, xs, ys)
+        loss_value += loss
         optimizer.apply_gradients(zip(grads, model.variables))
+    loss_value /= generator.steps_per_epoch
+    return loss_value
 
 
 def _loop_validation(model, generator):
@@ -71,7 +78,7 @@ def _grad_fn(model, images_tensor, list_y_trues):
         logits = model(images_tensor)
         loss = loss_fn(list_y_trues, logits)
         # print("loss = ", loss)
-    return tape.gradient(loss, model.variables)
+    return tape.gradient(loss, model.variables), loss
 
 
 if __name__ == '__main__':
