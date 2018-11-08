@@ -58,6 +58,8 @@ if __name__ == '__main__':
         n_pred += len(boxes)
         
         if args.save_dname:
+            if not os.path.exists(args.save_dname):
+                os.makedirs(args.save_dname)
             image_ = draw_boxes(image, boxes, labels, probs, config_parser.get_labels(), desired_size=416)
             output_path = os.path.join(args.save_dname, os.path.split(img_fname)[-1])
             cv2.imwrite(output_path, image_[:,:,::-1])
