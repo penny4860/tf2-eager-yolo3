@@ -101,4 +101,17 @@ class ConfigParser(object):
     def get_labels(self):
         return self._model_config["labels"]
 
+    def get_train_anns(self):
+        ann_fnames = glob.glob(os.path.join(self._train_config["train_annot_folder"], "*.xml"))
+        return ann_fnames
+
+    def parse_ann(self, ann_fname):
+        from yolo.dataset.annotation import parse_annotation
+        import numpy as np
+        import cv2
+        img_fname, true_boxes, true_labels = parse_annotation(ann_fname, self._train_config["train_image_folder"], self.get_labels())
+        true_labels = np.array(true_labels)
+        image = cv2.imread(img_fname)[:,:,::-1]
+        return image, true_boxes, true_labels
+
 
