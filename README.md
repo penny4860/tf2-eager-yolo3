@@ -78,8 +78,8 @@ Now you can add more images to train a digit detector with good generalization p
 <img src="imgs/svhn_1.jpg" height="400">
 
 * Pretrained weight file is stored at [svhn](https://drive.google.com/drive/folders/1c3ikKWNgaMtPHUWQf54taRUgyJhcyX1g)
-* Evaluation (1000-images)
-	* fscore / precision / recall: 0.93, 0.89, 0.97
+* Evaluation (33402-images)
+	* fscore / precision / recall: 0.90, 0.83, 0.97
 
 
 ### 3. Udacity self-driving-car dataset : https://github.com/udacity/self-driving-car/tree/master/annotations
