@@ -112,6 +112,6 @@ class ConfigParser(object):
         img_fname, true_boxes, true_labels = parse_annotation(ann_fname, self._train_config["train_image_folder"], self.get_labels())
         true_labels = np.array(true_labels)
         image = cv2.imread(img_fname)[:,:,::-1]
-        return image, true_boxes, true_labels
+        return image, img_fname, true_boxes, true_labels
 
 

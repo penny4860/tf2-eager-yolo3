@@ -22,8 +22,8 @@ argparser.add_argument(
 
 argparser.add_argument(
     '-s',
-    '--save',
-    default=False)
+    '--save_dname',
+    default=None)
 
 argparser.add_argument(
     '-t',
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     n_pred = 0
     ann_fnames = config_parser.get_train_anns()
     for ann_fname in tqdm(ann_fnames):
-        image, true_boxes, true_labels = config_parser.parse_ann(ann_fname)
+        image, img_fname, true_boxes, true_labels = config_parser.parse_ann(ann_fname)
 
         boxes, labels, probs = detector.detect(image, args.threshold)
         
@@ -57,9 +57,9 @@ if __name__ == '__main__':
         n_truth += len(true_boxes)
         n_pred += len(boxes)
         
-        if args.save:
+        if args.save_dname:
             image_ = draw_boxes(image, boxes, labels, probs, config_parser.get_labels(), desired_size=416)
-            output_path = os.path.join(config["train"]["save_folder"], os.path.split(ann_fname)[-1])
+            output_path = os.path.join(args.save_dname, os.path.split(img_fname)[-1])
             cv2.imwrite(output_path, image_[:,:,::-1])
 
     print(calc_score(n_true_positives, n_truth, n_pred))
