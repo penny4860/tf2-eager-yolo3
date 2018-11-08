@@ -7,10 +7,12 @@ import numpy as np
 
 class YoloDetector(object):
     
-    def __init__(self, model):
+    def __init__(self, model, anchors, net_size=288):
         self._model = model
+        self._anchors = anchors
+        self._net_size = net_size
         
-    def detect(self, image, anchors, net_size=288, cls_threshold=0.0):
+    def detect(self, image, cls_threshold=0.0):
         """
         # Args
             image : array, shape of (H, W, 3)
@@ -23,10 +25,10 @@ class YoloDetector(object):
             probs : array, shape of (N,)
         """
         image_h, image_w, _ = image.shape
-        new_image = preprocess_input(image, net_size)
+        new_image = preprocess_input(image, self._net_size)
         # 3. predict
         yolos = self._model.predict(new_image)
-        boxes_ = postprocess_ouput(yolos, anchors, net_size, image_h, image_w)
+        boxes_ = postprocess_ouput(yolos, self._anchors, self._net_size, image_h, image_w)
         
         if len(boxes_) > 0:
             boxes, probs = boxes_to_array(boxes_)

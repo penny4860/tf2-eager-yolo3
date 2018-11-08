@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 import argparse
 import cv2
 
-from yolo.utils.utils import download_if_not_exists
 from yolo.utils.box import draw_boxes
-from yolo.net.yolonet import Yolonet
-from yolo.frontend import YoloDetector
+from yolo.config import ConfigParser
 
 
 argparser = argparse.ArgumentParser(
@@ -32,27 +30,20 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     image_path   = args.image
     
-    import json
-    with open(args.config) as data_file:    
-        config = json.load(data_file)
-    
-    # Download if not exits weight file
-    download_if_not_exists(config["pretrained"]["darknet_format"],
-                           "https://pjreddie.com/media/files/yolov3.weights")
-
     # 1. create yolo model & load weights
-    yolov3 = Yolonet(n_classes=len(config["model"]["labels"]))
-    yolov3.load_darknet_params(config["pretrained"]["darknet_format"])
-
-    # 2. preprocess the image
+    config_parser = ConfigParser(args.config)
+    model = config_parser.create_model(skip_detect_layer=False)
+    detector = config_parser.create_detector(model)
+    
+    # 2. Load image
     image = cv2.imread(image_path)
     image = image[:,:,::-1]
-
-    d = YoloDetector(yolov3)
-    boxes, labels, probs = d.detect(image, config["model"]["anchors"], net_size=config["model"]["net_size"])
+    
+    # 3. Run detection
+    boxes, labels, probs = detector.detect(image, 0.5)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config["model"]["labels"], obj_thresh=0.5)
+    image = draw_boxes(image, boxes, labels, probs, config_parser.get_labels())
 
     # 5. plot    
     plt.imshow(image)
