@@ -2,11 +2,11 @@
 
 import tensorflow as tf
 tf.enable_eager_execution()
-import matplotlib.pyplot as plt
 import argparse
 import cv2
+import matplotlib.pyplot as plt
 
-from yolo.utils.box import draw_boxes
+from yolo.utils.box import visualize_boxes
 from yolo.config import ConfigParser
 
 
@@ -43,12 +43,11 @@ if __name__ == '__main__':
     boxes, labels, probs = detector.detect(image, 0.5)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config_parser.get_labels())
+    visualize_boxes(image, boxes, labels, probs, config_parser.get_labels())
 
     # 5. plot    
     plt.imshow(image)
     plt.show()
-
 
  
 

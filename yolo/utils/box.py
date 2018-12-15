@@ -244,6 +244,15 @@ def find_match_box(centroid_box, centroid_boxes):
     return match_index
 
 
+from yolo.utils.visualization_utils import visualize_boxes_and_labels_on_image_array
+def visualize_boxes(image, boxes, labels, probs, class_labels):
+    category_index = {}
+    for id_, label_name in enumerate(class_labels):
+        category_index[id_] = {"name": label_name}
+    
+    boxes = np.array([np.array([b[1],b[0],b[3],b[2]]) for b in boxes])
+    visualize_boxes_and_labels_on_image_array(image, boxes, labels, probs, category_index)
+
 
 if __name__ == '__main__':
     pass
