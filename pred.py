@@ -2,7 +2,6 @@
 
 import tensorflow as tf
 tf.enable_eager_execution()
-import matplotlib.pyplot as plt
 import argparse
 import cv2
 
@@ -46,9 +45,7 @@ if __name__ == '__main__':
     image = draw_boxes(image, boxes, labels, probs, config_parser.get_labels())
 
     # 5. plot    
-    plt.imshow(image)
-    plt.show()
-
+    cv2.imwrite("detected.jpg", image[:,:,::-1])
 
  
 
