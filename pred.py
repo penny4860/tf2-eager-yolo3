@@ -42,10 +42,23 @@ if __name__ == '__main__':
     boxes, labels, probs = detector.detect(image, 0.5)
     
     # 4. draw detected boxes
-    image = draw_boxes(image, boxes, labels, probs, config_parser.get_labels())
+    from yolo.utils.visualization_utils import visualize_boxes_and_labels_on_image_array
+
+    category_index = {}
+    print(config_parser.get_labels())
+    for id_, label_name in enumerate(config_parser.get_labels()):
+        category_index[id_] = {"name": label_name}
+    print(category_index)
+    
+    import numpy as np
+    boxes = np.array([np.array([b[1],b[0],b[3],b[2]]) for b in boxes])
+    print(boxes.shape)
+    visualize_boxes_and_labels_on_image_array(image, boxes, labels, probs, category_index)
 
     # 5. plot    
-    cv2.imwrite("detected.jpg", image[:,:,::-1])
+    import matplotlib.pyplot as plt
+    plt.imshow(image)
+    plt.show()
 
  
 
