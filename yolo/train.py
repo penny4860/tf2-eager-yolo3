@@ -10,7 +10,7 @@ from yolo.loss import loss_fn
 def train_fn(model, train_generator, valid_generator=None, learning_rate=1e-4, num_epoches=500, save_dname=None):
     
     save_fname = _setup(save_dname)
-    optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
     history = []
     for i in range(num_epoches):
