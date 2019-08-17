@@ -69,10 +69,6 @@ class WeightReader:
 
 
 if __name__ == '__main__':
-    # Todo : tensorflow를 import 했을 때 / 안했을 때 offset 결과가 다르다.
-#     import tensorflow as tf
-#     tf.enable_eager_execution()
-
     from yolo.net.yolonet import Yolonet
     from yolo import YOLOV3_WEIGHTS
     yolonet = Yolonet(18)

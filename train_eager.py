@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-tf.enable_eager_execution()
-
 import argparse
 from yolo.train import train_fn
 from yolo.config import ConfigParser

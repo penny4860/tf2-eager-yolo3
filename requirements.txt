@@ -1,0 +1,10 @@
+tensorflow==2.0.0-beta1
+opencv-python
+Pillow
+requests
+tqdm
+sklearn
+imgaug==0.2.6
+pytest-cov
+codecov
+matplotlib

@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/penny4860/tf-eager-yolo3.svg?branch=master)](https://travis-ci.org/penny4860/tf-eager-yolo3) [![codecov](https://codecov.io/gh/penny4860/tf-eager-yolo3/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/tf-eager-yolo3)
 
-# Tensorflow eager implementation of Yolo-v3
+# TF2 eager implementation of Yolo-v3
 
-I have implemented yolo-v3 detector using tensorflow eager execution.
+I have implemented yolo-v3 detector using tf2 eager execution.
 
 <img src="imgs/sample_detected.png" height="600" width="800">
 
@@ -11,26 +11,16 @@ I have implemented yolo-v3 detector using tensorflow eager execution.
 #### 0. Requirement
 
 * python 3.6
-* anaconda 5.1.0
-* tensorflow 1.9.0
-* opencv 3.4.3.18
-* imgaug 0.2.6
-* tqdm
+* tensorflow 2.0.0-beta1
 * Etc.
-
 
 I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
 
 ```
-$ conda create -n yolo3 python=3.6 anaconda=5.1.0
+$ conda create -n yolo3 python=3.6
 $ activate yolo3 # in linux "source activate yolo3"
-(yolo) $ pip install tensorflow==1.9.0
-(yolo) $ pip install opencv-python==3.4.3.18
-(yolo) $ pip install imgaug==0.2.6
-(yolo) $ pip install tqdm
-(yolo) $ pip install pytest-cov
-(yolo) $ pip install codecov
-(yolo) $ pip install -e .
+(yolo3) $ pip install -r requirements.txt
+(yolo3) $ pip install -e .
 ```
 
 ### 1. Object detection using original yolo3-weights

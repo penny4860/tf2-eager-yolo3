@@ -177,7 +177,6 @@ def normalize(image):
 
 
 if __name__ == '__main__':
-    tf.enable_eager_execution()
     import os
     import glob
     from yolo import PROJECT_ROOT

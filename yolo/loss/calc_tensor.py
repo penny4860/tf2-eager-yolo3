@@ -2,7 +2,6 @@
 
 import tensorflow as tf
 import numpy as np
-# tf.enable_eager_execution()
 from yolo.loss.utils import adjust_pred_tensor, adjust_true_tensor
 from yolo.loss.utils import conf_delta_tensor
 from yolo.loss.utils import loss_class_tensor, loss_conf_tensor, loss_coord_tensor, wh_scale_tensor
@@ -77,7 +76,6 @@ class LossTensorCalculator(object):
 if __name__ == '__main__':
     import os
     from yolo import PROJECT_ROOT
-    tf.enable_eager_execution()
     def test():
         yolo_1 = np.load(os.path.join(PROJECT_ROOT, "yolo_1.npy")).astype(np.float32)
         pred_yolo_1 = np.load(os.path.join(PROJECT_ROOT, "pred_yolo_1.npy")).astype(np.float32)

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import tensorflow as tf
-tf.enable_eager_execution()
-
 import argparse
 
 argparser = argparse.ArgumentParser(
