@@ -19,14 +19,9 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n yolo python=3.6 anaconda=5.1.0
+  - conda create -q -n yolo python=3.6
   - source activate yolo
-  - pip install tensorflow==1.9.0
-  - pip install opencv-python==3.4.3.18
-  - pip install imgaug==0.2.6
-  - pip install tqdm
-  - pip install pytest-cov
-  - pip install codecov
+  - pip install -r requirements.txt
   - pip install -e .
 
 # command to run tests
@@ -35,8 +30,3 @@ script: pytest -x --cov=yolo tests
 #Upload code coverage statistics
 after_success:
   - codecov
-
-
-
-
-
