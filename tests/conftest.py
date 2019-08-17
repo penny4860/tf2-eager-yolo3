@@ -8,10 +8,6 @@ import glob
 from yolo import PROJECT_ROOT
 from yolo.utils.utils import download_if_not_exists
 
-@pytest.fixture(scope='session')
-def setup_tf_eager(request):
-    tf.enable_eager_execution()
-
 
 @pytest.fixture(scope='session')
 def setup_darknet_weights():

@@ -8,7 +8,7 @@ from yolo import COCO_ANCHORS, PROJECT_ROOT
 from yolo.frontend import YoloDetector
 
 
-def test_detect(setup_tf_eager, setup_darknet_weights):
+def test_detect(setup_darknet_weights):
     
     darknet_weights = setup_darknet_weights
     image_path   = os.path.join(PROJECT_ROOT, "tests", "samples", "sample.jpeg")

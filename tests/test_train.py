@@ -19,7 +19,7 @@ def setup_generator(setup_train_dirs):
     return generator
 
 
-def test_overfit(setup_tf_eager, setup_darknet_weights, setup_generator):
+def test_overfit(setup_darknet_weights, setup_generator):
     
     # 1. create generator
     generator = setup_generator
@@ -36,7 +36,7 @@ def test_overfit(setup_tf_eager, setup_darknet_weights, setup_generator):
     assert loss_history[0] > loss_history[-1]
 
 
-def test_train(setup_tf_eager, setup_darknet_weights, setup_generator):
+def test_train(setup_darknet_weights, setup_generator):
 
     # 1. create generator
     generator = setup_generator
