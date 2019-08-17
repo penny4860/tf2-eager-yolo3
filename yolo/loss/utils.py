@@ -59,7 +59,7 @@ def conf_delta_tensor(y_true, y_pred, anchors, ignore_thresh):
     union_areas = pred_areas + true_areas - intersect_areas
     best_ious  = tf.truediv(intersect_areas, union_areas)
     
-    conf_delta = pred_box_conf * tf.compat.v1.to_float(best_ious < ignore_thresh)
+    conf_delta = pred_box_conf * tf.cast(best_ious < ignore_thresh, tf.float32)
     return conf_delta
 
 def wh_scale_tensor(true_box_wh, anchors, image_size):
@@ -100,7 +100,7 @@ def _create_mesh_xy(batch_size, grid_h, grid_w, n_box):
             [..., 0] means "grid_w"
             [..., 1] means "grid_h"
     """
-    mesh_x = tf.compat.v1.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+    mesh_x = tf.cast(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)), tf.float32)
     mesh_y = tf.transpose(mesh_x, (0,2,1,3,4))
     mesh_xy = tf.tile(tf.concat([mesh_x,mesh_y],-1), [batch_size, 1, 1, n_box, 1])
     return mesh_xy
