@@ -66,7 +66,6 @@ def preprocess_input(image, net_size):
 
 
 if __name__ == '__main__':
-    tf.enable_eager_execution()
     inputs = tf.constant(np.random.randn(1, 256, 256, 3).astype(np.float32))
     
     # (1, 256, 256, 3) => (1, 8, 8, 1024)

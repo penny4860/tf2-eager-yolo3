@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-tf.compat.v1.enable_eager_execution()
 import argparse
 import cv2
 import matplotlib.pyplot as plt

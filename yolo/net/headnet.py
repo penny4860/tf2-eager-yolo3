@@ -147,7 +147,6 @@ class _Upsamling(tf.keras.Model):
 
 if __name__ == '__main__':
     import numpy as np
-    tf.enable_eager_execution()
     s3 = tf.constant(np.random.randn(1, 32, 32, 256).astype(np.float32))
     s4 = tf.constant(np.random.randn(1, 16, 16, 512).astype(np.float32))
     s5 = tf.constant(np.random.randn(1, 8, 8, 1024).astype(np.float32))

@@ -82,5 +82,4 @@ def _grad_fn(model, images_tensor, list_y_trues):
 
 
 if __name__ == '__main__':
-    tf.compat.v1.enable_eager_execution()
     pass

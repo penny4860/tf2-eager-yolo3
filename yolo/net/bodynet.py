@@ -180,7 +180,6 @@ class _ResidualBlock(tf.keras.Model):
 
 if __name__ == '__main__':
     import numpy as np
-    tf.enable_eager_execution()
     imgs = np.random.randn(1, 256, 256, 3).astype(np.float32)
     input_tensor = tf.constant(imgs)
     
