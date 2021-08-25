@@ -1,4 +1,4 @@
-tensorflow==2.0.0-beta1
+tensorflow==2.5.1
 opencv-python
 Pillow
 requests
